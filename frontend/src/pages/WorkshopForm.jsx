@@ -1,0 +1,462 @@
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Buttons } from "../components/components";
+import api from "../api";
+
+import {
+  TextareaItem,
+  SelectItem,
+  InputItem,
+  InfoItem,
+} from "../components/components";
+
+import {
+  ChevronLeft,
+  Building2,
+  FileText,
+  Activity,
+  Settings,
+  XCircle,
+  Factory,
+  Edit2,
+  User,
+  Save,
+} from "lucide-react";
+
+const WorkshopForm = () => {
+  const { workshopId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine mode from route path
+  const isViewMode = location.pathname.includes("/view/");
+  const isEditMode = location.pathname.includes("/edit/");
+  const isCreateMode = location.pathname.includes("/add");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    department: "",
+    manager: "",
+    operational_status: "ACTIVE",
+  });
+
+  const [user, setUser] = useState({});
+  const [errors, setErrors] = useState({});
+  const [managers, setManagers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pageError, setPageError] = useState("");
+  const [workshop, setWorkshop] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [managersLoading, setManagersLoading] = useState(false);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
+
+  // !Fetch current user
+  useEffect(() => {
+    api
+      .get("api/user/me/")
+      .then((res) => setUser(res.data))
+      .catch(() => console.error("Failed to fetch user:"));
+  }, []);
+
+  // Fetch departments and managers
+  useEffect(() => {
+    setDepartmentsLoading(true);
+    api
+      .get("api/department/")
+      .then((response) =>
+        setDepartments(response.data.results || response.data || [])
+      )
+      .catch((error) => console.error("Failed to fetch departments:", error))
+      .finally(() => setDepartmentsLoading(false));
+
+    setManagersLoading(true);
+    api
+      .get("api/user/")
+      .then((response) => {
+        const allUsers = response.data.results || response.data || [];
+        // Filter for managers or relevant roles
+        const managerUsers = allUsers.filter(
+          (u) =>
+            u.role === "MANAGER" ||
+            u.role === "SUPERVISOR" ||
+            u.role === "ADMIN"
+        );
+        setManagers(managerUsers);
+      })
+      .catch((error) => console.error("Failed to fetch managers:", error))
+      .finally(() => setManagersLoading(false));
+  }, []);
+
+  // Fetch workshop data if editing or viewing
+  useEffect(() => {
+    if (workshopId) {
+      setLoading(true);
+      api
+        .get(`api/workshop/${workshopId}/`)
+        .then((response) => {
+          const ws = response.data;
+          setWorkshop(ws);
+          setFormData({
+            name: ws.name || "",
+            description: ws.description || "",
+            department: ws.department || "",
+            manager: ws.manager || "",
+            operational_status: ws.operational_status || "ACTIVE",
+            location: ws.location || "",
+          });
+        })
+        .catch((error) => {
+          setPageError("Failed to load workshop details.");
+          console.error(error);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [workshopId]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Workshop name is required";
+    if (!formData.department) newErrors.department = "Department is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setPageError("");
+    setErrors({});
+
+    const payload = {
+      ...formData,
+      manager: formData.manager || null,
+    };
+
+    try {
+      let finalPayload = payload;
+
+      if (user.role === "SUPERVISOR" && isEditMode) {
+        const {
+          name: _name,
+          description: _description,
+          department: _department,
+          location: _location,
+          ...supervisorPayload
+        } = payload;
+        finalPayload = supervisorPayload;
+      }
+      if (user.role === "MANAGER" && isEditMode) {
+        // Managers can only edit operational_status
+        finalPayload = {
+          operational_status: payload.operational_status,
+        };
+      }
+      if (isEditMode)
+        await api.patch(`api/workshop/${workshopId}/`, finalPayload);
+      else await api.post("api/workshop/", finalPayload);
+      alert("Workshop saved successfully!");
+      navigate("/workshop");
+    } catch (error) {
+      console.error("Form submission error:", error.response);
+      const apiErrors = error.response?.data;
+
+      if (apiErrors && typeof apiErrors === "object") {
+        const newFormErrors = {};
+        for (const key in apiErrors) {
+          if (
+            Object.prototype.hasOwnProperty.call(formData, key) &&
+            Array.isArray(apiErrors[key])
+          ) {
+            newFormErrors[key] = apiErrors[key].join(" ");
+          }
+        }
+        setErrors(newFormErrors);
+
+        if (Object.keys(newFormErrors).length === 0) {
+          setPageError(
+            apiErrors.detail || "An error occurred. Please try again."
+          );
+        } else setPageError("Please correct the errors below.");
+      } else {
+        setPageError(
+          error.response?.data?.detail || "An error occurred. Please try again."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = () => {
+    navigate(`/workshop/edit/${workshopId}`);
+  };
+
+  const getDepartmentOptions = () => {
+    return departments.map((dept) => ({
+      value: dept.id,
+      label: dept.name,
+    }));
+  };
+
+  const getManagerOptions = () => {
+    return managers.map((mgr) => ({
+      value: mgr.id,
+      label:
+        mgr.first_name && mgr.last_name
+          ? `${mgr.first_name} ${mgr.last_name} (${mgr.username})`
+          : mgr.username,
+    }));
+  };
+
+  const getDepartmentName = () => {
+    if (!workshop?.department) return "N/A";
+    const dept = departments.find((d) => d.id === workshop.department);
+    return dept ? dept.name : "Unknown";
+  };
+
+  const getManagerName = () => {
+    if (!workshop?.manager) return "N/A";
+    const manager = managers.find((m) => m.id === workshop.manager);
+    if (manager) {
+      return manager.first_name && manager.last_name
+        ? `${manager.first_name} ${manager.last_name}`
+        : manager.username;
+    }
+    return "Unknown";
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      ACTIVE: {
+        color: "bg-green-100 text-green-800",
+        icon: <Activity size={14} />,
+      },
+      MAINTENANCE: {
+        color: "bg-yellow-100 text-yellow-800",
+        icon: <Settings size={14} />,
+      },
+      INACTIVE: {
+        color: "bg-red-100 text-red-800",
+        icon: <XCircle size={14} />,
+      },
+    };
+    const config = statusConfig[status] || statusConfig.ACTIVE;
+    return (
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1 ${config.color}`}
+      >
+        {config.icon}
+        {status}
+      </span>
+    );
+  };
+
+  // Determine field editability
+  const canEditAllFields = user && user.role === "ADMIN";
+  const canEditLimitedFields = user && user.role === "SUPERVISOR";
+  const canEditOperationalStatus = user && user.role === "MANAGER";
+
+  if (loading && !formData.name) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
+        <div className="text-stone-400">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto text-star-dust-200">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="bg-gradient-to-r from-orange-600 to-orange-800 rounded-lg p-2 mr-4 text-stone-300">
+                <Factory size={35} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-medium">
+                  {isViewMode && "Workshop Details"}
+                  {isEditMode && "Edit Workshop"}
+                  {isCreateMode && "Create New Workshop"}
+                </h1>
+                <p className="text-stone-400 mt-1 text-1xl">
+                  {isViewMode && "View workshop information"}
+                  {isEditMode && "Update workshop information and settings"}
+                  {isCreateMode && "Add a new workshop to your organization"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/workshop")}
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+            >
+              <ChevronLeft size={20} />
+              Workshops
+            </button>
+            {isViewMode && (
+              <button
+                onClick={handleEdit}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              >
+                <Edit2 size={18} />
+                Edit
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {pageError && (
+          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
+            {pageError}
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
+          {isViewMode ? (
+            // View Mode
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InfoItem
+                icon={<Factory />}
+                label="Workshop Name"
+                value={workshop?.name}
+              />
+              <InfoItem
+                icon={<Building2 />}
+                label="Department"
+                value={getDepartmentName()}
+              />
+              <InfoItem
+                icon={<User />}
+                label="Manager"
+                value={getManagerName()}
+              />
+              <div className="flex flex-col">
+                <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+                  <Activity size={16} />
+                  Operational Status
+                </label>
+                {workshop?.operational_status &&
+                  getStatusBadge(workshop.operational_status)}
+              </div>
+              <div className="md:col-span-2">
+                <InfoItem
+                  icon={<FileText />}
+                  label="Description"
+                  value={workshop?.description}
+                />
+              </div>
+            </div>
+          ) : (
+            // Edit/Create Mode
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InputItem
+                  label="Workshop Name"
+                  name="name"
+                  icon={<Factory />}
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter workshop name"
+                  error={errors.name}
+                  disabled={isEditMode && !canEditAllFields}
+                />
+
+                <SelectItem
+                  label="Department"
+                  name="department"
+                  icon={<Building2 />}
+                  value={formData.department}
+                  onChange={handleChange}
+                  options={getDepartmentOptions()}
+                  loading={departmentsLoading}
+                  error={errors.department}
+                  required
+                  disabled={isEditMode && !canEditAllFields}
+                />
+
+                <SelectItem
+                  label="Manager"
+                  name="manager"
+                  icon={<User />}
+                  value={formData.manager}
+                  onChange={handleChange}
+                  options={getManagerOptions()}
+                  loading={managersLoading}
+                  error={errors.manager}
+                  disabled={
+                    isEditMode && !canEditAllFields && !canEditLimitedFields
+                  }
+                />
+
+                <SelectItem
+                  label="Operational Status"
+                  name="operational_status"
+                  icon={<Activity />}
+                  value={formData.operational_status}
+                  onChange={handleChange}
+                  options={[
+                    { value: "ACTIVE", label: "Active" },
+                    { value: "MAINTENANCE", label: "Under Maintenance" },
+                    { value: "INACTIVE", label: "Inactive" },
+                  ]}
+                  error={errors.operational_status}
+                  required
+                  disabled={
+                    isEditMode &&
+                    !canEditAllFields &&
+                    !canEditLimitedFields &&
+                    !canEditOperationalStatus
+                  }
+                />
+
+                <div className="md:col-span-2">
+                  <TextareaItem
+                    label="Description"
+                    name="description"
+                    icon={<FileText />}
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="4"
+                    placeholder="Describe the workshop's purpose and capabilities"
+                    error={errors.description}
+                    disabled={isEditMode && !canEditAllFields}
+                  />
+                </div>
+              </div>
+
+              <Buttons
+                onCancel={() => navigate("/workshop")}
+                text_01={isEditMode ? "Save Changes" : "Create Workshop"}
+                disabled={
+                  loading ||
+                  (isEditMode &&
+                    !canEditAllFields &&
+                    !canEditLimitedFields &&
+                    !canEditOperationalStatus)
+                }
+              />
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WorkshopForm;

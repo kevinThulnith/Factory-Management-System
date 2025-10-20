@@ -1,0 +1,327 @@
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import api from "../api";
+
+import { InfoItem, InputItem, TextareaItem } from "../components/components"; // Assuming shared components
+
+import {
+  Truck,
+  Save,
+  XCircle,
+  ChevronLeft,
+  Edit2,
+  UserCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+} from "lucide-react";
+
+const SupplierForm = () => {
+  const { supplierId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [user, setUser] = useState({});
+
+  // Determine mode from route path
+  const isViewMode = location.pathname.includes("/view/");
+  const isEditMode = location.pathname.includes("/edit/");
+  const isCreateMode = location.pathname.includes("/add");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    contact_person: "",
+    email: "",
+    phone: "",
+    address: "",
+    website: "",
+  });
+
+  const [supplier, setSupplier] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [pageError, setPageError] = useState("");
+
+  // Fetch current user for permissions
+  useEffect(() => {
+    api
+      .get("api/user/me/")
+      .then((res) => setUser(res.data))
+      .catch((error) => console.error("Failed to fetch user:", error));
+  }, []);
+
+  // Fetch supplier data if editing or viewing
+  useEffect(() => {
+    if (supplierId) {
+      setLoading(true);
+      api
+        .get(`api/supplier/${supplierId}/`)
+        .then((response) => {
+          const sData = response.data;
+          setSupplier(sData);
+          setFormData({
+            name: sData.name || "",
+            contact_person: sData.contact_person || "",
+            email: sData.email || "",
+            phone: sData.phone || "",
+            address: sData.address || "",
+            website: sData.website || "",
+          });
+        })
+        .catch(() => setPageError("Failed to load supplier details."))
+        .finally(() => setLoading(false));
+    }
+  }, [supplierId]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Supplier name is required.";
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      setPageError("Please correct the errors below.");
+      return;
+    }
+
+    setLoading(true);
+    setPageError("");
+    setErrors({});
+
+    // Filter out empty strings and send them as null if desired by the backend
+    const payload = Object.entries(formData).reduce((acc, [key, value]) => {
+      acc[key] = value || null;
+      return acc;
+    }, {});
+
+    try {
+      if (isEditMode) {
+        await api.patch(`api/supplier/${supplierId}/`, payload);
+      } else {
+        await api.post("api/supplier/", payload);
+      }
+      alert("Supplier saved successfully!");
+      navigate("/suppliers");
+    } catch (error) {
+      const apiErrors = error.response?.data;
+      if (apiErrors && typeof apiErrors === "object") {
+        setErrors(apiErrors);
+        setPageError("Please correct the errors below.");
+      } else {
+        setPageError(apiErrors?.detail || "An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = () => {
+    navigate(`/supplier/edit/${supplierId}`);
+  };
+
+  const canManage = user && user.role === "ADMIN";
+
+  if (loading && !supplier) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
+        <div className="text-stone-400">Loading Supplier...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto text-star-dust-200 mb-10">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
+          <div className="flex items-center">
+            <div className="bg-orange-600 rounded-lg p-2 mr-4 text-stone-200">
+              <Truck size={35} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-medium">
+                {isViewMode && "Supplier Details"}
+                {isEditMode && "Edit Supplier"}
+                {isCreateMode && "Add New Supplier"}
+              </h1>
+              <p className="text-stone-400 mt-1 text-1xl">
+                {isViewMode
+                  ? "View supplier information"
+                  : "Manage supplier details"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 mt-4 sm:mt-0">
+            <button
+              onClick={() => navigate("/suppliers")}
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+            >
+              <ChevronLeft size={20} /> Suppliers
+            </button>
+            {isViewMode && canManage && (
+              <button
+                onClick={handleEdit}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              >
+                <Edit2 size={18} /> Edit
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {pageError && (
+          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
+            {pageError}
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
+          {isViewMode ? (
+            // View Mode
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <InfoItem
+                icon={<Truck />}
+                label="Supplier Name"
+                value={supplier?.name}
+              />
+              <InfoItem
+                icon={<UserCircle />}
+                label="Contact Person"
+                value={supplier?.contact_person}
+              />
+              <InfoItem icon={<Mail />} label="Email" value={supplier?.email} />
+              <InfoItem
+                icon={<Phone />}
+                label="Phone"
+                value={supplier?.phone}
+              />
+              <InfoItem
+                icon={<Globe />}
+                label="Website"
+                value={supplier?.website}
+              />
+              <div className="md:col-span-2">
+                <InfoItem
+                  icon={<MapPin />}
+                  label="Address"
+                  value={supplier?.address}
+                />
+              </div>
+            </div>
+          ) : (
+            // Edit/Create Mode
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InputItem
+                  label="Supplier Name"
+                  name="name"
+                  icon={<Truck />}
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Global Parts Inc."
+                  error={errors.name}
+                />
+                <InputItem
+                  label="Contact Person"
+                  name="contact_person"
+                  icon={<UserCircle />}
+                  value={formData.contact_person}
+                  onChange={handleChange}
+                  placeholder="e.g., Jane Doe"
+                  error={errors.contact_person}
+                />
+                <InputItem
+                  label="Email"
+                  name="email"
+                  icon={<Mail />}
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="e.g., contact@globalparts.com"
+                  error={errors.email}
+                />
+                <InputItem
+                  label="Phone"
+                  name="phone"
+                  icon={<Phone />}
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="e.g., 1234567890"
+                  error={errors.phone}
+                />
+                <div className="md:col-span-2">
+                  <InputItem
+                    label="Website"
+                    name="website"
+                    icon={<Globe />}
+                    value={formData.website}
+                    onChange={handleChange}
+                    placeholder="e.g., https://www.globalparts.com"
+                    error={errors.website}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <TextareaItem
+                    label="Address"
+                    name="address"
+                    icon={<MapPin />}
+                    value={formData.address}
+                    onChange={handleChange}
+                    rows="3"
+                    placeholder="Enter full address"
+                    error={errors.address}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
+                <button
+                  type="button"
+                  onClick={() => navigate("/supplier")}
+                  disabled={loading}
+                  className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
+                >
+                  <XCircle size={18} /> Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !canManage}
+                  className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <Save size={18} />
+                      {isEditMode ? "Save Changes" : "Create Supplier"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SupplierForm;

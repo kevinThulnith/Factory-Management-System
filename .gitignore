@@ -1,0 +1,19 @@
+# Python-generated files
+*__pycache__/
+*.egg-info
+*.sqlite3
+*.py[oc]
+wheels/
+build/
+dist/
+
+# Virtual environments
+backend/media/invoices/
+.venv/
+.env
+
+# Project files
+.DS_Store
+.vscode/
+.idea/
+*.log
