@@ -18,7 +18,6 @@ import {
   House,
   Edit2,
   User,
-  Save,
 } from "lucide-react";
 
 const DepartmentForm = () => {
@@ -45,7 +44,6 @@ const DepartmentForm = () => {
   const [department, setDepartment] = useState(null);
   const [usersLoading, setUsersLoading] = useState(false);
 
-  // TODO: Fetch users for supervisor dropdown
   useEffect(() => {
     setUsersLoading(true);
     api
@@ -55,10 +53,7 @@ const DepartmentForm = () => {
       )
       .catch((error) => console.error("Failed to fetch users:", error))
       .finally(() => setUsersLoading(false));
-  }, []);
 
-  // !Fetch department data if editing or viewing
-  useEffect(() => {
     if (departmentId) {
       setLoading(true);
       api
@@ -140,10 +135,6 @@ const DepartmentForm = () => {
     }
   };
 
-  const handleEdit = () => {
-    navigate(`/department/edit/${departmentId}`);
-  };
-
   const getUserOptions = () => {
     return users.map((user) => ({
       value: user.id,
@@ -152,17 +143,6 @@ const DepartmentForm = () => {
           ? `${user.first_name} ${user.last_name} (${user.username})`
           : user.username,
     }));
-  };
-
-  const getSupervisorName = () => {
-    if (!department?.supervisor) return "N/A";
-    const supervisor = users.find((u) => u.id === department.supervisor);
-    if (supervisor) {
-      return supervisor.first_name && supervisor.last_name
-        ? `${supervisor.first_name} ${supervisor.last_name}`
-        : supervisor.username;
-    }
-    return "Unknown";
   };
 
   if (loading && !formData.name) {
@@ -201,15 +181,15 @@ const DepartmentForm = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/department")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} />
               Departments
             </button>
             {isViewMode && (
               <button
-                onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+                onClick={() => navigate(`/department/edit/${departmentId}`)}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
               >
                 <Edit2 size={18} />
                 Edit
@@ -243,7 +223,7 @@ const DepartmentForm = () => {
               <InfoItem
                 icon={<User />}
                 label="Supervisor"
-                value={getSupervisorName()}
+                value={department?.supervisor_name}
               />
               <InfoItem
                 icon={<House />}

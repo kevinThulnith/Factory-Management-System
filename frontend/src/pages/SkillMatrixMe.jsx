@@ -1,33 +1,30 @@
-import React from "react";
+import LoadingIndicator from "../components/LoadingIndicator";
 import { Link } from "react-router-dom";
+import React from "react";
 import api from "../api";
+
 import {
   PlusCircle,
-  Edit3,
-  Trash2,
-  Award,
+  TrendingUp,
   RefreshCw,
-  Filter,
-  Star,
-  BookOpen,
-  HardHat,
-  Lightbulb,
-  Users,
-  Search,
   RotateCcw,
+  Lightbulb,
+  BookOpen,
+  Sparkles,
+  UserStar,
+  Trash2,
+  HardHat,
+  Filter,
+  Search,
+  Trophy,
+  Edit3,
+  Award,
+  Users,
+  Star,
+  Zap,
+  User,
 } from "lucide-react";
 
-// --- Reusable Components (Styled like Workshop page) ---
-const LoadingIndicator = () => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-[#2a2a2a] p-6 rounded-lg shadow-xl">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-      <p className="text-stone-300 mt-4">Loading Your Skills...</p>
-    </div>
-  </div>
-);
-
-// --- Main Component ---
 const MySkillsPage = () => {
   const [mySkills, setMySkills] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -61,22 +58,6 @@ const MySkillsPage = () => {
       fetchMySkills();
     }
   }, [refreshing, fetchMySkills]);
-
-  const handleDelete = (skillId, skillName) => {
-    if (
-      window.confirm(
-        `Are you sure you want to remove the skill "${skillName}"?`
-      )
-    ) {
-      api
-        .delete(`api/skill/${skillId}/`)
-        .then(() => {
-          setMySkills((prev) => prev.filter((s) => s.id !== skillId));
-          alert("Skill removed successfully.");
-        })
-        .catch(() => alert("Failed to remove skill."));
-    }
-  };
 
   const resetFiltersHandler = () => {
     setSearchTerm("");
@@ -147,13 +128,21 @@ const MySkillsPage = () => {
       INTERMEDIATE: "bg-yellow-900/50 text-yellow-300 border-yellow-500/50",
       BEGINNER: "bg-orange-900/50 text-orange-300 border-orange-500/50",
     };
+
+    const icons = {
+      ADVANCED: <Zap size={12} />,
+      EXPERT: <Trophy size={12} />,
+      BEGINNER: <Sparkles size={12} />,
+      INTERMEDIATE: <TrendingUp size={12} />,
+    };
+
     return (
       <span
         className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 border ${
           styles[level] || "bg-stone-700 text-stone-300 border-stone-600"
         }`}
       >
-        <Star size={12} />{" "}
+        {icons[level] || <Star size={12} />}{" "}
         {level ? level.charAt(0) + level.slice(1).toLowerCase() : "N/A"}
       </span>
     );
@@ -166,7 +155,7 @@ const MySkillsPage = () => {
         <div className="rounded-2xl p-8 shadow-md mb-8 bg-card-main">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-2xl mr-6 shadow-lg bg-star-dust-700 transform hover:scale-105 transition-all duration-300">
+              <div className="p-3 rounded-2xl mr-6 shadow-lg bg-gradient-to-r from-rose-600 to-rose-800 transform hover:scale-105 transition-all duration-300">
                 <Award size={90} className="text-stone-200" />
               </div>
               <div>
@@ -223,7 +212,7 @@ const MySkillsPage = () => {
             <select
               value={filterByCategory}
               onChange={(e) => setFilterByCategory(e.target.value)}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub"
+              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
             >
               <option value="all">All Categories</option>
               {uniqueCategories.map((cat) => (
@@ -243,7 +232,7 @@ const MySkillsPage = () => {
 
         {/* Content Area */}
         {filteredSkills.length === 0 && !loading ? (
-          <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
+          <div className="bg-card-main rounded-xl p-12 text-center shadow-md border border-stone-700">
             <Award size={64} className="mx-auto text-gray-500 mb-4" />
             <h3 className="text-xl font-semibold text-stone-300 mb-2">
               {searchTerm || filterByCategory !== "all"
@@ -259,15 +248,19 @@ const MySkillsPage = () => {
             {filteredSkills.map((skill) => (
               <div
                 key={skill.id}
-                className="bg-[#2a2a2a] shadow-lg rounded-xl border border-stone-700/50 flex flex-col transition-all duration-300 hover:border-orange-500/50 hover:-translate-y-1"
+                className="bg-card-main shadow-md rounded-xl flex flex-col transition-all duration-300 hover:border-orange-500/50 hover:-translate-y-1"
               >
                 <div className="p-5 flex-grow">
                   <div className="flex items-start justify-between mb-3">
                     <h3
-                      className="text-lg font-semibold text-stone-200 truncate pr-2"
+                      className="text-lg font-semibold text-stone-200 flex items-center flex-1 min-w-0 pr-2"
                       title={skill.name}
                     >
-                      {skill.name}
+                      <UserStar
+                        size={30}
+                        className="text-indigo-500 mr-3 flex-shrink-0"
+                      />
+                      <span className="truncate">{skill.name}</span>
                     </h3>
                     {getLevelPill(skill.level)}
                   </div>
@@ -287,25 +280,6 @@ const MySkillsPage = () => {
                       <span className="italic">No description provided.</span>
                     )}
                   </p>
-                </div>
-
-                <div className="bg-stone-900/40 px-5 py-3 border-t border-stone-700/50 mt-auto rounded-b-xl">
-                  <div className="flex items-center justify-end space-x-2">
-                    <Link
-                      to={`/my-skills/edit/${skill.id}`}
-                      className="p-2 text-indigo-400 hover:bg-indigo-500/20 rounded-lg"
-                      title="Edit Skill"
-                    >
-                      <Edit3 size={16} />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(skill.id, skill.name)}
-                      className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                      title="Delete Skill"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}

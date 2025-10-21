@@ -34,9 +34,9 @@ const WorkshopForm = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    department: "",
     manager: "",
+    department: "",
+    description: "",
     operational_status: "ACTIVE",
   });
 
@@ -50,17 +50,13 @@ const WorkshopForm = () => {
   const [managersLoading, setManagersLoading] = useState(false);
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
 
-  // !Fetch current user
   useEffect(() => {
     api
       .get("api/user/me/")
       .then((res) => setUser(res.data))
       .catch(() => console.error("Failed to fetch user:"));
-  }, []);
-
-  // Fetch departments and managers
-  useEffect(() => {
     setDepartmentsLoading(true);
+
     api
       .get("api/department/")
       .then((response) =>
@@ -68,8 +64,8 @@ const WorkshopForm = () => {
       )
       .catch((error) => console.error("Failed to fetch departments:", error))
       .finally(() => setDepartmentsLoading(false));
-
     setManagersLoading(true);
+
     api
       .get("api/user/")
       .then((response) => {
@@ -77,18 +73,15 @@ const WorkshopForm = () => {
         // Filter for managers or relevant roles
         const managerUsers = allUsers.filter(
           (u) =>
-            u.role === "MANAGER" ||
             u.role === "SUPERVISOR" ||
+            u.role === "MANAGER" ||
             u.role === "ADMIN"
         );
         setManagers(managerUsers);
       })
       .catch((error) => console.error("Failed to fetch managers:", error))
       .finally(() => setManagersLoading(false));
-  }, []);
 
-  // Fetch workshop data if editing or viewing
-  useEffect(() => {
     if (workshopId) {
       setLoading(true);
       api
@@ -195,10 +188,6 @@ const WorkshopForm = () => {
     }
   };
 
-  const handleEdit = () => {
-    navigate(`/workshop/edit/${workshopId}`);
-  };
-
   const getDepartmentOptions = () => {
     return departments.map((dept) => ({
       value: dept.id,
@@ -216,35 +205,18 @@ const WorkshopForm = () => {
     }));
   };
 
-  const getDepartmentName = () => {
-    if (!workshop?.department) return "N/A";
-    const dept = departments.find((d) => d.id === workshop.department);
-    return dept ? dept.name : "Unknown";
-  };
-
-  const getManagerName = () => {
-    if (!workshop?.manager) return "N/A";
-    const manager = managers.find((m) => m.id === workshop.manager);
-    if (manager) {
-      return manager.first_name && manager.last_name
-        ? `${manager.first_name} ${manager.last_name}`
-        : manager.username;
-    }
-    return "Unknown";
-  };
-
   const getStatusBadge = (status) => {
     const statusConfig = {
       ACTIVE: {
-        color: "bg-green-100 text-green-800",
+        color: "bg-green-200 text-green-800",
         icon: <Activity size={14} />,
       },
       MAINTENANCE: {
-        color: "bg-yellow-100 text-yellow-800",
+        color: "bg-yellow-200 text-yellow-800",
         icon: <Settings size={14} />,
       },
       INACTIVE: {
-        color: "bg-red-100 text-red-800",
+        color: "bg-red-200 text-red-800",
         icon: <XCircle size={14} />,
       },
     };
@@ -300,15 +272,15 @@ const WorkshopForm = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/workshop")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} />
               Workshops
             </button>
             {isViewMode && (
               <button
-                onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+                onClick={() => navigate(`/workshop/edit/${workshopId}`)}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
               >
                 <Edit2 size={18} />
                 Edit
@@ -337,12 +309,12 @@ const WorkshopForm = () => {
               <InfoItem
                 icon={<Building2 />}
                 label="Department"
-                value={getDepartmentName()}
+                value={workshop?.department_name}
               />
               <InfoItem
                 icon={<User />}
                 label="Manager"
-                value={getManagerName()}
+                value={workshop?.manager_name}
               />
               <div className="flex flex-col">
                 <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">

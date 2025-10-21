@@ -48,27 +48,23 @@ const MachineForm = () => {
     specifications: "",
   });
 
+  const [user, setUser] = useState({});
+  const [errors, setErrors] = useState({});
+  const [machine, setMachine] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [workshops, setWorkshops] = useState([]);
   const [operators, setOperators] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
-  const [machine, setMachine] = useState(null);
   const [workshopsLoading, setWorkshopsLoading] = useState(false);
   const [operatorsLoading, setOperatorsLoading] = useState(false);
-  const [user, setUser] = useState({});
 
-  // Fetch current user
   useEffect(() => {
     api
       .get("api/user/me/")
       .then((res) => setUser(res.data))
       .catch((error) => console.error("Failed to fetch user:", error));
-  }, []);
-
-  // Fetch workshops and operators
-  useEffect(() => {
     setWorkshopsLoading(true);
+
     api
       .get("api/workshop/")
       .then((response) =>
@@ -76,8 +72,8 @@ const MachineForm = () => {
       )
       .catch((error) => console.error("Failed to fetch workshops:", error))
       .finally(() => setWorkshopsLoading(false));
-
     setOperatorsLoading(true);
+
     api
       .get("api/user/")
       .then((response) => {
@@ -93,10 +89,7 @@ const MachineForm = () => {
       })
       .catch((error) => console.error("Failed to fetch operators:", error))
       .finally(() => setOperatorsLoading(false));
-  }, []);
 
-  // Fetch machine data if editing or viewing
-  useEffect(() => {
     if (machineId) {
       setLoading(true);
       api
@@ -173,12 +166,9 @@ const MachineForm = () => {
           next_maintenance_date: payload.next_maintenance_date,
         };
       }
-      // ADMIN gets full payload (no filtering needed)
     }
 
     try {
-      console.log(finalPayload);
-
       if (isEditMode)
         await api.patch(`api/machine/${machineId}/`, finalPayload);
       else await api.post("api/machine/", finalPayload);
@@ -215,10 +205,6 @@ const MachineForm = () => {
     }
   };
 
-  const handleEdit = () => {
-    navigate(`/machine/edit/${machineId}`);
-  };
-
   const getWorkshopOptions = () => {
     return workshops.map((ws) => ({
       value: ws.id,
@@ -236,39 +222,22 @@ const MachineForm = () => {
     }));
   };
 
-  const getWorkshopName = () => {
-    if (!machine?.workshop) return "N/A";
-    const ws = workshops.find((w) => w.id === machine.workshop);
-    return ws ? ws.name : "Unknown";
-  };
-
-  const getOperatorName = () => {
-    if (!machine?.operator) return "N/A";
-    const op = operators.find((o) => o.id === machine.operator);
-    if (op) {
-      return op.first_name && op.last_name
-        ? `${op.first_name} ${op.last_name}`
-        : op.username;
-    }
-    return "Unknown";
-  };
-
   const getStatusBadge = (status) => {
     const statusConfig = {
       OPERATIONAL: {
-        color: "bg-green-100 text-green-800",
+        color: "bg-green-200 text-green-800",
         icon: <CheckCircle size={14} />,
       },
       IDLE: {
-        color: "bg-yellow-100 text-yellow-800",
+        color: "bg-yellow-200 text-yellow-800",
         icon: <Activity size={14} />,
       },
       MAINTENANCE: {
-        color: "bg-blue-100 text-blue-800",
+        color: "bg-blue-200 text-blue-800",
         icon: <Wrench size={14} />,
       },
       BROKEN: {
-        color: "bg-red-100 text-red-800",
+        color: "bg-red-200 text-red-800",
         icon: <AlertTriangle size={14} />,
       },
     };
@@ -334,15 +303,15 @@ const MachineForm = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/machine")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} />
               Machines
             </button>
             {isViewMode && (
               <button
-                onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+                onClick={() => navigate(`/machine/edit/${machineId}`)}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
               >
                 <Edit2 size={18} />
                 Edit
@@ -376,12 +345,12 @@ const MachineForm = () => {
               <InfoItem
                 icon={<Factory />}
                 label="Workshop"
-                value={getWorkshopName()}
+                value={machine?.workshop_name}
               />
               <InfoItem
                 icon={<User />}
                 label="Current Operator"
-                value={getOperatorName()}
+                value={machine?.operator_name}
               />
 
               <InfoItem

@@ -3,9 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 import api from "../api";
 
 import {
-  InputItem,
   TextareaItem,
   SelectItem,
+  InputItem,
   InfoItem,
 } from "../components/components";
 
@@ -27,14 +27,17 @@ const SKILL_CATEGORIES_MAP = {
   DESIGN: "Design",
   OTHER: "Other",
 };
+
 const SKILL_LEVELS_MAP = {
   BEGINNER: "Beginner",
   INTERMEDIATE: "Intermediate",
   ADVANCED: "Advanced",
   EXPERT: "Expert",
 };
+
 const ALL_SKILL_CATEGORIES = Object.keys(SKILL_CATEGORIES_MAP);
 const SKILL_LEVELS = Object.keys(SKILL_LEVELS_MAP);
+
 const ROLE_CATEGORY_MAP = {
   ADMIN: ALL_SKILL_CATEGORIES,
   SUPERVISOR: ALL_SKILL_CATEGORIES,
@@ -109,9 +112,7 @@ const SkillForm = () => {
         .get("api/user/")
         .then((res) => setEmployees(res.data.results || res.data));
     }
-  }, [isMySkillsMode]);
 
-  useEffect(() => {
     if (skillMatrixId) {
       const endpoint = isMySkillsMode
         ? `api/skill/my-skills/${skillMatrixId}/`
@@ -256,7 +257,7 @@ const SkillForm = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(backLink)}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} />
               Skill Matrix
@@ -264,7 +265,7 @@ const SkillForm = () => {
             {isViewMode && (
               <button
                 onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
               >
                 <Edit2 size={18} />
                 Edit
@@ -279,7 +280,7 @@ const SkillForm = () => {
           </div>
         )}
 
-        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
+        <div className="bg-card-main rounded-xl shadow-md p-6 sm:p-8">
           {isViewMode ? (
             // View Mode
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

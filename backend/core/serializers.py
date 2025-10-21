@@ -57,8 +57,8 @@ class WorkshopSerializer(ModelSerializer):
 
 
 class MachineSerializer(ModelSerializer):
-    workshop_name = StringRelatedField(source="workshop", read_only=True)
     operator_assignments = SerializerMethodField()
+    workshop_name = StringRelatedField(source="workshop.name", read_only=True)
     operator_name = StringRelatedField(source="operator.name", read_only=True)
     department_name = StringRelatedField(source="workshop.department", read_only=True)
 
