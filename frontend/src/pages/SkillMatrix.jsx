@@ -6,6 +6,7 @@ import api from "../api";
 
 import {
   PlusCircle,
+  TrendingUp,
   Briefcase,
   RefreshCw,
   RotateCcw,
@@ -15,10 +16,13 @@ import {
   Search,
   Trash2,
   Filter,
+  Target,
   Edit3,
+  Award,
   Users,
   Star,
   Eye,
+  Zap,
 } from "lucide-react";
 
 const INITIAL_FILTERS = {
@@ -27,7 +31,9 @@ const INITIAL_FILTERS = {
   category: "",
   level: "",
 };
+
 const INITIAL_SORT = { key: "employee_name", direction: "asc" };
+
 const TABLE_HEADERS = [
   { key: "employee_name", title: "Employee" },
   { key: "name", title: "Skill Name" },
@@ -38,8 +44,8 @@ const TABLE_HEADERS = [
 const SkillMatrix = () => {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [allSkills, setAllSkills] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const [allEmployees, setAllEmployees] = useState([]);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [sortConfig, setSortConfig] = useState(INITIAL_SORT);
@@ -80,7 +86,7 @@ const SkillMatrix = () => {
       )
     ) {
       api
-        .delete(`api/skill/${skillId}/`)
+        .delete(`api/skill-matrix/${skillId}/`)
         .then(() => {
           setAllSkills((prev) => prev.filter((s) => s.id !== skillId));
           alert(`Skill entry for ${employeeName} has been deleted.`);
@@ -164,19 +170,35 @@ const SkillMatrix = () => {
     user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
 
   const getLevelPill = (level) => {
-    const styles = {
-      EXPERT: "bg-green-100 text-green-800 border-green-200",
-      ADVANCED: "bg-blue-100 text-blue-800 border-blue-200",
-      INTERMEDIATE: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      BEGINNER: "bg-orange-100 text-orange-800 border-orange-200",
+    const config = {
+      EXPERT: {
+        style: "bg-green-100 text-green-800 border-green-200",
+        icon: <Award size={12} />,
+      },
+      ADVANCED: {
+        style: "bg-blue-100 text-blue-800 border-blue-200",
+        icon: <TrendingUp size={12} />,
+      },
+      INTERMEDIATE: {
+        style: "bg-yellow-100 text-yellow-800 border-yellow-200",
+        icon: <Target size={12} />,
+      },
+      BEGINNER: {
+        style: "bg-orange-100 text-orange-800 border-orange-200",
+        icon: <Zap size={12} />,
+      },
     };
+
+    const levelConfig = config[level] || {
+      style: "bg-gray-100 text-gray-800",
+      icon: <Star size={12} />,
+    };
+
     return (
       <span
-        className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 border ${
-          styles[level] || "bg-gray-100 text-gray-800"
-        }`}
+        className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 border ${levelConfig.style}`}
       >
-        <Star size={12} />{" "}
+        {levelConfig.icon}{" "}
         {level ? level.charAt(0) + level.slice(1).toLowerCase() : "N/A"}
       </span>
     );
@@ -229,7 +251,7 @@ const SkillMatrix = () => {
               </button>
               {canManage && (
                 <Link
-                  to="/skills/new"
+                  to="/skill-matrix/add"
                   className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
                 >
                   <PlusCircle size={20} className="mr-2" />
@@ -325,7 +347,7 @@ const SkillMatrix = () => {
             </p>
           </div>
         ) : (
-          <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">
+          <div className="shadow-lg rounded-2xl bg-card-main overflow-hidden">
             <div className="px-6 py-4 border-b border-stone-500">
               <h3 className="text-xl font-medium flex items-center">
                 <BarChart2 size={20} className="mr-3" /> Skill Entries
@@ -362,7 +384,7 @@ const SkillMatrix = () => {
                     )}
                   </tr>
                 </thead>
-                <tbody className="bg-[#2f2f2f] divide-y divide-stone-600">
+                <tbody className="bg-[#2f2f2f] divide-y divide-star-dust-700">
                   {filteredAndSortedSkills.map((skill) => (
                     <tr
                       key={skill.id}

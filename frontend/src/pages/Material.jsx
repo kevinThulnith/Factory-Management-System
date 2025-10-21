@@ -1,30 +1,22 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import api from "../api";
-import {
-  PlusCircle,
-  Edit3,
-  Trash2,
-  Box,
-  Search,
-  AlertTriangle,
-  Package,
-  Filter,
-  RefreshCw,
-  Eye,
-  RotateCcw,
-  TrendingUp,
-} from "lucide-react";
+import LoadingIndicator from "../components/LoadingIndicator";
 import { Link } from "react-router-dom";
+import api from "../api";
 
-// Loading Indicator Component
-const LoadingIndicator = () => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-[#2a2a2a] p-6 rounded-lg shadow-xl">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-      <p className="text-stone-300 mt-4">Loading materials...</p>
-    </div>
-  </div>
-);
+import {
+  AlertTriangle,
+  PlusCircle,
+  TrendingUp,
+  RefreshCw,
+  RotateCcw,
+  Package,
+  Trash2,
+  Search,
+  Filter,
+  Edit3,
+  Box,
+  Eye,
+} from "lucide-react";
 
 const MaterialListPage = () => {
   const [materials, setMaterials] = useState([]);
@@ -259,7 +251,7 @@ const MaterialListPage = () => {
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub"
+                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
                 style={{ height: "40px" }}
               >
                 <option value="all">All Status</option>

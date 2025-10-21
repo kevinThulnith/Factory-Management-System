@@ -173,7 +173,7 @@ const MaterialForm = () => {
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
           <div className="flex items-center">
-            <div className="bg-blue-600 rounded-lg p-2 mr-4 text-stone-200">
+            <div className="bg-gradient-to-r from-sky-600 to-sky-800 rounded-lg p-2 mr-4 text-stone-200">
               <Box size={35} />
             </div>
             <div>

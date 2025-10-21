@@ -258,8 +258,8 @@ function Home() {
   return (
     <div className="w-full lg:mr-[-50px]">
       {/* Header */}
-      <div className="mb-8 bg-card-main p-6 rounded-lg shadow-lg flex items-center justify-between">
-        <div className="p-2 rounded-2xl ml-3 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
+      <div className="mb-8 bg-card-main p-8 rounded-lg shadow-lg flex items-center justify-between">
+        <div className="p-2 rounded-2xl ml-2 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
           <MdDashboard size={95} className="text-stone-200" />
         </div>
         <div className="flex-1 ml-6">

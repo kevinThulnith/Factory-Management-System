@@ -1,6 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Buttons } from "../components/components";
 import api from "../api";
 
 import {
@@ -8,6 +7,7 @@ import {
   SelectItem,
   InputItem,
   InfoItem,
+  Buttons,
 } from "../components/components";
 
 import {
@@ -20,7 +20,6 @@ import {
   Factory,
   Edit2,
   User,
-  Save,
 } from "lucide-react";
 
 const WorkshopForm = () => {

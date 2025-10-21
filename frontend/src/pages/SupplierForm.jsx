@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../api";
 
-import { InfoItem, InputItem, TextareaItem } from "../components/components"; // Assuming shared components
+import {
+  InfoItem,
+  InputItem,
+  TextareaItem,
+  Buttons,
+} from "../components/components";
 
 import {
   Truck,
@@ -61,11 +66,9 @@ const SupplierForm = () => {
           setSupplier(sData);
           setFormData({
             name: sData.name || "",
-            contact_person: sData.contact_person || "",
             email: sData.email || "",
             phone: sData.phone || "",
             address: sData.address || "",
-            website: sData.website || "",
           });
         })
         .catch(() => setPageError("Failed to load supplier details."))
@@ -149,7 +152,7 @@ const SupplierForm = () => {
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
           <div className="flex items-center">
-            <div className="bg-orange-600 rounded-lg p-2 mr-4 text-stone-200">
+            <div className="bg-gradient-to-r from-lime-600 to-lime-800 rounded-lg p-2 mr-4 text-stone-200">
               <Truck size={35} />
             </div>
             <div>
@@ -167,7 +170,7 @@ const SupplierForm = () => {
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <button
-              onClick={() => navigate("/suppliers")}
+              onClick={() => navigate("/supplier")}
               className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} /> Suppliers
@@ -200,21 +203,11 @@ const SupplierForm = () => {
                 label="Supplier Name"
                 value={supplier?.name}
               />
-              <InfoItem
-                icon={<UserCircle />}
-                label="Contact Person"
-                value={supplier?.contact_person}
-              />
               <InfoItem icon={<Mail />} label="Email" value={supplier?.email} />
               <InfoItem
                 icon={<Phone />}
                 label="Phone"
                 value={supplier?.phone}
-              />
-              <InfoItem
-                icon={<Globe />}
-                label="Website"
-                value={supplier?.website}
               />
               <div className="md:col-span-2">
                 <InfoItem
@@ -239,15 +232,6 @@ const SupplierForm = () => {
                   error={errors.name}
                 />
                 <InputItem
-                  label="Contact Person"
-                  name="contact_person"
-                  icon={<UserCircle />}
-                  value={formData.contact_person}
-                  onChange={handleChange}
-                  placeholder="e.g., Jane Doe"
-                  error={errors.contact_person}
-                />
-                <InputItem
                   label="Email"
                   name="email"
                   icon={<Mail />}
@@ -267,17 +251,6 @@ const SupplierForm = () => {
                   error={errors.phone}
                 />
                 <div className="md:col-span-2">
-                  <InputItem
-                    label="Website"
-                    name="website"
-                    icon={<Globe />}
-                    value={formData.website}
-                    onChange={handleChange}
-                    placeholder="e.g., https://www.globalparts.com"
-                    error={errors.website}
-                  />
-                </div>
-                <div className="md:col-span-2">
                   <TextareaItem
                     label="Address"
                     name="address"
@@ -291,31 +264,11 @@ const SupplierForm = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-                <button
-                  type="button"
-                  onClick={() => navigate("/supplier")}
-                  disabled={loading}
-                  className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-                >
-                  <XCircle size={18} /> Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !canManage}
-                  className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    "Saving..."
-                  ) : (
-                    <>
-                      <Save size={18} />
-                      {isEditMode ? "Save Changes" : "Create Supplier"}
-                    </>
-                  )}
-                </button>
-              </div>
+              <Buttons
+                onCancel={() => navigate("/supplier")}
+                text_01={isEditMode ? "Save Changes" : "Create Supplier"}
+                disabled={loading || !canManage}
+              />
             </form>
           )}
         </div>

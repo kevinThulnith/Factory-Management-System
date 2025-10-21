@@ -1,32 +1,28 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Buttons } from "../components/components";
 import api from "../api";
 
 import {
-  InfoItem,
-  InputItem,
   TextareaItem,
   SelectItem,
+  InputItem,
+  InfoItem,
+  Buttons,
 } from "../components/components";
 
 import {
-  Cog,
+  AlertTriangle,
+  ChevronLeft,
+  CheckCircle,
   FileText,
-  MapPin,
-  Building2,
-  Edit2,
-  User,
-  Save,
   Activity,
   Calendar,
   Package,
-  Wrench,
   Factory,
-  CheckCircle,
-  AlertTriangle,
-  ChevronLeft,
-  XCircle,
+  Wrench,
+  Edit2,
+  User,
+  Cog,
 } from "lucide-react";
 
 const MachineForm = () => {

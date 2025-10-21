@@ -21,6 +21,7 @@ import Material from "./pages/Material";
 import MaterialFormPage from "./pages/MaterialForm";
 import SkillMatrix from "./pages/Skillmatrix";
 import MySkillsPage from "./pages/SkillMatrixMe";
+import SkillMatrixForm from "./pages/SkillMatrixForm";
 import Supplier from "./pages/Supplier";
 import SupplierForm from "./pages/SupplierForm";
 import Product from "./pages/Product";
@@ -61,6 +62,9 @@ function App() {
     { path: "/material/edit/:materialId", element: <MaterialFormPage /> },
     { path: "/material/view/:materialId", element: <MaterialFormPage /> },
     { path: "/skill-matrix", element: <SkillMatrix /> },
+    { path: "/skill-matrix/add", element: <SkillMatrixForm /> },
+    { path: "/skills/edit/:skillMatrixId", element: <SkillMatrixForm /> },
+    { path: "/skills/view/:skillMatrixId", element: <SkillMatrixForm /> },
     { path: "/my-skills", element: <MySkillsPage /> },
     { path: "/supplier", element: <Supplier /> },
     { path: "/supplier/add", element: <SupplierForm /> },
@@ -95,7 +99,7 @@ function App() {
             path="/logout"
             element={<Logout setIsAuthenticated={setIsAuthenticated} />}
           />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

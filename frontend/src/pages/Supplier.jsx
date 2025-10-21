@@ -1,38 +1,26 @@
-// src/pages/suppliers/SupplierListPage.jsx
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import LoadingIndicator from "../components/LoadingIndicator";
 import { Link } from "react-router-dom";
 import api from "../api";
+
 import {
   PlusCircle,
-  Edit3,
-  Trash2,
-  Truck,
+  UserCircle,
+  RefreshCw,
+  RotateCcw,
+  UserRound,
+  Download,
   Search,
-  Mail,
-  Phone,
   MapPin,
   Filter,
-  SortAsc,
-  SortDesc,
+  Trash2,
+  Edit3,
+  Truck,
+  Phone,
+  Mail,
   Eye,
-  RefreshCw,
-  Download,
-  UserCircle,
-  Globe,
-  RotateCcw,
 } from "lucide-react";
 
-// --- Reusable Components (Styled like Workshop page) ---
-const LoadingIndicator = () => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-[#2a2a2a] p-6 rounded-lg shadow-xl">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-      <p className="text-stone-300 mt-4">Loading Suppliers...</p>
-    </div>
-  </div>
-);
-
-// --- Main Component ---
 const Supplier = () => {
   const [user, setUser] = useState({});
   const [allSuppliers, setAllSuppliers] = useState([]);
@@ -182,7 +170,7 @@ const Supplier = () => {
               </button>
               {canManage && (
                 <Link
-                  to="/suppliers/new"
+                  to="/supplier/add"
                   className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
                 >
                   <PlusCircle size={20} className="mr-2" />
@@ -252,12 +240,18 @@ const Supplier = () => {
                 className="bg-card-main shadow-md rounded-xl flex flex-col transition-all duration-300  hover:-translate-y-1"
               >
                 <div className="p-5 flex-grow">
-                  <h2
-                    className="text-lg font-bold text-orange-400 truncate mb-2"
-                    title={supplier.name}
-                  >
-                    {supplier.name}
-                  </h2>
+                  <div className="flex justify-between items-start mb-2">
+                    <h2
+                      className="text-lg font-bold text-stone-200 truncate mb-2"
+                      title={supplier.name}
+                    >
+                      <UserRound
+                        size={24}
+                        className="inline-block mr-2 text-purple-300"
+                      />
+                      {supplier.name}
+                    </h2>
+                  </div>
                   {supplier.contact_person && (
                     <p className="flex items-center text-sm text-stone-300 mb-3">
                       <UserCircle size={16} className="mr-2 text-stone-400" />
@@ -298,7 +292,7 @@ const Supplier = () => {
                     )}
                   </div>
                 </div>
-                <div className="mt-auto px-6 py-4 bg-card-sub rounded-b-xl">
+                <div className="mt-auto px-6 py-2 bg-card-sub rounded-b-xl">
                   <div className="flex items-center justify-end space-x-2">
                     <Link
                       to={`/supplier/view/${supplier.id}`}
