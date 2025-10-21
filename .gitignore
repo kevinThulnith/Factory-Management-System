@@ -17,3 +17,4 @@ backend/media/invoices/
 .vscode/
 .idea/
 *.log
+schema/*.jpg
