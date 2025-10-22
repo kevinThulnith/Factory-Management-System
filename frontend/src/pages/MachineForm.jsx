@@ -276,7 +276,7 @@ const MachineForm = () => {
   }
 
   return (
-    <div className="container mx-auto text-star-dust-200 mb-10">
+    <div className="container mx-auto text-star-dust-200">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">

@@ -1,0 +1,401 @@
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import LoadingIndicator from "../components/LoadingIndicator";
+import { Link } from "react-router-dom";
+import api from "../api";
+
+import {
+  PackageCheck,
+  ShoppingCart,
+  PlusCircle,
+  RefreshCw,
+  RotateCcw,
+  SortDesc,
+  FileText,
+  Building,
+  SortAsc,
+  Filter,
+  Search,
+  Trash2,
+  Edit3,
+  Clock,
+  Eye,
+} from "lucide-react";
+
+const Order = () => {
+  const [user, setUser] = useState({});
+  const [allOrders, setAllOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filters, setFilters] = useState({ searchTerm: "", status: "all" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "id",
+    direction: "desc",
+  });
+
+  const fetchOrders = useCallback(() => {
+    setLoading(true);
+    api
+      .get("api/order/")
+      .then((res) => setAllOrders(res.data.results || res.data))
+      .catch(() => alert("Failed to fetch purchase orders."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    api
+      .get("api/user/me/")
+      .then((res) => setUser(res.data))
+      .catch((error) => console.error("Failed to fetch user:", error));
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+    setTimeout(() => setRefreshing(false), 1000);
+  };
+
+  const handleDelete = (id) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete Order #${id}? This can only be done for Draft orders.`
+      )
+    ) {
+      api
+        .delete(`api/order/${id}/`)
+        .then(() => {
+          setAllOrders((prev) => prev.filter((o) => o.id !== id));
+          alert(`Order #${id} has been deleted.`);
+        })
+        .catch(() =>
+          alert("Failed to delete order. It may have been processed already.")
+        );
+    }
+  };
+
+  const handleFilterChange = (e) => {
+    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const resetFiltersHandler = () => {
+    setFilters({ searchTerm: "", status: "all" });
+  };
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const filteredAndSortedOrders = useMemo(() => {
+    const filtered = allOrders.filter((order) => {
+      const searchTermLower = filters.searchTerm.toLowerCase();
+      const matchesSearch =
+        !filters.searchTerm ||
+        order.id.toString().includes(searchTermLower) ||
+        order.supplier_name?.toLowerCase().includes(searchTermLower);
+
+      const matchesStatus =
+        filters.status === "all" || order.status === filters.status;
+      return matchesSearch && matchesStatus;
+    });
+
+    return [...filtered].sort((a, b) => {
+      const aVal = a[sortConfig.key] || "";
+      const bVal = b[sortConfig.key] || "";
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [allOrders, filters, sortConfig]);
+
+  const stats = useMemo(
+    () => ({
+      total: allOrders.length,
+      draft: allOrders.filter((o) => o.status === "DRAFT").length,
+      ordered: allOrders.filter((o) => o.status === "ORDERED").length,
+      received: allOrders.filter((o) => o.status === "RECEIVED").length,
+    }),
+    [allOrders]
+  );
+
+  const getStatusPill = (status) => {
+    const styles = {
+      DRAFT: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      ORDERED: "bg-blue-100 text-blue-800 border-blue-200",
+      RECEIVED: "bg-green-100 text-green-800 border-green-200",
+      CANCELLED: "bg-red-100 text-red-800 border-red-200",
+    };
+    const icons = {
+      DRAFT: <FileText size={14} />,
+      ORDERED: <Clock size={14} />,
+      RECEIVED: <PackageCheck size={14} />,
+      CANCELLED: <Trash2 size={14} />,
+    };
+    return (
+      <span
+        className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1.5 border ${
+          styles[status] || "bg-gray-100 text-gray-800"
+        }`}
+      >
+        {icons[status]}
+        {status}
+      </span>
+    );
+  };
+
+  const canManage =
+    user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="container mx-auto">
+        {/* Header Section */}
+        <div className="rounded-2xl p-8 shadow-md mb-8 bg-card-main">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="flex items-center">
+              <div className="p-3 rounded-2xl mr-6 shadow-lg bg-gradient-to-r from-violet-600 to-violet-800 transform hover:scale-105 transition-all duration-300">
+                <ShoppingCart size={90} className="text-stone-200" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-medium mb-2 tracking-tight">
+                  Purchase Orders
+                </h1>
+                <p className="text-star-dust-400 text-1xl">
+                  Create, track, and manage all purchase orders.
+                </p>
+                <div className="flex items-center flex-wrap mt-3 gap-2">
+                  <span className="text-sm px-3 py-1 rounded-2xl bg-orange-600">
+                    Total: <span className="font-medium">{stats.total}</span>
+                  </span>
+                  <span className="text-sm px-3 py-1 rounded-2xl bg-yellow-600">
+                    Draft: <span className="font-medium">{stats.draft}</span>
+                  </span>
+                  <span className="text-sm px-3 py-1 rounded-2xl bg-blue-600">
+                    Ordered:{" "}
+                    <span className="font-medium">{stats.ordered}</span>
+                  </span>
+                  <span className="text-sm px-3 py-1 rounded-2xl bg-green-600">
+                    Received:{" "}
+                    <span className="font-medium">{stats.received}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-3 lg:mt-0">
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
+              >
+                <RefreshCw
+                  size={18}
+                  className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
+                />
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </button>
+              {canManage && (
+                <Link
+                  to="/order/add"
+                  className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
+                >
+                  <PlusCircle size={20} className="mr-2" />
+                  New Order
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-card-main rounded-xl p-6 mb-8 shadow-lg">
+          <h3 className="flex items-center text-slate-300 mb-4">
+            <Filter size={15} className="mr-2" /> Search & Filter Orders
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative lg:col-span-2">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                name="searchTerm"
+                placeholder="Search by Order ID or Supplier..."
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
+              />
+            </div>
+            <select
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
+            >
+              <option value="all">All Statuses</option>
+              <option value="DRAFT">Draft</option>
+              <option value="ORDERED">Ordered</option>
+              <option value="RECEIVED">Received</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            <button
+              onClick={resetFiltersHandler}
+              className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
+            >
+              <RotateCcw size={16} className="mr-2" /> Reset
+            </button>
+          </div>
+        </div>
+
+        {/* Table */}
+        {filteredAndSortedOrders.length === 0 && !loading ? (
+          <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
+            <ShoppingCart size={64} className="mx-auto text-gray-500 mb-4" />
+            <h3 className="text-xl font-semibold text-stone-300 mb-2">
+              No Orders Found
+            </h3>
+            <p className="text-stone-400">
+              Try adjusting your filters or create your first purchase order.
+            </p>
+          </div>
+        ) : (
+          <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-stone-500">
+                <thead className="bg-[#2f2f2f]">
+                  <tr>
+                    <th
+                      onClick={() => handleSort("id")}
+                      className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-stone-700"
+                    >
+                      <div className="flex items-center gap-2 w-[90px]">
+                        Order Id{" "}
+                        {sortConfig.key === "id" &&
+                          (sortConfig.direction === "asc" ? (
+                            <SortAsc size={14} />
+                          ) : (
+                            <SortDesc size={14} />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("supplier_name")}
+                      className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-stone-700"
+                    >
+                      <div className="flex items-center">
+                        Supplier{" "}
+                        {sortConfig.key === "supplier_name" &&
+                          (sortConfig.direction === "asc" ? (
+                            <SortAsc size={14} />
+                          ) : (
+                            <SortDesc size={14} />
+                          ))}
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th
+                      onClick={() => handleSort("total")}
+                      className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-stone-700"
+                    >
+                      <div className="flex items-center">
+                        Total{" "}
+                        {sortConfig.key === "total" &&
+                          (sortConfig.direction === "asc" ? (
+                            <SortAsc size={14} />
+                          ) : (
+                            <SortDesc size={14} />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("order_date")}
+                      className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-stone-700"
+                    >
+                      <div className="flex items-center">
+                        Order Date{" "}
+                        {sortConfig.key === "order_date" &&
+                          (sortConfig.direction === "asc" ? (
+                            <SortAsc size={14} />
+                          ) : (
+                            <SortDesc size={14} />
+                          ))}
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-[#2f2f2f] divide-y divide-stone-600">
+                  {filteredAndSortedOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-star-dust-800 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-orange-400">
+                        #{order.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Building size={16} className="mr-2 text-slate-400" />
+                          {order.supplier_name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {getStatusPill(order.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-stone-300">
+                        ${parseFloat(order.total || 0).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-stone-400">
+                        {new Date(
+                          order.order_date + "T00:00:00Z"
+                        ).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            to={`/order/view/${order.id}`}
+                            className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
+                            title="View Details"
+                          >
+                            <Eye size={18} />
+                          </Link>
+                          {canManage && order.status === "DRAFT" && (
+                            <>
+                              <Link
+                                to={`/order/edit/${order.id}`}
+                                className="p-2 text-indigo-400 hover:bg-indigo-500/20 rounded-lg"
+                                title="Edit Order"
+                              >
+                                <Edit3 size={18} />
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(order.id)}
+                                className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+                                title="Delete Order"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+      {loading && !refreshing && <LoadingIndicator />}
+    </div>
+  );
+};
+
+export default Order;

@@ -26,6 +26,8 @@ import Supplier from "./pages/Supplier";
 import SupplierForm from "./pages/SupplierForm";
 import Product from "./pages/Product";
 import ProductForm from "./pages/ProductForm";
+import Order from "./pages/Order";
+import OrderForm from "./pages/OrderForm";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -74,6 +76,10 @@ function App() {
     { path: "/product/add", element: <ProductForm /> },
     { path: "/product/edit/:productId", element: <ProductForm /> },
     { path: "/product/view/:productId", element: <ProductForm /> },
+    { path: "/order", element: <Order /> },
+    { path: "/order/add", element: <OrderForm /> },
+    { path: "/order/edit/:orderId", element: <OrderForm /> },
+    { path: "/order/view/:orderId", element: <OrderForm /> },
   ];
 
   return (
@@ -99,7 +105,10 @@ function App() {
             path="/logout"
             element={<Logout setIsAuthenticated={setIsAuthenticated} />}
           />
-          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route
+            path="/login"
+            element={<Login setIsAuthenticated={setIsAuthenticated} />}
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

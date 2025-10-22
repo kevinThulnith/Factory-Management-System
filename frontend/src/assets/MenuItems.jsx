@@ -129,7 +129,7 @@ const menuItems = {
     {
       id: "orders",
       name: "Purchase Orders",
-      path: "/orders",
+      path: "/order",
       icon: <FaShoppingCart size={20} />,
       roles: ["ADMIN", "SUPERVISOR", "PURCHASING"],
     },
