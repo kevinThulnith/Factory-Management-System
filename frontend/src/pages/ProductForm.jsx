@@ -1,31 +1,31 @@
-// src/pages/products/ProductFormPage.jsx
-import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import api from "../api";
 
 import {
-  InfoItem,
-  InputItem,
   TextareaItem,
   SelectItem,
+  InputItem,
+  InfoItem,
+  Buttons,
 } from "../components/components";
 
 import {
-  Package,
-  Save,
-  XCircle,
-  ChevronLeft,
-  Edit2,
-  Tag,
   ClipboardList,
-  FileText,
+  ChevronLeft,
   CheckCircle,
-  Activity,
   AlertCircle,
-  ListPlus,
-  Trash2,
-  ArrowUp,
   ArrowDown,
+  FileText,
+  Activity,
+  ListPlus,
+  Package,
+  XCircle,
+  ArrowUp,
+  Trash2,
+  Edit2,
+  Save,
+  Tag,
 } from "lucide-react";
 
 const ProductForm = () => {
@@ -37,7 +37,6 @@ const ProductForm = () => {
   // Determine mode
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
-  const isCreateMode = location.pathname.includes("/add");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -79,10 +78,11 @@ const ProductForm = () => {
             unit_of_measurement: pData.unit_of_measurement || "",
             specifications: JSON.stringify(pData.specifications || {}, null, 2),
             selected_processes: (pData.processes || [])
-              .map((p) => ({
-                id: p.id,
-                name: p.name,
-                sequence: p.sequence, // Assuming the backend provides sequence
+              .map((p, index) => ({
+                // Use manufacturing_processes array for IDs or fallback to index
+                id: pData.manufacturing_processes?.[index] || index,
+                name: p.process__name, // Map from process__name instead of name
+                sequence: p.sequence,
               }))
               .sort((a, b) => a.sequence - b.sequence),
           });
@@ -187,11 +187,33 @@ const ProductForm = () => {
     }
   };
 
-  const handleEdit = () => navigate(`/products/edit/${productId}`);
+  const handleEdit = () => navigate(`/product/edit/${productId}`);
   const canManage = user && user.role === "ADMIN";
 
   const getStatusBadge = (status) => {
-    /* ... getStatusBadge logic as before ... */
+    const statusConfig = {
+      ACTIVE: {
+        color: "bg-green-200 text-green-800",
+        icon: <CheckCircle size={14} />,
+      },
+      INACTIVE: {
+        color: "bg-yellow-200 text-yellow-800",
+        icon: <AlertCircle size={14} />,
+      },
+      DISCONTINUED: {
+        color: "bg-red-200 text-red-800",
+        icon: <XCircle size={14} />,
+      },
+    };
+    const config = statusConfig[status] || statusConfig.ACTIVE;
+    return (
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1 ${config.color}`}
+      >
+        {config.icon}
+        {status}
+      </span>
+    );
   };
 
   if (loading && !product && isEditMode)
@@ -207,7 +229,7 @@ const ProductForm = () => {
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
           {/* Header */}
           <div className="flex items-center">
-            <div className="bg-orange-600 rounded-lg p-2 mr-4 text-stone-200">
+            <div className="bg-gradient-to-r from-amber-600 to-amber-800 rounded-lg p-2 mr-4 text-stone-200">
               <Package size={35} />
             </div>
             <div>
@@ -226,14 +248,14 @@ const ProductForm = () => {
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <button
               onClick={() => navigate("/product")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} /> Products
             </button>
             {isViewMode && canManage && (
               <button
-                onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+                onClick={() => navigate(`/product/edit/${productId}`)}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
               >
                 <Edit2 size={18} /> Edit
               </button>
@@ -247,7 +269,7 @@ const ProductForm = () => {
           </div>
         )}
 
-        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
+        <div className="bg-card-main rounded-md shadow-md p-6 sm:p-8">
           {isViewMode ? (
             <div className="space-y-8">
               {/* View Mode: Basic Info */}
@@ -274,7 +296,6 @@ const ProductForm = () => {
                   value={product?.unit_of_measurement}
                 />
               </div>
-              {/* View Mode: Specs & Processes */}
               <InfoItem
                 icon={<FileText />}
                 label="Specifications (JSON)"
@@ -438,31 +459,12 @@ const ProductForm = () => {
                   ))}
                 </div>
               </div>
-              {/* Form: Action Buttons */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-                <button
-                  type="button"
-                  onClick={() => navigate("/product")}
-                  disabled={loading}
-                  className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-                >
-                  <XCircle size={18} /> Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !canManage}
-                  className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    "Saving..."
-                  ) : (
-                    <>
-                      <Save size={18} />
-                      {isEditMode ? "Save Changes" : "Create Product"}
-                    </>
-                  )}
-                </button>
-              </div>
+
+              <Buttons
+                onCancel={() => navigate("/product")}
+                disabled={loading}
+                text_01={isEditMode ? "Save Changes" : "Create Product"}
+              />
             </form>
           )}
         </div>

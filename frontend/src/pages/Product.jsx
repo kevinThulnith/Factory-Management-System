@@ -1,35 +1,25 @@
-// src/pages/products/ProductListPage.jsx
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import LoadingIndicator from "../components/LoadingIndicator";
 import { Link } from "react-router-dom";
 import api from "../api";
+
 import {
+  ClipboardList,
+  CheckCircle,
   PlusCircle,
-  Edit3,
-  Trash2,
-  Package,
-  Search,
-  Filter,
   RefreshCw,
   RotateCcw,
-  CheckCircle,
   XCircle,
+  Package,
   Activity,
+  Trash2,
+  Filter,
+  Search,
+  Edit3,
   Eye,
   Tag,
-  ClipboardList,
 } from "lucide-react";
 
-// --- Reusable Components (Styled like Workshop page) ---
-const LoadingIndicator = () => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-[#2a2a2a] p-6 rounded-lg shadow-xl">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-      <p className="text-stone-300 mt-4">Loading Products...</p>
-    </div>
-  </div>
-);
-
-// --- Main Component ---
 const Product = () => {
   const [user, setUser] = useState({});
   const [allProducts, setAllProducts] = useState([]);
@@ -37,15 +27,6 @@ const Product = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({ searchTerm: "", status: "all" });
 
-  // Fetch current user for permissions
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-  }, []);
-
-  // Fetch products
   const fetchProducts = useCallback(() => {
     setLoading(true);
     api
@@ -56,6 +37,10 @@ const Product = () => {
   }, []);
 
   useEffect(() => {
+    api
+      .get("api/user/me/")
+      .then((res) => setUser(res.data))
+      .catch((error) => console.error("Failed to fetch user:", error));
     fetchProducts();
   }, [fetchProducts]);
 
@@ -144,7 +129,7 @@ const Product = () => {
         <div className="rounded-2xl p-8 shadow-md mb-8 bg-card-main">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-2xl mr-6 shadow-lg bg-star-dust-700 transform hover:scale-105 transition-all duration-300">
+              <div className="p-3 rounded-2xl mr-6 shadow-lg bg-gradient-to-r from-amber-600 to-amber-800 transform hover:scale-105 transition-all duration-300">
                 <Package size={90} className="text-stone-200" />
               </div>
               <div>
@@ -198,7 +183,7 @@ const Product = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-card-main rounded-xl p-6 mb-8 shadow-lg">
+        <div className="bg-card-main rounded-xl p-6 mb-8 shadow-md">
           <h3 className="flex items-center text-slate-300 mb-4">
             <Filter size={15} className="mr-2" /> Search & Filter
           </h3>
@@ -221,7 +206,7 @@ const Product = () => {
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub"
+              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
             >
               <option value="all">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -253,14 +238,15 @@ const Product = () => {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="relative bg-[#2a2a2a] shadow-lg rounded-xl border border-stone-700/50 flex flex-col transition-all duration-300 hover:border-orange-500/50 hover:-translate-y-1"
+                className="relative bg-card-main shadow-md rounded-xl flex flex-col transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="p-5 flex-grow">
                   {getStatusPill(product.status)}
                   <h2
-                    className="text-lg font-bold text-orange-400 truncate mt-8 mb-2"
+                    className="text-lg font-bold text-orange-200 truncate mt-8 mb-2 flex gap-2 items-center"
                     title={product.name}
                   >
+                    <Package size={25}/>
                     {product.name}
                   </h2>
                   <div className="space-y-2 text-sm text-stone-400">
@@ -279,30 +265,30 @@ const Product = () => {
                     </p>
                   </div>
                 </div>
-                <div className="bg-stone-900/40 px-5 py-3 border-t border-stone-700/50 mt-auto rounded-b-xl">
+                <div className="bg-card-accent px-6 py-2 border-t border-stone-700/50 mt-auto rounded-b-xl">
                   <div className="flex items-center justify-end space-x-2">
                     <Link
                       to={`/product/view/${product.id}`}
-                      className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg"
+                      className="text-purple-200 hover:text-black transition duration-200 p-2 hover:bg-purple-200 rounded-full shadow-sm"
                       title="View Details"
                     >
-                      <Eye size={16} />
+                      <Eye size={20} />
                     </Link>
                     {canManage && (
                       <>
                         <Link
                           to={`/product/edit/${product.id}`}
-                          className="p-2 text-indigo-400 hover:bg-indigo-500/20 rounded-lg"
+                          className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
                           title="Edit Product"
                         >
-                          <Edit3 size={16} />
+                          <Edit3 size={20} />
                         </Link>
                         <button
                           onClick={() => handleDelete(product.id, product.name)}
-                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+                          className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Product"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={20} />
                         </button>
                       </>
                     )}

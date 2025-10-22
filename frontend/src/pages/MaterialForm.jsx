@@ -1,24 +1,22 @@
-// src/pages/materials/MaterialForm.jsx
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import api from "../api"; // Assuming a shared API service
+import api from "../api";
 
 import {
+  Buttons,
   InfoItem,
   InputItem,
   TextareaItem,
-} from "../components/components"; // Reusing your custom components
+} from "../components/components";
 
 import {
-  Box,
-  Save,
-  XCircle,
   ChevronLeft,
-  Edit2,
+  Warehouse,
   FileText,
   Package,
-  Ruler, // Using Ruler for unit of measurement
-  Warehouse, // A more fitting icon for stock
+  Edit2,
+  Ruler,
+  Box,
 } from "lucide-react";
 
 const MaterialForm = () => {
@@ -34,17 +32,16 @@ const MaterialForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    unit_of_measurement: "",
     quantity: "0.00",
     reorder_level: "0.00",
+    unit_of_measurement: "",
   });
 
-  const [material, setMaterial] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [material, setMaterial] = useState(null);
   const [pageError, setPageError] = useState("");
 
-  // Fetch material data if editing or viewing
   useEffect(() => {
     if (materialId) {
       setLoading(true);
@@ -90,10 +87,16 @@ const MaterialForm = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Material name is required.";
-    if (isNaN(parseFloat(formData.quantity)) || parseFloat(formData.quantity) < 0) {
+    if (
+      isNaN(parseFloat(formData.quantity)) ||
+      parseFloat(formData.quantity) < 0
+    ) {
       newErrors.quantity = "Quantity must be a non-negative number.";
     }
-    if ( isisNaN(parseFloat(formData.reorder_level))|| parseFloat(formData.reorder_level) < 0) {
+    if (
+      isisNaN(parseFloat(formData.reorder_level)) ||
+      parseFloat(formData.reorder_level) < 0
+    ) {
       newErrors.reorder_level = "Reorder level must be a non-negative number.";
     }
     setErrors(newErrors);
@@ -154,10 +157,6 @@ const MaterialForm = () => {
       setLoading(false);
     }
   };
-  
-  const handleEdit = () => {
-    navigate(`/material/edit/${materialId}`);
-  };
 
   if (loading && !formData.name) {
     return (
@@ -173,7 +172,7 @@ const MaterialForm = () => {
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
           <div className="flex items-center">
-            <div className="bg-gradient-to-r from-sky-600 to-sky-800 rounded-lg p-2 mr-4 text-stone-200">
+            <div className="bg-gradient-to-r from-sky-600 to-sky-800 rounded-lg p-2 mr-4 text-stone-200 shadow-lg">
               <Box size={35} />
             </div>
             <div>
@@ -193,15 +192,15 @@ const MaterialForm = () => {
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <button
               onClick={() => navigate("/material")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
             >
               <ChevronLeft size={20} />
               Materials
             </button>
             {isViewMode && (
               <button
-                onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-md gap-2 px-3 hover:shadow-sm"
+                onClick={() => navigate(`/material/edit/${materialId}`)}
+                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
               >
                 <Edit2 size={18} />
                 Edit
@@ -222,12 +221,32 @@ const MaterialForm = () => {
           {isViewMode ? (
             // View Mode
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoItem icon={<Package />} label="Material Name" value={material?.name} />
-              <InfoItem icon={<Ruler />} label="Unit of Measurement" value={material?.unit_of_measurement} />
-              <InfoItem icon={<Warehouse />} label="Quantity in Stock" value={material?.quantity} />
-              <InfoItem icon={<Warehouse />} label="Reorder Level" value={material?.reorder_level} />
+              <InfoItem
+                icon={<Package />}
+                label="Material Name"
+                value={material?.name}
+              />
+              <InfoItem
+                icon={<Ruler />}
+                label="Unit of Measurement"
+                value={material?.unit_of_measurement}
+              />
+              <InfoItem
+                icon={<Warehouse />}
+                label="Quantity in Stock"
+                value={material?.quantity}
+              />
+              <InfoItem
+                icon={<Warehouse />}
+                label="Reorder Level"
+                value={material?.reorder_level}
+              />
               <div className="md:col-span-2">
-                <InfoItem icon={<FileText />} label="Description" value={material?.description} />
+                <InfoItem
+                  icon={<FileText />}
+                  label="Description"
+                  value={material?.description}
+                />
               </div>
             </div>
           ) : (
@@ -236,59 +255,67 @@ const MaterialForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <InputItem
-                    label="Material Name" name="name" icon={<Package />}
-                    value={formData.name} onChange={handleChange} required
-                    placeholder="e.g., Steel Plate 5mm" error={errors.name}
+                    label="Material Name"
+                    name="name"
+                    icon={<Package />}
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g., Steel Plate 5mm"
+                    error={errors.name}
                   />
                 </div>
 
                 <InputItem
-                  label="Unit of Measurement" name="unit_of_measurement" icon={<Ruler />}
-                  value={formData.unit_of_measurement} onChange={handleChange}
-                  placeholder="e.g., kg, meters, units" error={errors.unit_of_measurement}
-                />
-                
-                <InputItem
-                  label="Quantity" name="quantity" icon={<Warehouse />}
-                  value={formData.quantity} onChange={handleDecimalChange} required
-                  inputMode="decimal" error={errors.quantity}
+                  label="Unit of Measurement"
+                  name="unit_of_measurement"
+                  icon={<Ruler />}
+                  value={formData.unit_of_measurement}
+                  onChange={handleChange}
+                  placeholder="e.g., kg, meters, units"
+                  error={errors.unit_of_measurement}
                 />
 
                 <InputItem
-                  label="Reorder Level" name="reorder_level" icon={<Warehouse />}
-                  value={formData.reorder_level} onChange={handleDecimalChange} required
-                  inputMode="decimal" error={errors.reorder_level}
+                  label="Quantity"
+                  name="quantity"
+                  icon={<Warehouse />}
+                  value={formData.quantity}
+                  onChange={handleDecimalChange}
+                  required
+                  inputMode="decimal"
+                  error={errors.quantity}
+                />
+
+                <InputItem
+                  label="Reorder Level"
+                  name="reorder_level"
+                  icon={<Warehouse />}
+                  value={formData.reorder_level}
+                  onChange={handleDecimalChange}
+                  required
+                  inputMode="decimal"
+                  error={errors.reorder_level}
                 />
 
                 <div className="md:col-span-2">
                   <TextareaItem
-                    label="Description" name="description" icon={<FileText />}
-                    value={formData.description} onChange={handleChange} rows="4"
-                    placeholder="Enter details about the material" error={errors.description}
+                    label="Description"
+                    name="description"
+                    icon={<FileText />}
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="4"
+                    placeholder="Enter details about the material"
+                    error={errors.description}
                   />
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-                <button
-                  type="button" onClick={() => navigate("/material")} disabled={loading}
-                  className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit" disabled={loading}
-                  className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? ( "Saving..." ) : (
-                    <>
-                      <Save size={18} />
-                      {isEditMode ? "Save Changes" : "Create Material"}
-                    </>
-                  )}
-                </button>
-              </div>
+              <Buttons
+                onCancel={() => navigate("/material")}
+                text_01={isEditMode ? "Save Changes" : "Create Material"}
+              />
             </form>
           )}
         </div>
