@@ -27,9 +27,7 @@ function Navbar() {
       .get("api/user/me/")
       .then((res) => setUserInfo(res.data))
       .catch((error) => alert(error));
-  }, []);
 
-  useEffect(() => {
     const checkWindowSize = () => {
       if (window.innerWidth >= 1024) setIsMenuOpen(true);
       else setIsMenuOpen(false);
@@ -37,18 +35,14 @@ function Navbar() {
 
     // Check on initial render
     checkWindowSize();
-
-    // Add event listener for window resize
     window.addEventListener("resize", checkWindowSize);
-
-    // Cleanup event listener on component unmount
     return () => window.removeEventListener("resize", checkWindowSize);
   }, []);
 
   // Setup nav link classes
   const getNavLinkClass = useCallback(
     ({ isActive }) => `
-     flex text-stone-200 mb-2 py-1 rounded-md text-[14px] mr-[-4px] hover:bg-stone-100 hover:text-stone-900 font-medium pl-2  ${
+     flex text-star-dust-200 mb-2 py-1 rounded-md text-[14px] mr-[-4px] hover:bg-stone-100 hover:text-stone-900 font-medium pl-2  ${
        isActive ? "bg-stone-100 text-stone-900" : ""
      }
   `,
@@ -72,7 +66,7 @@ function Navbar() {
   );
 
   return (
-    <div className="fixed top-0 left-0 z-50 bg-[#2a2a2a] shadow-md w-full py-3">
+    <div className="fixed top-0 left-0 z-50 bg-card-main shadow-md w-full py-3">
       <div className="md:container md:mx-auto mx-4 flex justify-between items-center">
         <NavLink
           to="/"
@@ -81,7 +75,7 @@ function Navbar() {
             fontSize: "22px",
             letterSpacing: "0.5px",
           }}
-          className="flex text-stone-200 items-center p-0.2 px-2 rounded-lg hover:bg-[#5a5a5a] hover:text-white transition-colors"
+          className="flex text-[#eeeade] items-center p-0.2 px-2 rounded-lg hover:bg-card-accent hover:text-white transition-colors"
         >
           <img className="h-5 mr-3" src={logo} alt="Logo" />
           <span>KY Biscuits</span>
@@ -93,7 +87,7 @@ function Navbar() {
             <div className="w-8 h-8 rounded-full bg-[#5a5a5a] flex items-center justify-center">
               <FaUser className="text-stone-200 text-1xl" />
             </div>
-            <span className="text-stone-200 capitalize text-[18px]">
+            <span className="text-star-dust-200 capitalize text-[18px]">
               {userInfo.username}
             </span>
           </div>
@@ -125,7 +119,7 @@ function Navbar() {
 
               return (
                 <div key={group} className="mb-4">
-                  <h3 className="text-stone-400 font-normal mb-2 border-b border-stone-600 pb-1 text-[12px]">
+                  <h3 className="text-star-dust-500 mb-2 border-b border-star-dust-600 pb-1 text-[13px]">
                     {capitalizeGroupName(group)}
                   </h3>
                   <div>

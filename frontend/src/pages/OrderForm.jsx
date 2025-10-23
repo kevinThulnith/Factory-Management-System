@@ -22,14 +22,7 @@ import {
 } from "lucide-react";
 
 // --- Reusable Line Item Form Sub-Component ---
-const LineItemForm = ({
-  orderId,
-  itemToEdit,
-  materials,
-  onSave,
-  onCancel,
-  loading,
-}) => {
+const LineItemForm = ({ itemToEdit, materials, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
     material: "",
     quantity: "1.00",
@@ -65,8 +58,8 @@ const LineItemForm = ({
     }
     setFormErrors({});
 
+    // Note: 'order' field is NOT needed - it's automatically set from the URL
     const payload = {
-      order: orderId,
       material: formData.material,
       quantity: formData.quantity,
       unit_price: formData.unit_price,
@@ -164,12 +157,19 @@ const OrderForm = () => {
       return;
     }
     setLoading((prev) => ({ ...prev, page: true }));
-    api
-      .get(`api/order/${orderId}/`)
-      .then((res) => {
-        setOrder(res.data);
-        setLineItems(res.data.items || []);
-        setFormData({ supplier: res.data.supplier, status: res.data.status });
+
+    // Fetch order details
+    Promise.all([
+      api.get(`api/order/${orderId}/`),
+      api.get(`api/order/${orderId}/material/`),
+    ])
+      .then(([orderRes, materialsRes]) => {
+        setOrder(orderRes.data);
+        setLineItems(materialsRes.data.results || materialsRes.data || []);
+        setFormData({
+          supplier: orderRes.data.supplier,
+          status: orderRes.data.status,
+        });
       })
       .catch(() => setPageError("Failed to load order details."))
       .finally(() => setLoading((prev) => ({ ...prev, page: false })));
@@ -213,22 +213,24 @@ const OrderForm = () => {
 
   const handleSaveLineItem = async (payload, itemId) => {
     setLoading((prev) => ({ ...prev, action: true }));
-    const method = itemId ? "patch" : "post";
-    const endpoint = itemId
-      ? `api/order-material/${itemId}/`
-      : `api/order-material/`;
-    // For PATCH, only send changeable fields
-    const patchPayload = {
-      quantity: payload.quantity,
-      unit_price: payload.unit_price,
-    };
 
     try {
-      await api[method](endpoint, method === "patch" ? patchPayload : payload);
+      if (itemId) {
+        // Update existing item - use nested endpoint with PATCH
+        await api.patch(`api/order/${orderId}/material/${itemId}/`, {
+          quantity: payload.quantity,
+          unit_price: payload.unit_price,
+        });
+      } else {
+        // Create new item - use nested endpoint with POST
+        await api.post(`api/order/${orderId}/material/`, payload);
+      }
+
       setShowAddItemForm(false);
       setEditingItem(null);
       fetchOrderData(); // Refetch all data
     } catch (err) {
+      console.error("API error:", err.response?.data || err.message);
       setPageError("Failed to save line item.");
     } finally {
       setLoading((prev) => ({ ...prev, action: false }));
@@ -239,10 +241,12 @@ const OrderForm = () => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     setLoading((prev) => ({ ...prev, action: true }));
     try {
-      await api.delete(`api/order-material/${itemId}/`);
+      // Use nested endpoint for deletion
+      await api.delete(`api/order/${orderId}/material/${itemId}/`);
       fetchOrderData();
     } catch (err) {
-      setPageError("Failed to delete line item.");
+      console.error("Delete error:", err.response?.data || err.message);
+      setPageError(err.response?.data?.detail || "Failed to delete line item.");
     } finally {
       setLoading((prev) => ({ ...prev, action: false }));
     }
@@ -451,7 +455,6 @@ const OrderForm = () => {
 
                 {isEditable && (showAddItemForm || editingItem) && (
                   <LineItemForm
-                    orderId={orderId}
                     itemToEdit={editingItem}
                     materials={materials}
                     onSave={handleSaveLineItem}

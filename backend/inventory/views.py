@@ -105,3 +105,15 @@ class OrderMaterialViewSet(ModelViewSet):
         order_id = self.kwargs.get("order_pk")
         order = get_object_or_404(Order, id=order_id)
         serializer.save(order=order)
+        
+    def perform_update(self, serializer):
+        order_id = self.kwargs.get("order_pk")
+        order = get_object_or_404(Order, id=order_id)
+        serializer.save(order=order)
+        
+    def perform_destroy(self, instance):
+        # Prevent deletion if user is SUPERVISOR
+        user = self.request.user
+        if user.role == "SUPERVISOR":
+            raise PermissionError("Supervisors cannot delete order materials.")
+        instance.delete()
