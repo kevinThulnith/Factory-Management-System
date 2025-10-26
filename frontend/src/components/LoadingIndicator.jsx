@@ -1,7 +1,24 @@
 const LoadingIndicator = () => {
   return (
     <div className="loader-container">
-      <div className="loader" />
+      <div className="loader-grid">
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+        <div className="block"></div>
+      </div>
     </div>
   );
 };

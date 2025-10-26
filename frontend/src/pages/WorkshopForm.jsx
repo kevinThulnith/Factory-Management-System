@@ -276,7 +276,7 @@ const WorkshopForm = () => {
         )}
 
         {/* Main Content */}
-        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
+        <div className="bg-[#2a2a2a] rounded-xl shadow-md p-6 sm:p-8">
           {isViewMode ? (
             // View Mode
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
