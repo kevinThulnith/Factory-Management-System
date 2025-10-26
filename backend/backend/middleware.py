@@ -27,7 +27,7 @@ class RequestTimeLoggingMiddleware:
         # Log the execution time
         logger.info(
             f"{request.method} {request.path} - Status: {response.status_code} - "
-            f"⌛-S : {execution_time:.4f}s ({execution_time * 1000:.2f}ms)"
+            f"⌛: {execution_time:.4f}s {execution_time * 1000:.2f}ms"
         )
 
         # Optionally add execution time to response headers

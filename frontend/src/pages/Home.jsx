@@ -264,7 +264,7 @@ function Home() {
         </div>
         <div className="flex-1 ml-6">
           <h1 className="text-4xl font-bold text-stone-200 mb-1 tracking-wide">
-            Dasboard
+            Dashboard
           </h1>
           <p className="text-1xl font-medium text-stone-400">
             Welcome back {userInfo.name} !!!

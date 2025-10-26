@@ -4,6 +4,7 @@ import api from "../api";
 
 import {
   TextareaItem,
+  FormHeader,
   SelectItem,
   InputItem,
   InfoItem,
@@ -11,14 +12,12 @@ import {
 } from "../components/components";
 
 import {
-  ChevronLeft,
   Building2,
   FileText,
   Activity,
   Settings,
   XCircle,
   Factory,
-  Edit2,
   User,
 } from "lucide-react";
 
@@ -30,7 +29,6 @@ const WorkshopForm = () => {
   // Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
-  const isCreateMode = location.pathname.includes("/add");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -247,47 +245,28 @@ const WorkshopForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-r from-orange-600 to-orange-800 rounded-lg p-2 mr-4 text-stone-300">
-                <Factory size={35} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-medium">
-                  {isViewMode && "Workshop Details"}
-                  {isEditMode && "Edit Workshop"}
-                  {isCreateMode && "Create New Workshop"}
-                </h1>
-                <p className="text-stone-400 mt-1 text-1xl">
-                  {isViewMode && "View workshop information"}
-                  {isEditMode && "Update workshop information and settings"}
-                  {isCreateMode && "Add a new workshop to your organization"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/workshop")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} />
-              Workshops
-            </button>
-            {isViewMode && (
-              <button
-                onClick={() => navigate(`/workshop/edit/${workshopId}`)}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} />
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<Factory />}
+          heading={
+            isViewMode
+              ? "Workshop Details"
+              : isEditMode
+              ? "Edit Workshop"
+              : "Create New Workshop"
+          }
+          text_01={
+            isViewMode
+              ? "View workshop information"
+              : isEditMode
+              ? "Update workshop information and settings"
+              : "Add a new workshop to your organization"
+          }
+          text_02="Workshops"
+          onClick={() => navigate("/workshop")}
+          fnction={() => navigate(`/workshop/edit/${workshopId}`)}
+          gradient="from-orange-600 to-orange-800"
+          isViewMode={isViewMode}
+        />
 
         {/* Error Message */}
         {pageError && (

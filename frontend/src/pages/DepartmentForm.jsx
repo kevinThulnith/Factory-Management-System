@@ -1,3 +1,4 @@
+import { Building2, FileText, MapPin, House, User } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import api from "../api";
@@ -5,20 +6,11 @@ import api from "../api";
 import {
   TextareaItem,
   SelectItem,
+  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
 } from "../components/components";
-
-import {
-  ChevronLeft,
-  Building2,
-  FileText,
-  MapPin,
-  House,
-  Edit2,
-  User,
-} from "lucide-react";
 
 const DepartmentForm = () => {
   const { departmentId } = useParams();
@@ -28,7 +20,6 @@ const DepartmentForm = () => {
   // Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
-  const isCreateMode = location.pathname.includes("/add");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -156,47 +147,28 @@ const DepartmentForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-2 mr-4 text-stone-200">
-                <Building2 size={40} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-medium">
-                  {isViewMode && "Department Details"}
-                  {isEditMode && "Edit Department"}
-                  {isCreateMode && "Create New Department"}
-                </h1>
-                <p className="text-stone-400 mt-1 text-1xl">
-                  {isViewMode && "View department information"}
-                  {isEditMode && "Update department information and settings"}
-                  {isCreateMode && "Add a new department to your organization"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/department")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} />
-              Departments
-            </button>
-            {isViewMode && (
-              <button
-                onClick={() => navigate(`/department/edit/${departmentId}`)}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} />
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<Building2 />}
+          heading={
+            isViewMode
+              ? "Department Details"
+              : isEditMode
+              ? "Edit Department"
+              : "Create New Department"
+          }
+          text_01={
+            isViewMode
+              ? "View department information"
+              : isEditMode
+              ? "Update department information and settings"
+              : "Add a new department to your organization"
+          }
+          text_02="Departments"
+          onClick={() => navigate("/department")}
+          fnction={() => navigate(`/department/edit/${departmentId}`)}
+          gradient="from-red-600 to-red-800"
+          isViewMode={isViewMode}
+        />
 
         {/* Error Message */}
         {pageError && (

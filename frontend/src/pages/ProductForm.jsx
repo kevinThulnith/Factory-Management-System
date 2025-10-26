@@ -5,6 +5,7 @@ import api from "../api";
 import {
   TextareaItem,
   SelectItem,
+  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
@@ -12,7 +13,6 @@ import {
 
 import {
   ClipboardList,
-  ChevronLeft,
   CheckCircle,
   AlertCircle,
   ArrowDown,
@@ -23,8 +23,6 @@ import {
   XCircle,
   ArrowUp,
   Trash2,
-  Edit2,
-  Save,
   Tag,
 } from "lucide-react";
 
@@ -226,42 +224,24 @@ const ProductForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200 mb-10">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
-          {/* Header */}
-          <div className="flex items-center">
-            <div className="bg-gradient-to-r from-amber-600 to-amber-800 rounded-lg p-2 mr-4 text-stone-200">
-              <Package size={35} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-medium">
-                {isViewMode
-                  ? "Product Details"
-                  : isEditMode
-                  ? "Edit Product"
-                  : "Add New Product"}
-              </h1>
-              <p className="text-stone-400 mt-1 text-1xl">
-                Manage product details and manufacturing steps
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 mt-4 sm:mt-0">
-            <button
-              onClick={() => navigate("/product")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} /> Products
-            </button>
-            {isViewMode && canManage && (
-              <button
-                onClick={() => navigate(`/product/edit/${productId}`)}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} /> Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<Package />}
+          heading={
+            isViewMode
+              ? "Product Details"
+              : isEditMode
+              ? "Edit Product"
+              : "Add New Product"
+          }
+          text_01={
+            isViewMode ? "View product information" : "Manage product details"
+          }
+          text_02="Products"
+          onClick={() => navigate("/product")}
+          fnction={() => navigate(`/product/edit/${productId}`)}
+          gradient="from-amber-600 to-amber-800"
+          isViewMode={isViewMode && canManage}
+        />
 
         {pageError && (
           <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">

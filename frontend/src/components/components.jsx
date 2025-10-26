@@ -1,5 +1,5 @@
+import { Save, ChevronLeft, Edit2 } from "lucide-react";
 import { cloneElement } from "react";
-import { Save } from "lucide-react";
 
 // !Input component for forms
 export const InputItem = ({ label, name, icon, error, ...props }) => (
@@ -109,16 +109,62 @@ export const Buttons = ({
     <button
       type="button"
       onClick={onCancel}
-      className="bg-gray-500 hover:bg-gray-400 text-stone-200 font-medium py-2 px-3 rounded-lg text-sm"
+      className="bg-gray-600 hover:bg-gray-500 text-stone-200 font-medium duration-100 py-2 px-3 rounded-lg text-sm"
     >
       Cancel
     </button>
     <button
       type="submit"
       disabled={disabled}
-      className="bg-orange-500 hover:bg-orange-400 text-stone-800 font-medium py-2 px-3 rounded-lg text-sm"
+      className="bg-orange-500 hover:bg-orange-400 text-stone-800 font-medium duration-100 py-2 px-3 rounded-lg text-sm"
     >
       {text_01} <Save className="inline ml-1" size={16} />
     </button>
+  </div>
+);
+
+export const FormHeader = ({
+  icon,
+  heading,
+  text_01,
+  text_02,
+  onClick,
+  fnction,
+  gradient,
+  isViewMode,
+}) => (
+  <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center">
+        <div
+          className={` bg-gradient-to-r ${gradient} rounded-lg p-2 mr-4 text-stone-200`}
+        >
+          {icon && cloneElement(icon, { size: 40 })}
+        </div>
+        <div>
+          <h1 className="text-2xl font-medium">{heading}</h1>
+          <p className="text-stone-400 mt-1 text-1xl">{text_01}</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-2">
+      <button
+        onClick={onClick}
+        className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
+      >
+        <ChevronLeft size={20} />
+        {text_02}
+      </button>
+      {isViewMode && (
+        <button
+          onClick={fnction}
+          className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
+        >
+          <Edit2 size={18} />
+          Edit
+        </button>
+      )}
+    </div>
   </div>
 );

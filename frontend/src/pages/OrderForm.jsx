@@ -1,14 +1,19 @@
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
-import { InfoItem, SelectItem, InputItem } from "../components/components";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import api from "../api";
+
+import {
+  SelectItem,
+  FormHeader,
+  InputItem,
+  InfoItem,
+} from "../components/components";
 
 import {
   ShoppingCart,
   CalendarDays,
   ListOrdered,
   CheckCircle,
-  ChevronLeft,
   DollarSign,
   PlusCircle,
   UserCircle,
@@ -286,39 +291,28 @@ const OrderForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-md">
-          <div className="flex items-center">
-            <div className="bg-gradient-to-r from-violet-600 to-violet-800 rounded-lg p-2 mr-4 text-stone-200 shadow-lg">
-              <ShoppingCart size={35} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-medium">
-                {isCreateMode ? "Create New Order" : `Order #${orderId}`}
-              </h1>
-              <p className="text-stone-400 mt-1 text-1xl">
-                Manage order details and line items
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-4 sm:mt-0">
-            <Link
-              to="/order"
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} />
-              Orders
-            </Link>
-            {isViewMode && isEditable && (
-              <button
-                onClick={() => navigate(`/order/edit/${orderId}`)}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} /> Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<ShoppingCart />}
+          heading={
+            isViewMode
+              ? `Order #${orderId} Details`
+              : isCreateMode
+              ? "Create New Order"
+              : `Edit Order #${orderId}`
+          }
+          text_01={
+            isViewMode
+              ? "View order information and items"
+              : isCreateMode
+              ? "Fill in order details to create a new order"
+              : "Update order information and items"
+          }
+          text_02="Orders"
+          onClick={() => navigate("/order")}
+          fnction={() => navigate(`/order/edit/${orderId}`)}
+          gradient="from-violet-600 to-violet-800"
+          isViewMode={isViewMode && canManage}
+        />
 
         {pageError && (
           <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">

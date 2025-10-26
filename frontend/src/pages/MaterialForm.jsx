@@ -6,6 +6,7 @@ import {
   Buttons,
   InfoItem,
   InputItem,
+  FormHeader,
   TextareaItem,
 } from "../components/components";
 
@@ -27,7 +28,6 @@ const MaterialForm = () => {
   // Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
-  const isCreateMode = location.pathname.includes("/add");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -169,45 +169,28 @@ const MaterialForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200 mb-10">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
-          <div className="flex items-center">
-            <div className="bg-gradient-to-r from-sky-600 to-sky-800 rounded-lg p-2 mr-4 text-stone-200 shadow-lg">
-              <Box size={35} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-medium">
-                {isViewMode && "Material Details"}
-                {isEditMode && "Edit Material"}
-                {isCreateMode && "Create New Material"}
-              </h1>
-              <p className="text-stone-400 mt-1 text-1xl">
-                {isViewMode && "View material information"}
-                {isEditMode && "Update material information"}
-                {isCreateMode && "Add a new material to your inventory"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 mt-4 sm:mt-0">
-            <button
-              onClick={() => navigate("/material")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} />
-              Materials
-            </button>
-            {isViewMode && (
-              <button
-                onClick={() => navigate(`/material/edit/${materialId}`)}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} />
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<Box />}
+          heading={
+            isViewMode
+              ? "Material Details"
+              : isEditMode
+              ? "Edit Material"
+              : "Create New Material"
+          }
+          text_01={
+            isViewMode
+              ? "View material information"
+              : isEditMode
+              ? "Update material information"
+              : "Add a new material to your inventory"
+          }
+          text_02="Materials"
+          onClick={() => navigate("/material")}
+          fnction={() => navigate(`/material/edit/${materialId}`)}
+          gradient="from-sky-600 to-sky-800"
+          isViewMode={isViewMode}
+        />
 
         {/* Error Message */}
         {pageError && (

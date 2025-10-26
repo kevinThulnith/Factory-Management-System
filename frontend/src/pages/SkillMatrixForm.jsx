@@ -1,3 +1,4 @@
+import { Save, Star, ChevronLeft, Users, Briefcase, Edit2 } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import api from "../api";
@@ -5,11 +6,11 @@ import api from "../api";
 import {
   TextareaItem,
   SelectItem,
+  FormHeader,
   InputItem,
   InfoItem,
+  Buttons,
 } from "../components/components";
-
-import { Save, Star, ChevronLeft, Users, Briefcase, Edit2 } from "lucide-react";
 
 // --- Constants (as in the original) ---
 const SKILL_CATEGORIES_MAP = {
@@ -239,40 +240,20 @@ const SkillForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200 mb-10">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
-          <div className="flex items-center">
-            <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-lg p-2 mr-4 text-stone-200">
-              <Briefcase size={35} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-medium">{pageTitle}</h1>
-              <p className="text-stone-400 mt-1 text-1xl">
-                {isMySkillsMode
-                  ? "Manage your personal skills"
-                  : "Manage employee skills"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate(backLink)}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} />
-              Skill Matrix
-            </button>
-            {isViewMode && (
-              <button
-                onClick={handleEdit}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} />
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<Briefcase />}
+          heading={pageTitle}
+          text_01={
+            isMySkillsMode
+              ? "Manage your personal skills"
+              : "Manage employee skills"
+          }
+          text_02="Skill Matrix"
+          onClick={() => navigate(backLink)}
+          fnction={handleEdit}
+          gradient="from-green-600 to-green-800"
+          isViewMode={isViewMode}
+        />
 
         {pageError && (
           <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
@@ -386,31 +367,11 @@ const SkillForm = () => {
                 />
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-                <button
-                  type="button"
-                  onClick={() => navigate(backLink)}
-                  disabled={loading}
-                  className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !canManageForm}
-                  className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    "Saving..."
-                  ) : (
-                    <>
-                      <Save size={18} />
-                      {skillMatrixId ? "Save Changes" : "Add Skill"}
-                    </>
-                  )}
-                </button>
-              </div>
+              <Buttons
+                onCancel={() => navigate(backLink)}
+                text_01={skillMatrixId ? "Save Changes" : "Add Skill"}
+                disabled={loading || !canManageForm}
+              />
             </form>
           )}
         </div>

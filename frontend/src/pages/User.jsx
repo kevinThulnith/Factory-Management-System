@@ -5,9 +5,9 @@ import api from "../api";
 
 import {
   Filter as FilterIcon,
-  Users as UsersIcon,
+  UserRoundPlus,
   ShieldCheck,
-  PlusCircle,
+  UsersRound,
   RefreshCw,
   UserCheck,
   RotateCcw,
@@ -173,7 +173,7 @@ function User() {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
               <div className="flex items-center">
                 <div className="p-3 rounded-2xl mr-6 shadow-lg bg-gradient-to-r from-blue-600 to-blue-800 transform hover:scale-105 transition-all duration-300">
-                  <UsersIcon size={90} className="text-stone-200" />
+                  <UsersRound size={90} className="text-stone-200" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-medium mb-2 tracking-tight">
@@ -219,7 +219,7 @@ function User() {
                   to="/register"
                   className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
                 >
-                  <PlusCircle size={20} className="mr-2" />
+                  <UserRoundPlus size={20} className="mr-2" />
                   Add New User
                 </Link>
               </div>
@@ -295,7 +295,7 @@ function User() {
           {/* Users Table with Modern Design */}
           {allUsers.length === 0 && !loading ? (
             <div className="border rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
-              <UsersIcon size={64} className="mx-auto text-gray-400 mb-4" />
+              <UsersRound size={64} className="mx-auto text-gray-400 mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
                 No Users Found
               </h3>
@@ -314,7 +314,7 @@ function User() {
             <div className="shadow-lg rounded-2xl bg-card-main overflow-hidden">
               <div className="px-4 py-4 border-b border-stone-500">
                 <h3 className="text-xl font-medium flex items-center">
-                  <UsersIcon size={20} className="mr-2" />
+                  <UsersRound size={20} className="mr-2" />
                   Users
                   <span className="text-slate-400 ml-4">
                     {filteredUsers.length}

@@ -5,6 +5,7 @@ import api from "../api";
 import {
   TextareaItem,
   SelectItem,
+  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
@@ -12,7 +13,6 @@ import {
 
 import {
   AlertTriangle,
-  ChevronLeft,
   CheckCircle,
   FileText,
   Activity,
@@ -20,7 +20,6 @@ import {
   Package,
   Factory,
   Wrench,
-  Edit2,
   User,
   Cog,
 } from "lucide-react";
@@ -33,7 +32,6 @@ const MachineForm = () => {
   // Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
-  const isCreateMode = location.pathname.includes("/add");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -278,47 +276,28 @@ const MachineForm = () => {
   return (
     <div className="container mx-auto text-star-dust-200">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-lg p-2 mr-4 text-stone-200">
-                <Cog size={35} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-medium">
-                  {isViewMode && "Machine Details"}
-                  {isEditMode && "Edit Machine"}
-                  {isCreateMode && "Create New Machine"}
-                </h1>
-                <p className="text-stone-400 mt-1 text-1xl">
-                  {isViewMode && "View machine information"}
-                  {isEditMode && "Update machine information and settings"}
-                  {isCreateMode && "Add a new machine to your workshop"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/machine")}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 hover:shadow-sm"
-            >
-              <ChevronLeft size={20} />
-              Machines
-            </button>
-            {isViewMode && (
-              <button
-                onClick={() => navigate(`/machine/edit/${machineId}`)}
-                className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
-              >
-                <Edit2 size={18} />
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+        <FormHeader
+          icon={<Cog />}
+          heading={
+            isViewMode
+              ? "Machine Details"
+              : isEditMode
+              ? "Edit Machine"
+              : "Create New Machine"
+          }
+          text_01={
+            isViewMode
+              ? "View machine information"
+              : isEditMode
+              ? "Update machine information and settings"
+              : "Add a new machine to your workshop"
+          }
+          text_02="Machines"
+          onClick={() => navigate("/machine")}
+          fnction={() => navigate(`/machine/edit/${machineId}`)}
+          gradient="from-yellow-600 to-yellow-800"
+          isViewMode={isViewMode}
+        />
 
         {/* Error Message */}
         {pageError && (
