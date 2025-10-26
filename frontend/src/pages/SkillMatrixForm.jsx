@@ -1,12 +1,12 @@
 import { Save, Star, ChevronLeft, Users, Briefcase, Edit2 } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   TextareaItem,
   SelectItem,
-  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
@@ -238,145 +238,130 @@ const SkillForm = () => {
   };
 
   return (
-    <div className="container mx-auto text-star-dust-200 mb-10">
-      <div className="max-w-4xl mx-auto">
-        <FormHeader
-          icon={<Briefcase />}
-          heading={pageTitle}
-          text_01={
-            isMySkillsMode
-              ? "Manage your personal skills"
-              : "Manage employee skills"
-          }
-          text_02="Skill Matrix"
-          onClick={() => navigate(backLink)}
-          fnction={handleEdit}
-          gradient="from-green-600 to-green-800"
-          isViewMode={isViewMode}
-        />
-
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
-          </div>
-        )}
-
-        <div className="bg-card-main rounded-xl shadow-md p-6 sm:p-8">
-          {isViewMode ? (
-            // View Mode
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {!isMySkillsMode && (
-                <InfoItem
-                  icon={<Users />}
-                  label="Employee"
-                  value={getEmployeeName()}
-                />
-              )}
-              <InfoItem
-                icon={<Star />}
-                label="Skill Name"
-                value={formData.name}
-              />
-              <InfoItem
-                icon={<Star />}
-                label="Category"
-                value={SKILL_CATEGORIES_MAP[formData.category]}
-              />
-              <InfoItem
-                icon={<Star />}
-                label="Proficiency Level"
-                value={SKILL_LEVELS_MAP[formData.level]}
-              />
-              <div className="md:col-span-2">
-                <InfoItem
-                  icon={<Star />}
-                  label="Description"
-                  value={formData.description || "No description provided"}
-                />
-              </div>
-            </div>
-          ) : (
-            // Edit/Create Mode
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-6">
-                {!isMySkillsMode && (
-                  <SelectItem
-                    label="Employee"
-                    name="employee"
-                    icon={<Users />}
-                    value={formData.employee}
-                    onChange={handleChange}
-                    options={employees.map((emp) => ({
-                      value: emp.id,
-                      label: `${emp.first_name || ""} ${emp.last_name || ""} (${
-                        emp.username
-                      }) - ${emp.role}`,
-                    }))}
-                    required={!skillMatrixId}
-                    disabled={skillMatrixId}
-                    error={formErrors.employee}
-                  />
-                )}
-                <InputItem
-                  label="Skill Name"
-                  name="name"
-                  icon={<Star />}
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., TIG Welding"
-                  error={formErrors.name}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <SelectItem
-                    label="Category"
-                    name="category"
-                    icon={<Star />}
-                    value={formData.category}
-                    onChange={handleChange}
-                    options={getAllowedCategories.map((cat) => ({
-                      value: cat,
-                      label: SKILL_CATEGORIES_MAP[cat],
-                    }))}
-                    required
-                    error={formErrors.category}
-                  />
-                  <SelectItem
-                    label="Proficiency Level"
-                    name="level"
-                    icon={<Star />}
-                    value={formData.level}
-                    onChange={handleChange}
-                    options={SKILL_LEVELS.map((lvl) => ({
-                      value: lvl,
-                      label: SKILL_LEVELS_MAP[lvl],
-                    }))}
-                    required
-                    error={formErrors.level}
-                  />
-                </div>
-                <TextareaItem
-                  label="Description"
-                  name="description"
-                  icon={<Star />}
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="4"
-                  placeholder="Describe the skill, including any relevant experience or certifications."
-                  error={formErrors.description}
-                />
-              </div>
-
-              <Buttons
-                onCancel={() => navigate(backLink)}
-                text_01={skillMatrixId ? "Save Changes" : "Add Skill"}
-                disabled={loading || !canManageForm}
-              />
-            </form>
+    <Form
+      icon={<Briefcase />}
+      heading={pageTitle}
+      text_01={
+        isMySkillsMode
+          ? "Manage your personal skills"
+          : "Manage employee skills"
+      }
+      text_02="Skill Matrix"
+      onClick={() => navigate(backLink)}
+      fnction={handleEdit}
+      gradient="from-green-600 to-green-800"
+      isViewMode={isViewMode}
+      loading={loading}
+      pageError={pageError}
+    >
+      {isViewMode ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {!isMySkillsMode && (
+            <InfoItem
+              icon={<Users />}
+              label="Employee"
+              value={getEmployeeName()}
+            />
           )}
+          <InfoItem icon={<Star />} label="Skill Name" value={formData.name} />
+          <InfoItem
+            icon={<Star />}
+            label="Category"
+            value={SKILL_CATEGORIES_MAP[formData.category]}
+          />
+          <InfoItem
+            icon={<Star />}
+            label="Proficiency Level"
+            value={SKILL_LEVELS_MAP[formData.level]}
+          />
+          <div className="md:col-span-2">
+            <InfoItem
+              icon={<Star />}
+              label="Description"
+              value={formData.description || "No description provided"}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+      ) : (
+        // !Edit/Create Mode
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-6">
+            {!isMySkillsMode && (
+              <SelectItem
+                label="Employee"
+                name="employee"
+                icon={<Users />}
+                value={formData.employee}
+                onChange={handleChange}
+                options={employees.map((emp) => ({
+                  value: emp.id,
+                  label: `${emp.first_name || ""} ${emp.last_name || ""} (${
+                    emp.username
+                  }) - ${emp.role}`,
+                }))}
+                required={!skillMatrixId}
+                disabled={skillMatrixId}
+                error={formErrors.employee}
+              />
+            )}
+            <InputItem
+              label="Skill Name"
+              name="name"
+              icon={<Star />}
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="e.g., TIG Welding"
+              error={formErrors.name}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <SelectItem
+                label="Category"
+                name="category"
+                icon={<Star />}
+                value={formData.category}
+                onChange={handleChange}
+                options={getAllowedCategories.map((cat) => ({
+                  value: cat,
+                  label: SKILL_CATEGORIES_MAP[cat],
+                }))}
+                required
+                error={formErrors.category}
+              />
+              <SelectItem
+                label="Proficiency Level"
+                name="level"
+                icon={<Star />}
+                value={formData.level}
+                onChange={handleChange}
+                options={SKILL_LEVELS.map((lvl) => ({
+                  value: lvl,
+                  label: SKILL_LEVELS_MAP[lvl],
+                }))}
+                required
+                error={formErrors.level}
+              />
+            </div>
+            <TextareaItem
+              label="Description"
+              name="description"
+              icon={<Star />}
+              value={formData.description}
+              onChange={handleChange}
+              rows="4"
+              placeholder="Describe the skill, including any relevant experience or certifications."
+              error={formErrors.description}
+            />
+          </div>
+
+          <Buttons
+            onCancel={() => navigate(backLink)}
+            text_01={skillMatrixId ? "Save Changes" : "Add Skill"}
+            disabled={loading || !canManageForm}
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 

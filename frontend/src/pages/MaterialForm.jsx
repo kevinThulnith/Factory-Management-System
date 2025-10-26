@@ -1,24 +1,15 @@
+import { Warehouse, FileText, Package, Ruler, Box } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   Buttons,
   InfoItem,
   InputItem,
-  FormHeader,
   TextareaItem,
 } from "../components/components";
-
-import {
-  ChevronLeft,
-  Warehouse,
-  FileText,
-  Package,
-  Edit2,
-  Ruler,
-  Box,
-} from "lucide-react";
 
 const MaterialForm = () => {
   const { materialId } = useParams();
@@ -158,152 +149,131 @@ const MaterialForm = () => {
     }
   };
 
-  if (loading && !formData.name) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto text-star-dust-200 mb-10">
-      <div className="max-w-4xl mx-auto">
-        <FormHeader
-          icon={<Box />}
-          heading={
-            isViewMode
-              ? "Material Details"
-              : isEditMode
-              ? "Edit Material"
-              : "Create New Material"
-          }
-          text_01={
-            isViewMode
-              ? "View material information"
-              : isEditMode
-              ? "Update material information"
-              : "Add a new material to your inventory"
-          }
-          text_02="Materials"
-          onClick={() => navigate("/material")}
-          fnction={() => navigate(`/material/edit/${materialId}`)}
-          gradient="from-sky-600 to-sky-800"
-          isViewMode={isViewMode}
-        />
-
-        {/* Error Message */}
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
+    <Form
+      icon={<Box />}
+      heading={
+        isViewMode
+          ? "Material Details"
+          : isEditMode
+          ? "Edit Material"
+          : "Create New Material"
+      }
+      text_01={
+        isViewMode
+          ? "View material information"
+          : isEditMode
+          ? "Update material information"
+          : "Add a new material to your inventory"
+      }
+      text_02="Materials"
+      onClick={() => navigate("/material")}
+      fnction={() => navigate(`/material/edit/${materialId}`)}
+      gradient="from-sky-600 to-sky-800"
+      isViewMode={isViewMode}
+      pageError={pageError}
+      loading={loading}
+    >
+      {isViewMode ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoItem
+            icon={<Package />}
+            label="Material Name"
+            value={material?.name}
+          />
+          <InfoItem
+            icon={<Ruler />}
+            label="Unit of Measurement"
+            value={material?.unit_of_measurement}
+          />
+          <InfoItem
+            icon={<Warehouse />}
+            label="Quantity in Stock"
+            value={material?.quantity}
+          />
+          <InfoItem
+            icon={<Warehouse />}
+            label="Reorder Level"
+            value={material?.reorder_level}
+          />
+          <div className="md:col-span-2">
+            <InfoItem
+              icon={<FileText />}
+              label="Description"
+              value={material?.description}
+            />
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
-          {isViewMode ? (
-            // View Mode
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoItem
-                icon={<Package />}
-                label="Material Name"
-                value={material?.name}
-              />
-              <InfoItem
-                icon={<Ruler />}
-                label="Unit of Measurement"
-                value={material?.unit_of_measurement}
-              />
-              <InfoItem
-                icon={<Warehouse />}
-                label="Quantity in Stock"
-                value={material?.quantity}
-              />
-              <InfoItem
-                icon={<Warehouse />}
-                label="Reorder Level"
-                value={material?.reorder_level}
-              />
-              <div className="md:col-span-2">
-                <InfoItem
-                  icon={<FileText />}
-                  label="Description"
-                  value={material?.description}
-                />
-              </div>
-            </div>
-          ) : (
-            // Edit/Create Mode
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <InputItem
-                    label="Material Name"
-                    name="name"
-                    icon={<Package />}
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="e.g., Steel Plate 5mm"
-                    error={errors.name}
-                  />
-                </div>
-
-                <InputItem
-                  label="Unit of Measurement"
-                  name="unit_of_measurement"
-                  icon={<Ruler />}
-                  value={formData.unit_of_measurement}
-                  onChange={handleChange}
-                  placeholder="e.g., kg, meters, units"
-                  error={errors.unit_of_measurement}
-                />
-
-                <InputItem
-                  label="Quantity"
-                  name="quantity"
-                  icon={<Warehouse />}
-                  value={formData.quantity}
-                  onChange={handleDecimalChange}
-                  required
-                  inputMode="decimal"
-                  error={errors.quantity}
-                />
-
-                <InputItem
-                  label="Reorder Level"
-                  name="reorder_level"
-                  icon={<Warehouse />}
-                  value={formData.reorder_level}
-                  onChange={handleDecimalChange}
-                  required
-                  inputMode="decimal"
-                  error={errors.reorder_level}
-                />
-
-                <div className="md:col-span-2">
-                  <TextareaItem
-                    label="Description"
-                    name="description"
-                    icon={<FileText />}
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows="4"
-                    placeholder="Enter details about the material"
-                    error={errors.description}
-                  />
-                </div>
-              </div>
-
-              <Buttons
-                onCancel={() => navigate("/material")}
-                text_01={isEditMode ? "Save Changes" : "Create Material"}
-              />
-            </form>
-          )}
         </div>
-      </div>
-    </div>
+      ) : (
+        // !Edit/Create Mode
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <InputItem
+                label="Material Name"
+                name="name"
+                icon={<Package />}
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="e.g., Steel Plate 5mm"
+                error={errors.name}
+              />
+            </div>
+
+            <InputItem
+              label="Unit of Measurement"
+              name="unit_of_measurement"
+              icon={<Ruler />}
+              value={formData.unit_of_measurement}
+              onChange={handleChange}
+              placeholder="e.g., kg, meters, units"
+              error={errors.unit_of_measurement}
+            />
+
+            <InputItem
+              label="Quantity"
+              name="quantity"
+              icon={<Warehouse />}
+              value={formData.quantity}
+              onChange={handleDecimalChange}
+              required
+              inputMode="decimal"
+              error={errors.quantity}
+            />
+
+            <InputItem
+              label="Reorder Level"
+              name="reorder_level"
+              icon={<Warehouse />}
+              value={formData.reorder_level}
+              onChange={handleDecimalChange}
+              required
+              inputMode="decimal"
+              error={errors.reorder_level}
+            />
+
+            <div className="md:col-span-2">
+              <TextareaItem
+                label="Description"
+                name="description"
+                icon={<FileText />}
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Enter details about the material"
+                error={errors.description}
+              />
+            </div>
+          </div>
+
+          <Buttons
+            onCancel={() => navigate("/material")}
+            text_01={isEditMode ? "Save Changes" : "Create Material"}
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 

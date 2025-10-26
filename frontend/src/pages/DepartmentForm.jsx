@@ -1,12 +1,12 @@
 import { Building2, FileText, MapPin, House, User } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   TextareaItem,
   SelectItem,
-  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
@@ -136,141 +136,120 @@ const DepartmentForm = () => {
     }));
   };
 
-  if (loading && !formData.name) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto text-star-dust-200">
-      <div className="max-w-5xl mx-auto">
-        <FormHeader
-          icon={<Building2 />}
-          heading={
-            isViewMode
-              ? "Department Details"
-              : isEditMode
-              ? "Edit Department"
-              : "Create New Department"
-          }
-          text_01={
-            isViewMode
-              ? "View department information"
-              : isEditMode
-              ? "Update department information and settings"
-              : "Add a new department to your organization"
-          }
-          text_02="Departments"
-          onClick={() => navigate("/department")}
-          fnction={() => navigate(`/department/edit/${departmentId}`)}
-          gradient="from-red-600 to-red-800"
-          isViewMode={isViewMode}
-        />
-
-        {/* Error Message */}
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
+    <Form
+      icon={<Building2 />}
+      heading={
+        isViewMode
+          ? "Department Details"
+          : isEditMode
+          ? "Edit Department"
+          : "Create New Department"
+      }
+      text_01={
+        isViewMode
+          ? "View department information"
+          : isEditMode
+          ? "Update department information and settings"
+          : "Add a new department to your organization"
+      }
+      text_02="Departments"
+      onClick={() => navigate("/department")}
+      fnction={() => navigate(`/department/edit/${departmentId}`)}
+      gradient="from-red-600 to-red-800"
+      isViewMode={isViewMode}
+      pageError={pageError}
+      loading={loading}
+    >
+      {isViewMode ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoItem
+            icon={<Building2 />}
+            label="Department Name"
+            value={department?.name}
+          />
+          <InfoItem
+            icon={<MapPin />}
+            label="Location"
+            value={department?.location}
+          />
+          <InfoItem
+            icon={<User />}
+            label="Supervisor"
+            value={department?.supervisor_name}
+          />
+          <InfoItem
+            icon={<House />}
+            label="Workshops"
+            value={department?.workshops}
+          />
+          <div className="md:col-span-2">
+            <InfoItem
+              icon={<FileText />}
+              label="Description"
+              value={department?.description}
+            />
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
-          {isViewMode ? (
-            // View Mode
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoItem
-                icon={<Building2 />}
-                label="Department Name"
-                value={department?.name}
-              />
-              <InfoItem
-                icon={<MapPin />}
-                label="Location"
-                value={department?.location}
-              />
-              <InfoItem
-                icon={<User />}
-                label="Supervisor"
-                value={department?.supervisor_name}
-              />
-              <InfoItem
-                icon={<House />}
-                label="Workshops"
-                value={department?.workshops}
-              />
-              <div className="md:col-span-2">
-                <InfoItem
-                  icon={<FileText />}
-                  label="Description"
-                  value={department?.description}
-                />
-              </div>
-            </div>
-          ) : (
-            // Edit/Create Mode
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <InputItem
-                    label="Department Name"
-                    name="name"
-                    icon={<Building2 />}
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter department name"
-                    error={errors.name}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <TextareaItem
-                    label="Description"
-                    name="description"
-                    icon={<FileText />}
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows="4"
-                    placeholder="Describe the department's purpose and responsibilities"
-                    error={errors.description}
-                  />
-                </div>
-
-                <InputItem
-                  label="Location"
-                  name="location"
-                  icon={<MapPin />}
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Building, floor, or area"
-                  error={errors.location}
-                />
-
-                <SelectItem
-                  label="Supervisor"
-                  name="supervisor"
-                  icon={<User />}
-                  value={formData.supervisor}
-                  onChange={handleChange}
-                  options={getUserOptions()}
-                  loading={usersLoading}
-                  error={errors.supervisor}
-                />
-              </div>
-
-              <Buttons
-                onCancel={() => navigate("/department")}
-                text_01={isEditMode ? "Save Changes" : "Create Department"}
-              />
-            </form>
-          )}
         </div>
-      </div>
-    </div>
+      ) : (
+        // !Edit/Create Mode
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <InputItem
+                label="Department Name"
+                name="name"
+                icon={<Building2 />}
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="Enter department name"
+                error={errors.name}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <TextareaItem
+                label="Description"
+                name="description"
+                icon={<FileText />}
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Describe the department's purpose and responsibilities"
+                error={errors.description}
+              />
+            </div>
+
+            <InputItem
+              label="Location"
+              name="location"
+              icon={<MapPin />}
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Building, floor, or area"
+              error={errors.location}
+            />
+
+            <SelectItem
+              label="Supervisor"
+              name="supervisor"
+              icon={<User />}
+              value={formData.supervisor}
+              onChange={handleChange}
+              options={getUserOptions()}
+              loading={usersLoading}
+              error={errors.supervisor}
+            />
+          </div>
+
+          <Buttons
+            onCancel={() => navigate("/department")}
+            text_01={isEditMode ? "Save Changes" : "Create Department"}
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 

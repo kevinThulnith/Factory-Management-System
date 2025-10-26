@@ -1,11 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   TextareaItem,
   SelectItem,
-  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
@@ -265,253 +265,224 @@ const MachineForm = () => {
     user && (user.role === "SUPERVISOR" || user.role === "MANAGER");
   const canEditMaintenanceAndStatus = user && user.role === "TECHNICIAN";
 
-  if (loading && !formData.name) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto text-star-dust-200">
-      <div className="max-w-6xl mx-auto">
-        <FormHeader
-          icon={<Cog />}
-          heading={
-            isViewMode
-              ? "Machine Details"
-              : isEditMode
-              ? "Edit Machine"
-              : "Create New Machine"
-          }
-          text_01={
-            isViewMode
-              ? "View machine information"
-              : isEditMode
-              ? "Update machine information and settings"
-              : "Add a new machine to your workshop"
-          }
-          text_02="Machines"
-          onClick={() => navigate("/machine")}
-          fnction={() => navigate(`/machine/edit/${machineId}`)}
-          gradient="from-yellow-600 to-yellow-800"
-          isViewMode={isViewMode}
-        />
+    <Form
+      icon={<Cog />}
+      heading={
+        isViewMode
+          ? "Machine Details"
+          : isEditMode
+          ? "Edit Machine"
+          : "Create New Machine"
+      }
+      text_01={
+        isViewMode
+          ? "View machine information"
+          : isEditMode
+          ? "Update machine information and settings"
+          : "Add a new machine to your workshop"
+      }
+      text_02="Machines"
+      onClick={() => navigate("/machine")}
+      fnction={() => navigate(`/machine/edit/${machineId}`)}
+      gradient="from-yellow-600 to-yellow-800"
+      isViewMode={isViewMode}
+      pageError={pageError}
+      loading={loading}
+    >
+      {isViewMode ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoItem icon={<Cog />} label="Machine Name" value={machine?.name} />
+          <InfoItem
+            icon={<Package />}
+            label="Model Number"
+            value={machine?.model_number}
+          />
+          <InfoItem
+            icon={<Factory />}
+            label="Workshop"
+            value={machine?.workshop_name}
+          />
+          <InfoItem
+            icon={<User />}
+            label="Current Operator"
+            value={machine?.operator_name}
+          />
 
-        {/* Error Message */}
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
+          <InfoItem
+            icon={<Calendar />}
+            label="Purchase Date"
+            value={formatDate(machine?.purchase_date)}
+          />
+          <InfoItem
+            icon={<Wrench />}
+            label="Last Maintenance"
+            value={formatDate(machine?.last_maintenance_date)}
+          />
+          <InfoItem
+            icon={<Calendar />}
+            label="Next Maintenance"
+            value={formatDate(machine?.next_maintenance_date)}
+          />
+          <div className="flex flex-col">
+            <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+              <Activity size={16} />
+              Status
+            </label>
+            {machine?.status && getStatusBadge(machine.status)}
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="bg-[#2a2a2a] rounded-xl shadow-lg p-6 sm:p-8">
-          {isViewMode ? (
-            // View Mode
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoItem
-                icon={<Cog />}
-                label="Machine Name"
-                value={machine?.name}
-              />
-              <InfoItem
-                icon={<Package />}
-                label="Model Number"
-                value={machine?.model_number}
-              />
-              <InfoItem
-                icon={<Factory />}
-                label="Workshop"
-                value={machine?.workshop_name}
-              />
-              <InfoItem
-                icon={<User />}
-                label="Current Operator"
-                value={machine?.operator_name}
-              />
-
-              <InfoItem
-                icon={<Calendar />}
-                label="Purchase Date"
-                value={formatDate(machine?.purchase_date)}
-              />
-              <InfoItem
-                icon={<Wrench />}
-                label="Last Maintenance"
-                value={formatDate(machine?.last_maintenance_date)}
-              />
-              <InfoItem
-                icon={<Calendar />}
-                label="Next Maintenance"
-                value={formatDate(machine?.next_maintenance_date)}
-              />
-              <div className="flex flex-col">
-                <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                  <Activity size={16} />
-                  Status
-                </label>
-                {machine?.status && getStatusBadge(machine.status)}
-              </div>
-              <div className="md:col-span-2">
-                <InfoItem
-                  icon={<FileText />}
-                  label="Specifications"
-                  value={machine?.specifications}
-                />
-              </div>
-            </div>
-          ) : (
-            // Edit/Create Mode
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <InputItem
-                    label="Machine Name"
-                    name="name"
-                    icon={<Cog />}
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter machine name"
-                    error={errors.name}
-                    disabled={isEditMode && !canEditAllFields}
-                  />
-                </div>
-
-                <InputItem
-                  label="Model Number"
-                  name="model_number"
-                  icon={<Package />}
-                  value={formData.model_number}
-                  onChange={handleChange}
-                  placeholder="e.g., XYZ-2000"
-                  error={errors.model_number}
-                  disabled={isEditMode && !canEditAllFields}
-                />
-
-                <SelectItem
-                  label="Workshop"
-                  name="workshop"
-                  icon={<Factory />}
-                  value={formData.workshop}
-                  onChange={handleChange}
-                  options={getWorkshopOptions()}
-                  loading={workshopsLoading}
-                  error={errors.workshop}
-                  required
-                  disabled={isEditMode && !canEditAllFields}
-                />
-
-                <SelectItem
-                  label="Operator"
-                  name="operator"
-                  icon={<User />}
-                  value={formData.operator}
-                  onChange={handleChange}
-                  options={getOperatorOptions()}
-                  loading={operatorsLoading}
-                  error={errors.operator}
-                  disabled={
-                    isEditMode && !canEditAllFields && !canEditOperatorAndStatus
-                  }
-                />
-
-                <SelectItem
-                  label="Status"
-                  name="status"
-                  icon={<Activity />}
-                  value={formData.status}
-                  onChange={handleChange}
-                  options={[
-                    { value: "OPERATIONAL", label: "Operational" },
-                    { value: "IDLE", label: "Idle" },
-                    { value: "MAINTENANCE", label: "Under Maintenance" },
-                    { value: "BROKEN", label: "Broken" },
-                  ]}
-                  error={errors.status}
-                  required
-                  disabled={
-                    isEditMode &&
-                    !canEditAllFields &&
-                    !canEditOperatorAndStatus &&
-                    !canEditMaintenanceAndStatus
-                  }
-                />
-
-                <InputItem
-                  label="Purchase Date"
-                  name="purchase_date"
-                  icon={<Calendar />}
-                  type="date"
-                  value={formData.purchase_date}
-                  onChange={handleChange}
-                  error={errors.purchase_date}
-                  disabled={isEditMode && !canEditAllFields}
-                />
-
-                <InputItem
-                  label="Last Maintenance Date"
-                  name="last_maintenance_date"
-                  icon={<Wrench />}
-                  type="date"
-                  value={formData.last_maintenance_date}
-                  onChange={handleChange}
-                  error={errors.last_maintenance_date}
-                  disabled={
-                    isEditMode &&
-                    !canEditAllFields &&
-                    !canEditMaintenanceAndStatus
-                  }
-                />
-
-                <InputItem
-                  label="Next Maintenance Date"
-                  name="next_maintenance_date"
-                  icon={<Calendar />}
-                  type="date"
-                  value={formData.next_maintenance_date}
-                  onChange={handleChange}
-                  error={errors.next_maintenance_date}
-                  disabled={
-                    isEditMode &&
-                    !canEditAllFields &&
-                    !canEditMaintenanceAndStatus
-                  }
-                />
-
-                <div className="md:col-span-2">
-                  <TextareaItem
-                    label="Specifications"
-                    name="specifications"
-                    icon={<FileText />}
-                    value={formData.specifications}
-                    onChange={handleChange}
-                    rows="4"
-                    placeholder="Enter machine specifications and technical details"
-                    error={errors.specifications}
-                    disabled={isEditMode && !canEditAllFields}
-                  />
-                </div>
-              </div>
-
-              <Buttons
-                onCancel={() => navigate("/workshop")}
-                text_01={isEditMode ? "Save Changes" : "Create Workshop"}
-                disabled={
-                  loading ||
-                  (isEditMode &&
-                    !canEditAllFields &&
-                    !canEditOperatorAndStatus &&
-                    !canEditMaintenanceAndStatus)
-                }
-              />
-            </form>
-          )}
+          <div className="md:col-span-2">
+            <InfoItem
+              icon={<FileText />}
+              label="Specifications"
+              value={machine?.specifications}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+      ) : (
+        // !Edit/Create Mode
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <InputItem
+                label="Machine Name"
+                name="name"
+                icon={<Cog />}
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="Enter machine name"
+                error={errors.name}
+                disabled={isEditMode && !canEditAllFields}
+              />
+            </div>
+
+            <InputItem
+              label="Model Number"
+              name="model_number"
+              icon={<Package />}
+              value={formData.model_number}
+              onChange={handleChange}
+              placeholder="e.g., XYZ-2000"
+              error={errors.model_number}
+              disabled={isEditMode && !canEditAllFields}
+            />
+
+            <SelectItem
+              label="Workshop"
+              name="workshop"
+              icon={<Factory />}
+              value={formData.workshop}
+              onChange={handleChange}
+              options={getWorkshopOptions()}
+              loading={workshopsLoading}
+              error={errors.workshop}
+              required
+              disabled={isEditMode && !canEditAllFields}
+            />
+
+            <SelectItem
+              label="Operator"
+              name="operator"
+              icon={<User />}
+              value={formData.operator}
+              onChange={handleChange}
+              options={getOperatorOptions()}
+              loading={operatorsLoading}
+              error={errors.operator}
+              disabled={
+                isEditMode && !canEditAllFields && !canEditOperatorAndStatus
+              }
+            />
+
+            <SelectItem
+              label="Status"
+              name="status"
+              icon={<Activity />}
+              value={formData.status}
+              onChange={handleChange}
+              options={[
+                { value: "OPERATIONAL", label: "Operational" },
+                { value: "IDLE", label: "Idle" },
+                { value: "MAINTENANCE", label: "Under Maintenance" },
+                { value: "BROKEN", label: "Broken" },
+              ]}
+              error={errors.status}
+              required
+              disabled={
+                isEditMode &&
+                !canEditAllFields &&
+                !canEditOperatorAndStatus &&
+                !canEditMaintenanceAndStatus
+              }
+            />
+
+            <InputItem
+              label="Purchase Date"
+              name="purchase_date"
+              icon={<Calendar />}
+              type="date"
+              value={formData.purchase_date}
+              onChange={handleChange}
+              error={errors.purchase_date}
+              disabled={isEditMode && !canEditAllFields}
+            />
+
+            <InputItem
+              label="Last Maintenance Date"
+              name="last_maintenance_date"
+              icon={<Wrench />}
+              type="date"
+              value={formData.last_maintenance_date}
+              onChange={handleChange}
+              error={errors.last_maintenance_date}
+              disabled={
+                isEditMode && !canEditAllFields && !canEditMaintenanceAndStatus
+              }
+            />
+
+            <InputItem
+              label="Next Maintenance Date"
+              name="next_maintenance_date"
+              icon={<Calendar />}
+              type="date"
+              value={formData.next_maintenance_date}
+              onChange={handleChange}
+              error={errors.next_maintenance_date}
+              disabled={
+                isEditMode && !canEditAllFields && !canEditMaintenanceAndStatus
+              }
+            />
+
+            <div className="md:col-span-2">
+              <TextareaItem
+                label="Specifications"
+                name="specifications"
+                icon={<FileText />}
+                value={formData.specifications}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Enter machine specifications and technical details"
+                error={errors.specifications}
+                disabled={isEditMode && !canEditAllFields}
+              />
+            </div>
+          </div>
+
+          <Buttons
+            onCancel={() => navigate("/workshop")}
+            text_01={isEditMode ? "Save Changes" : "Create Workshop"}
+            disabled={
+              loading ||
+              (isEditMode &&
+                !canEditAllFields &&
+                !canEditOperatorAndStatus &&
+                !canEditMaintenanceAndStatus)
+            }
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 

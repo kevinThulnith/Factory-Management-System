@@ -1,10 +1,10 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   TextareaItem,
-  FormHeader,
   SelectItem,
   InputItem,
   InfoItem,
@@ -234,178 +234,157 @@ const WorkshopForm = () => {
   const canEditLimitedFields = user && user.role === "SUPERVISOR";
   const canEditOperationalStatus = user && user.role === "MANAGER";
 
-  if (loading && !formData.name) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto text-star-dust-200">
-      <div className="max-w-5xl mx-auto">
-        <FormHeader
-          icon={<Factory />}
-          heading={
-            isViewMode
-              ? "Workshop Details"
-              : isEditMode
-              ? "Edit Workshop"
-              : "Create New Workshop"
-          }
-          text_01={
-            isViewMode
-              ? "View workshop information"
-              : isEditMode
-              ? "Update workshop information and settings"
-              : "Add a new workshop to your organization"
-          }
-          text_02="Workshops"
-          onClick={() => navigate("/workshop")}
-          fnction={() => navigate(`/workshop/edit/${workshopId}`)}
-          gradient="from-orange-600 to-orange-800"
-          isViewMode={isViewMode}
-        />
-
-        {/* Error Message */}
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
+    <Form
+      icon={<Factory />}
+      heading={
+        isViewMode
+          ? "Workshop Details"
+          : isEditMode
+          ? "Edit Workshop"
+          : "Create New Workshop"
+      }
+      text_01={
+        isViewMode
+          ? "View workshop information"
+          : isEditMode
+          ? "Update workshop information and settings"
+          : "Add a new workshop to your organization"
+      }
+      text_02="Workshops"
+      onClick={() => navigate("/workshop")}
+      fnction={() => navigate(`/workshop/edit/${workshopId}`)}
+      gradient="from-orange-600 to-orange-800"
+      isViewMode={isViewMode}
+      pageError={pageError}
+      loading={loading}
+    >
+      {isViewMode ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoItem
+            icon={<Factory />}
+            label="Workshop Name"
+            value={workshop?.name}
+          />
+          <InfoItem
+            icon={<Building2 />}
+            label="Department"
+            value={workshop?.department_name}
+          />
+          <InfoItem
+            icon={<User />}
+            label="Manager"
+            value={workshop?.manager_name}
+          />
+          <div className="flex flex-col">
+            <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+              <Activity size={16} />
+              Operational Status
+            </label>
+            {workshop?.operational_status &&
+              getStatusBadge(workshop.operational_status)}
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="bg-[#2a2a2a] rounded-xl shadow-md p-6 sm:p-8">
-          {isViewMode ? (
-            // View Mode
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InfoItem
-                icon={<Factory />}
-                label="Workshop Name"
-                value={workshop?.name}
-              />
-              <InfoItem
-                icon={<Building2 />}
-                label="Department"
-                value={workshop?.department_name}
-              />
-              <InfoItem
-                icon={<User />}
-                label="Manager"
-                value={workshop?.manager_name}
-              />
-              <div className="flex flex-col">
-                <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                  <Activity size={16} />
-                  Operational Status
-                </label>
-                {workshop?.operational_status &&
-                  getStatusBadge(workshop.operational_status)}
-              </div>
-              <div className="md:col-span-2">
-                <InfoItem
-                  icon={<FileText />}
-                  label="Description"
-                  value={workshop?.description}
-                />
-              </div>
-            </div>
-          ) : (
-            // Edit/Create Mode
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputItem
-                  label="Workshop Name"
-                  name="name"
-                  icon={<Factory />}
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter workshop name"
-                  error={errors.name}
-                  disabled={isEditMode && !canEditAllFields}
-                />
-
-                <SelectItem
-                  label="Department"
-                  name="department"
-                  icon={<Building2 />}
-                  value={formData.department}
-                  onChange={handleChange}
-                  options={getDepartmentOptions()}
-                  loading={departmentsLoading}
-                  error={errors.department}
-                  required
-                  disabled={isEditMode && !canEditAllFields}
-                />
-
-                <SelectItem
-                  label="Manager"
-                  name="manager"
-                  icon={<User />}
-                  value={formData.manager}
-                  onChange={handleChange}
-                  options={getManagerOptions()}
-                  loading={managersLoading}
-                  error={errors.manager}
-                  disabled={
-                    isEditMode && !canEditAllFields && !canEditLimitedFields
-                  }
-                />
-
-                <SelectItem
-                  label="Operational Status"
-                  name="operational_status"
-                  icon={<Activity />}
-                  value={formData.operational_status}
-                  onChange={handleChange}
-                  options={[
-                    { value: "ACTIVE", label: "Active" },
-                    { value: "MAINTENANCE", label: "Under Maintenance" },
-                    { value: "INACTIVE", label: "Inactive" },
-                  ]}
-                  error={errors.operational_status}
-                  required
-                  disabled={
-                    isEditMode &&
-                    !canEditAllFields &&
-                    !canEditLimitedFields &&
-                    !canEditOperationalStatus
-                  }
-                />
-
-                <div className="md:col-span-2">
-                  <TextareaItem
-                    label="Description"
-                    name="description"
-                    icon={<FileText />}
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows="4"
-                    placeholder="Describe the workshop's purpose and capabilities"
-                    error={errors.description}
-                    disabled={isEditMode && !canEditAllFields}
-                  />
-                </div>
-              </div>
-
-              <Buttons
-                onCancel={() => navigate("/workshop")}
-                text_01={isEditMode ? "Save Changes" : "Create Workshop"}
-                disabled={
-                  loading ||
-                  (isEditMode &&
-                    !canEditAllFields &&
-                    !canEditLimitedFields &&
-                    !canEditOperationalStatus)
-                }
-              />
-            </form>
-          )}
+          <div className="md:col-span-2">
+            <InfoItem
+              icon={<FileText />}
+              label="Description"
+              value={workshop?.description}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+      ) : (
+        // !Edit/Create Mode
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputItem
+              label="Workshop Name"
+              name="name"
+              icon={<Factory />}
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Enter workshop name"
+              error={errors.name}
+              disabled={isEditMode && !canEditAllFields}
+            />
+
+            <SelectItem
+              label="Department"
+              name="department"
+              icon={<Building2 />}
+              value={formData.department}
+              onChange={handleChange}
+              options={getDepartmentOptions()}
+              loading={departmentsLoading}
+              error={errors.department}
+              required
+              disabled={isEditMode && !canEditAllFields}
+            />
+
+            <SelectItem
+              label="Manager"
+              name="manager"
+              icon={<User />}
+              value={formData.manager}
+              onChange={handleChange}
+              options={getManagerOptions()}
+              loading={managersLoading}
+              error={errors.manager}
+              disabled={
+                isEditMode && !canEditAllFields && !canEditLimitedFields
+              }
+            />
+
+            <SelectItem
+              label="Operational Status"
+              name="operational_status"
+              icon={<Activity />}
+              value={formData.operational_status}
+              onChange={handleChange}
+              options={[
+                { value: "ACTIVE", label: "Active" },
+                { value: "MAINTENANCE", label: "Under Maintenance" },
+                { value: "INACTIVE", label: "Inactive" },
+              ]}
+              error={errors.operational_status}
+              required
+              disabled={
+                isEditMode &&
+                !canEditAllFields &&
+                !canEditLimitedFields &&
+                !canEditOperationalStatus
+              }
+            />
+
+            <div className="md:col-span-2">
+              <TextareaItem
+                label="Description"
+                name="description"
+                icon={<FileText />}
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Describe the workshop's purpose and capabilities"
+                error={errors.description}
+                disabled={isEditMode && !canEditAllFields}
+              />
+            </div>
+          </div>
+
+          <Buttons
+            onCancel={() => navigate("/workshop")}
+            text_01={isEditMode ? "Save Changes" : "Create Workshop"}
+            disabled={
+              loading ||
+              (isEditMode &&
+                !canEditAllFields &&
+                !canEditLimitedFields &&
+                !canEditOperationalStatus)
+            }
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 

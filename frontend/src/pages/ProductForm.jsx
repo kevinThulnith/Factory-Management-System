@@ -1,11 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   TextareaItem,
   SelectItem,
-  FormHeader,
   InputItem,
   InfoItem,
   Buttons,
@@ -185,7 +185,6 @@ const ProductForm = () => {
     }
   };
 
-  const handleEdit = () => navigate(`/product/edit/${productId}`);
   const canManage = user && user.role === "ADMIN";
 
   const getStatusBadge = (status) => {
@@ -214,242 +213,224 @@ const ProductForm = () => {
     );
   };
 
-  if (loading && !product && isEditMode)
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading...</div>
-      </div>
-    );
-
   return (
-    <div className="container mx-auto text-star-dust-200 mb-10">
-      <div className="max-w-4xl mx-auto">
-        <FormHeader
-          icon={<Package />}
-          heading={
-            isViewMode
-              ? "Product Details"
-              : isEditMode
-              ? "Edit Product"
-              : "Add New Product"
-          }
-          text_01={
-            isViewMode ? "View product information" : "Manage product details"
-          }
-          text_02="Products"
-          onClick={() => navigate("/product")}
-          fnction={() => navigate(`/product/edit/${productId}`)}
-          gradient="from-amber-600 to-amber-800"
-          isViewMode={isViewMode && canManage}
-        />
-
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
-          </div>
-        )}
-
-        <div className="bg-card-main rounded-md shadow-md p-6 sm:p-8">
-          {isViewMode ? (
-            <div className="space-y-8">
-              {/* View Mode: Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <InfoItem
-                  icon={<Package />}
-                  label="Product Name"
-                  value={product?.name}
-                />
-                <InfoItem
-                  icon={<Tag />}
-                  label="Product Code"
-                  value={product?.code}
-                />
-                <div className="flex flex-col">
-                  <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                    <Activity size={16} /> Status
-                  </label>
-                  {product?.status && getStatusBadge(product.status)}
-                </div>
-                <InfoItem
-                  icon={<ClipboardList />}
-                  label="Unit of Measurement"
-                  value={product?.unit_of_measurement}
-                />
-              </div>
-              <InfoItem
-                icon={<FileText />}
-                label="Specifications (JSON)"
-                value={
-                  <pre className="text-sm bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap">
-                    {formData.specifications}
-                  </pre>
-                }
-              />
-              <div>
-                <h3 className="text-lg font-medium text-stone-300 mb-3 border-b border-stone-700 pb-2">
-                  Manufacturing Steps
-                </h3>
-                <div className="space-y-2 mt-4">
-                  {formData.selected_processes.map((p) => (
-                    <div
-                      key={p.id}
-                      className="p-3 bg-stone-900/50 rounded-md flex items-center"
-                    >
-                      <span className="font-semibold text-orange-400 w-8">
-                        {p.sequence}.
-                      </span>
-                      <span className="text-stone-300">{p.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+    <Form
+      icon={<Package />}
+      heading={
+        isViewMode
+          ? "Product Details"
+          : isEditMode
+          ? "Edit Product"
+          : "Add New Product"
+      }
+      text_01={
+        isViewMode ? "View product information" : "Manage product details"
+      }
+      text_02="Products"
+      onClick={() => navigate("/product")}
+      fnction={() => navigate(`/product/edit/${productId}`)}
+      gradient="from-amber-600 to-amber-800"
+      isViewMode={isViewMode && canManage}
+      pageError={pageError}
+      loading={loading}
+    >
+      {" "}
+      {isViewMode ? (
+        <div className="space-y-8">
+          {/* View Mode: Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <InfoItem
+              icon={<Package />}
+              label="Product Name"
+              value={product?.name}
+            />
+            <InfoItem
+              icon={<Tag />}
+              label="Product Code"
+              value={product?.code}
+            />
+            <div className="flex flex-col">
+              <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+                <Activity size={16} /> Status
+              </label>
+              {product?.status && getStatusBadge(product.status)}
             </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              {/* Form: Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputItem
-                  label="Product Name"
-                  name="name"
-                  icon={<Package />}
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-                <InputItem
-                  label="Product Code"
-                  name="code"
-                  icon={<Tag />}
-                  value={formData.code}
-                  onChange={handleChange}
-                  required
-                />
-                <SelectItem
-                  label="Status"
-                  name="status"
-                  icon={<Activity />}
-                  value={formData.status}
-                  onChange={handleChange}
-                  options={[
-                    { value: "ACTIVE", label: "Active" },
-                    { value: "INACTIVE", label: "Inactive" },
-                    { value: "DISCONTINUED", label: "Discontinued" },
-                  ]}
-                  required
-                />
-                <InputItem
-                  label="Unit of Measurement"
-                  name="unit_of_measurement"
-                  icon={<ClipboardList />}
-                  value={formData.unit_of_measurement}
-                  onChange={handleChange}
-                />
-              </div>
-              {/* Form: Specs */}
-              <div className="mt-6">
-                <TextareaItem
-                  label="Specifications (JSON format)"
-                  name="specifications"
-                  icon={<FileText />}
-                  value={formData.specifications}
-                  onChange={handleChange}
-                  rows="6"
-                  error={errors.specifications}
-                />
-              </div>
-              {/* Form: Manufacturing Steps */}
-              <div className="mt-8 pt-6 border-t border-stone-700">
-                <h3 className="text-lg font-medium text-stone-300 mb-4">
-                  Manufacturing Steps
-                </h3>
-                <div className="flex items-end gap-3 mb-4">
-                  <div className="flex-grow">
-                    <label className="block text-sm font-medium text-stone-400 mb-1">
-                      Add Process
-                    </label>
-                    <select
-                      value={processToAdd}
-                      onChange={(e) => setProcessToAdd(e.target.value)}
-                      className="w-full px-4 text-slate-200 border-stone-600 border outline-none rounded-lg bg-card-sub h-10"
-                    >
-                      <option value="">Select a process...</option>
-                      {allProcesses
-                        .filter(
-                          (p) =>
-                            !formData.selected_processes.find(
-                              (sp) => sp.id === p.id
-                            )
-                        )
-                        .map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddProcess}
-                    disabled={!processToAdd}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 h-10"
-                  >
-                    <ListPlus size={18} /> Add
-                  </button>
+            <InfoItem
+              icon={<ClipboardList />}
+              label="Unit of Measurement"
+              value={product?.unit_of_measurement}
+            />
+          </div>
+          <InfoItem
+            icon={<FileText />}
+            label="Specifications (JSON)"
+            value={
+              <pre className="text-sm bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap">
+                {formData.specifications}
+              </pre>
+            }
+          />
+          <div>
+            <h3 className="text-lg font-medium text-stone-300 mb-3 border-b border-stone-700 pb-2">
+              Manufacturing Steps
+            </h3>
+            <div className="space-y-2 mt-4">
+              {formData.selected_processes.map((p) => (
+                <div
+                  key={p.id}
+                  className="p-3 bg-stone-900/50 rounded-md flex items-center"
+                >
+                  <span className="font-semibold text-orange-400 w-8">
+                    {p.sequence}.
+                  </span>
+                  <span className="text-stone-300">{p.name}</span>
                 </div>
-                <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
-                  {formData.selected_processes.map((p, i) => (
-                    <div
-                      key={p.id}
-                      className="p-2.5 bg-stone-900/50 border border-stone-700 rounded-md flex items-center justify-between"
-                    >
-                      <div className="flex items-center">
-                        <span className="font-semibold text-orange-400 w-8">
-                          {p.sequence}.
-                        </span>
-                        <span>{p.name}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <button
-                          type="button"
-                          onClick={() => moveProcess(p.id, "up")}
-                          disabled={i === 0}
-                          className="p-1.5 text-stone-400 hover:text-white disabled:opacity-40 rounded-full hover:bg-stone-700"
-                        >
-                          <ArrowUp size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveProcess(p.id, "down")}
-                          disabled={
-                            i === formData.selected_processes.length - 1
-                          }
-                          className="p-1.5 text-stone-400 hover:text-white disabled:opacity-40 rounded-full hover:bg-stone-700"
-                        >
-                          <ArrowDown size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveProcess(p.id)}
-                          className="p-1.5 text-red-500 hover:text-red-400 rounded-full hover:bg-red-500/20"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Buttons
-                onCancel={() => navigate("/product")}
-                disabled={loading}
-                text_01={isEditMode ? "Save Changes" : "Create Product"}
-              />
-            </form>
-          )}
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          {/* Form: Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputItem
+              label="Product Name"
+              name="name"
+              icon={<Package />}
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+            <InputItem
+              label="Product Code"
+              name="code"
+              icon={<Tag />}
+              value={formData.code}
+              onChange={handleChange}
+              required
+            />
+            <SelectItem
+              label="Status"
+              name="status"
+              icon={<Activity />}
+              value={formData.status}
+              onChange={handleChange}
+              options={[
+                { value: "ACTIVE", label: "Active" },
+                { value: "INACTIVE", label: "Inactive" },
+                { value: "DISCONTINUED", label: "Discontinued" },
+              ]}
+              required
+            />
+            <InputItem
+              label="Unit of Measurement"
+              name="unit_of_measurement"
+              icon={<ClipboardList />}
+              value={formData.unit_of_measurement}
+              onChange={handleChange}
+            />
+          </div>
+          {/* Form: Specs */}
+          <div className="mt-6">
+            <TextareaItem
+              label="Specifications (JSON format)"
+              name="specifications"
+              icon={<FileText />}
+              value={formData.specifications}
+              onChange={handleChange}
+              rows="6"
+              error={errors.specifications}
+            />
+          </div>
+          {/* Form: Manufacturing Steps */}
+          <div className="mt-8 pt-6 border-t border-stone-700">
+            <h3 className="text-lg font-medium text-stone-300 mb-4">
+              Manufacturing Steps
+            </h3>
+            <div className="flex items-end gap-3 mb-4">
+              <div className="flex-grow">
+                <label className="block text-sm font-medium text-stone-400 mb-1">
+                  Add Process
+                </label>
+                <select
+                  value={processToAdd}
+                  onChange={(e) => setProcessToAdd(e.target.value)}
+                  className="w-full px-4 text-slate-200 border-stone-600 border outline-none rounded-lg bg-card-sub h-10"
+                >
+                  <option value="">Select a process...</option>
+                  {allProcesses
+                    .filter(
+                      (p) =>
+                        !formData.selected_processes.find(
+                          (sp) => sp.id === p.id
+                        )
+                    )
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddProcess}
+                disabled={!processToAdd}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 h-10"
+              >
+                <ListPlus size={18} /> Add
+              </button>
+            </div>
+            <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
+              {formData.selected_processes.map((p, i) => (
+                <div
+                  key={p.id}
+                  className="p-2.5 bg-stone-900/50 border border-stone-700 rounded-md flex items-center justify-between"
+                >
+                  <div className="flex items-center">
+                    <span className="font-semibold text-orange-400 w-8">
+                      {p.sequence}.
+                    </span>
+                    <span>{p.name}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => moveProcess(p.id, "up")}
+                      disabled={i === 0}
+                      className="p-1.5 text-stone-400 hover:text-white disabled:opacity-40 rounded-full hover:bg-stone-700"
+                    >
+                      <ArrowUp size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveProcess(p.id, "down")}
+                      disabled={i === formData.selected_processes.length - 1}
+                      className="p-1.5 text-stone-400 hover:text-white disabled:opacity-40 rounded-full hover:bg-stone-700"
+                    >
+                      <ArrowDown size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveProcess(p.id)}
+                      className="p-1.5 text-red-500 hover:text-red-400 rounded-full hover:bg-red-500/20"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Buttons
+            onCancel={() => navigate("/product")}
+            disabled={loading}
+            text_01={isEditMode ? "Save Changes" : "Create Product"}
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 

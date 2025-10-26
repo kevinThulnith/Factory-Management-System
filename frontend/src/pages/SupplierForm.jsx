@@ -1,13 +1,13 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { MapPin, Truck, Phone, Mail } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import Form from "../components/Form";
 import api from "../api";
 
 import {
   Buttons,
   InfoItem,
   InputItem,
-  FormHeader,
   TextareaItem,
 } from "../components/components";
 
@@ -118,124 +118,100 @@ const SupplierForm = () => {
 
   const canManage = user && user.role === "ADMIN";
 
-  if (loading && !supplier) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading Supplier...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto text-star-dust-200 mb-10">
-      <div className="max-w-4xl mx-auto">
-        <FormHeader
-          icon={<Truck />}
-          heading={
-            isViewMode
-              ? "Supplier Details"
-              : isEditMode
-              ? "Edit Supplier"
-              : "Add New Supplier"
-          }
-          text_01={
-            isViewMode ? "View supplier information" : "Manage supplier details"
-          }
-          text_02="Suppliers"
-          onClick={() => navigate("/supplier")}
-          fnction={() => navigate(`/supplier/edit/${supplierId}`)}
-          gradient="from-lime-600 to-lime-800"
-          isViewMode={isViewMode && canManage}
-        />
-
-        {/* Error Message */}
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
+    <Form
+      icon={<Truck />}
+      heading={
+        isViewMode
+          ? "Supplier Details"
+          : isEditMode
+          ? "Edit Supplier"
+          : "Add New Supplier"
+      }
+      text_01={
+        isViewMode ? "View supplier information" : "Manage supplier details"
+      }
+      text_02="Suppliers"
+      onClick={() => navigate("/supplier")}
+      fnction={() => navigate(`/supplier/edit/${supplierId}`)}
+      gradient="from-lime-600 to-lime-800"
+      isViewMode={isViewMode && canManage}
+      pageError={pageError}
+      loading={loading}
+    >
+      {isViewMode ? (
+        // View Mode
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          <InfoItem
+            icon={<Truck />}
+            label="Supplier Name"
+            value={supplier?.name}
+          />
+          <InfoItem icon={<Mail />} label="Email" value={supplier?.email} />
+          <InfoItem icon={<Phone />} label="Phone" value={supplier?.phone} />
+          <div className="md:col-span-2">
+            <InfoItem
+              icon={<MapPin />}
+              label="Address"
+              value={supplier?.address}
+            />
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="bg-card-main rounded-xl shadow-md p-6 sm:p-8">
-          {isViewMode ? (
-            // View Mode
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <InfoItem
-                icon={<Truck />}
-                label="Supplier Name"
-                value={supplier?.name}
-              />
-              <InfoItem icon={<Mail />} label="Email" value={supplier?.email} />
-              <InfoItem
-                icon={<Phone />}
-                label="Phone"
-                value={supplier?.phone}
-              />
-              <div className="md:col-span-2">
-                <InfoItem
-                  icon={<MapPin />}
-                  label="Address"
-                  value={supplier?.address}
-                />
-              </div>
-            </div>
-          ) : (
-            // Edit/Create Mode
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputItem
-                  label="Supplier Name"
-                  name="name"
-                  icon={<Truck />}
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., Global Parts Inc."
-                  error={errors.name}
-                />
-                <InputItem
-                  label="Email"
-                  name="email"
-                  icon={<Mail />}
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="e.g., contact@globalparts.com"
-                  error={errors.email}
-                />
-                <InputItem
-                  label="Phone"
-                  name="phone"
-                  icon={<Phone />}
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="e.g., 1234567890"
-                  error={errors.phone}
-                />
-                <div className="md:col-span-2">
-                  <TextareaItem
-                    label="Address"
-                    name="address"
-                    icon={<MapPin />}
-                    value={formData.address}
-                    onChange={handleChange}
-                    rows="3"
-                    placeholder="Enter full address"
-                    error={errors.address}
-                  />
-                </div>
-              </div>
-
-              <Buttons
-                onCancel={() => navigate("/supplier")}
-                text_01={isEditMode ? "Save Changes" : "Create Supplier"}
-                disabled={loading || !canManage}
-              />
-            </form>
-          )}
         </div>
-      </div>
-    </div>
+      ) : (
+        // Edit/Create Mode
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputItem
+              label="Supplier Name"
+              name="name"
+              icon={<Truck />}
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="e.g., Global Parts Inc."
+              error={errors.name}
+            />
+            <InputItem
+              label="Email"
+              name="email"
+              icon={<Mail />}
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="e.g., contact@globalparts.com"
+              error={errors.email}
+            />
+            <InputItem
+              label="Phone"
+              name="phone"
+              icon={<Phone />}
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="e.g., 1234567890"
+              error={errors.phone}
+            />
+            <div className="md:col-span-2">
+              <TextareaItem
+                label="Address"
+                name="address"
+                icon={<MapPin />}
+                value={formData.address}
+                onChange={handleChange}
+                rows="3"
+                placeholder="Enter full address"
+                error={errors.address}
+              />
+            </div>
+          </div>
+
+          <Buttons
+            onCancel={() => navigate("/supplier")}
+            text_01={isEditMode ? "Save Changes" : "Create Supplier"}
+            disabled={loading || !canManage}
+          />
+        </form>
+      )}
+    </Form>
   );
 };
 
