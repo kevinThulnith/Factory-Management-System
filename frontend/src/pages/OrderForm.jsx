@@ -1,13 +1,8 @@
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { SelectItem, InputItem, InfoItem } from "../components/components";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import Form from "../components/Form.jsx";
 import api from "../api";
-
-import {
-  SelectItem,
-  FormHeader,
-  InputItem,
-  InfoItem,
-} from "../components/components";
 
 import {
   ShoppingCart,
@@ -133,7 +128,6 @@ const OrderForm = () => {
 
   const isViewMode = location.pathname.includes("/view/");
   const isCreateMode = location.pathname.includes("/add");
-  const isEditMode = !isCreateMode && !isViewMode;
 
   const [order, setOrder] = useState(null);
   const [lineItems, setLineItems] = useState([]);
@@ -281,236 +275,212 @@ const OrderForm = () => {
     return { total: total.toFixed(2), itemCount: lineItems.length };
   }, [lineItems]);
 
-  if (loading.page)
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#1a1a1a]">
-        <div className="text-stone-400">Loading...</div>
-      </div>
-    );
-
   return (
-    <div className="container mx-auto text-star-dust-200">
-      <div className="max-w-6xl mx-auto">
-        <FormHeader
-          icon={<ShoppingCart />}
-          heading={
-            isViewMode
-              ? `Order #${orderId} Details`
-              : isCreateMode
-              ? "Create New Order"
-              : `Edit Order #${orderId}`
+    <Form
+      icon={<ShoppingCart />}
+      heading={
+        isViewMode
+          ? `Order #${orderId} Details`
+          : isCreateMode
+          ? "Create New Order"
+          : `Edit Order #${orderId}`
+      }
+      text_01={
+        isViewMode
+          ? "View order information and items"
+          : isCreateMode
+          ? "Fill in order details to create a new order"
+          : "Update order information and items"
+      }
+      text_02="Orders"
+      onClick={() => navigate("/order")}
+      fnction={() => navigate(`/order/edit/${orderId}`)}
+      gradient="from-violet-600 to-violet-800"
+      pageError={pageError}
+      isViewMode={isViewMode && canManage}
+      loading={loading.action}
+    >
+      <form
+        onSubmit={handleHeaderSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pb-6 mb-6 border-b border-stone-700"
+      >
+        <InfoItem
+          icon={<CalendarDays />}
+          label="Order Date"
+          value={
+            order?.order_date
+              ? new Date(order.order_date + "T00:00:00Z").toLocaleDateString()
+              : "Pending"
           }
-          text_01={
-            isViewMode
-              ? "View order information and items"
-              : isCreateMode
-              ? "Fill in order details to create a new order"
-              : "Update order information and items"
+        />
+        {!isCreateMode && (
+          <InfoItem
+            icon={<UserCircle />}
+            label="Created By"
+            value={order?.created_by_username || user?.username || "Pending"}
+          />
+        )}
+        <SelectItem
+          label="Supplier"
+          name="supplier"
+          icon={<Building />}
+          value={formData.supplier}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, supplier: e.target.value }))
           }
-          text_02="Orders"
-          onClick={() => navigate("/order")}
-          fnction={() => navigate(`/order/edit/${orderId}`)}
-          gradient="from-violet-600 to-violet-800"
-          isViewMode={isViewMode && canManage}
+          options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+          required
+          disabled={!isCreateMode}
         />
 
-        {pageError && (
-          <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
-            {pageError}
+        {isCreateMode && canManage && (
+          <div className="md:col-span-3 flex justify-end">
+            <button
+              type="submit"
+              disabled={loading.action}
+              className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+            >
+              <Save size={18} /> Create Order to Add Items
+            </button>
           </div>
         )}
+      </form>
 
-        {/* Main Content */}
-        <div className="bg-card-main rounded-xl shadow-md p-6 sm:p-8">
-          {/* Order Header Form/Info */}
-          <form
-            onSubmit={handleHeaderSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pb-6 mb-6 border-b border-stone-700"
-          >
+      {!isCreateMode && (
+        <>
+          {/* Order Status & Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             <InfoItem
-              icon={<CalendarDays />}
-              label="Order Date"
-              value={
-                order?.order_date
-                  ? new Date(
-                      order.order_date + "T00:00:00Z"
-                    ).toLocaleDateString()
-                  : "Pending"
-              }
+              icon={<DollarSign />}
+              label="Order Total"
+              value={`$${orderSummary.total}`}
             />
-            {!isCreateMode && (
-              <InfoItem
-                icon={<UserCircle />}
-                label="Created By"
-                value={
-                  order?.created_by_username || user?.username || "Pending"
-                }
+            <InfoItem
+              icon={<Hash />}
+              label="Item Count"
+              value={`${orderSummary.itemCount} items`}
+            />
+            <InfoItem
+              icon={<CheckCircle />}
+              label="Status"
+              value={order?.status}
+            />
+          </div>
+
+          {/* Order Actions */}
+          {isViewMode && canManage && (
+            <div className="mt-6 pt-6 border-t border-stone-700 flex flex-wrap gap-3 items-center">
+              <span className="text-sm text-stone-400 mr-2">
+                Quick Actions:
+              </span>
+              {order?.status === "DRAFT" && lineItems.length > 0 && (
+                <button
+                  onClick={() => handleOrderStatusUpdate("ORDERED")}
+                  disabled={loading.action}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+                >
+                  <Send size={16} /> Mark as Ordered
+                </button>
+              )}
+              {order?.status === "ORDERED" && (
+                <button
+                  onClick={() => handleOrderStatusUpdate("RECEIVED")}
+                  disabled={loading.action}
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+                >
+                  <CheckCircle size={16} /> Mark as Received
+                </button>
+              )}
+              {(order?.status === "DRAFT" || order?.status === "ORDERED") && (
+                <button
+                  onClick={() => handleOrderStatusUpdate("CANCELLED")}
+                  disabled={loading.action}
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+                >
+                  <XOctagon size={16} /> Cancel Order
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Line Items Section */}
+          <div className="mt-8 pt-6 border-t border-stone-700">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-stone-200 flex items-center gap-3">
+                <ListOrdered /> Order Items
+              </h3>
+              {isEditable && !showAddItemForm && !editingItem && (
+                <button
+                  onClick={() => setShowAddItemForm(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+                >
+                  <PlusCircle size={18} /> Add Item
+                </button>
+              )}
+            </div>
+
+            {isEditable && (showAddItemForm || editingItem) && (
+              <LineItemForm
+                itemToEdit={editingItem}
+                materials={materials}
+                onSave={handleSaveLineItem}
+                onCancel={() => {
+                  setShowAddItemForm(false);
+                  setEditingItem(null);
+                }}
+                loading={loading.action}
               />
             )}
-            <SelectItem
-              label="Supplier"
-              name="supplier"
-              icon={<Building />}
-              value={formData.supplier}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, supplier: e.target.value }))
-              }
-              options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
-              required
-              disabled={!isCreateMode}
-            />
 
-            {isCreateMode && canManage && (
-              <div className="md:col-span-3 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={loading.action}
-                  className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                >
-                  <Save size={18} /> Create Order to Add Items
-                </button>
-              </div>
-            )}
-          </form>
-
-          {!isCreateMode && (
-            <>
-              {/* Order Status & Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                <InfoItem
-                  icon={<DollarSign />}
-                  label="Order Total"
-                  value={`$${orderSummary.total}`}
-                />
-                <InfoItem
-                  icon={<Hash />}
-                  label="Item Count"
-                  value={`${orderSummary.itemCount} items`}
-                />
-                <InfoItem
-                  icon={<CheckCircle />}
-                  label="Status"
-                  value={order?.status}
-                />
-              </div>
-
-              {/* Order Actions */}
-              {isViewMode && canManage && (
-                <div className="mt-6 pt-6 border-t border-stone-700 flex flex-wrap gap-3 items-center">
-                  <span className="text-sm text-stone-400 mr-2">
-                    Quick Actions:
-                  </span>
-                  {order?.status === "DRAFT" && lineItems.length > 0 && (
-                    <button
-                      onClick={() => handleOrderStatusUpdate("ORDERED")}
-                      disabled={loading.action}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                    >
-                      <Send size={16} /> Mark as Ordered
-                    </button>
-                  )}
-                  {order?.status === "ORDERED" && (
-                    <button
-                      onClick={() => handleOrderStatusUpdate("RECEIVED")}
-                      disabled={loading.action}
-                      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                    >
-                      <CheckCircle size={16} /> Mark as Received
-                    </button>
-                  )}
-                  {(order?.status === "DRAFT" ||
-                    order?.status === "ORDERED") && (
-                    <button
-                      onClick={() => handleOrderStatusUpdate("CANCELLED")}
-                      disabled={loading.action}
-                      className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                    >
-                      <XOctagon size={16} /> Cancel Order
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Line Items Section */}
-              <div className="mt-8 pt-6 border-t border-stone-700">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-stone-200 flex items-center gap-3">
-                    <ListOrdered /> Order Items
-                  </h3>
-                  {isEditable && !showAddItemForm && !editingItem && (
-                    <button
-                      onClick={() => setShowAddItemForm(true)}
-                      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                    >
-                      <PlusCircle size={18} /> Add Item
-                    </button>
-                  )}
-                </div>
-
-                {isEditable && (showAddItemForm || editingItem) && (
-                  <LineItemForm
-                    itemToEdit={editingItem}
-                    materials={materials}
-                    onSave={handleSaveLineItem}
-                    onCancel={() => {
-                      setShowAddItemForm(false);
-                      setEditingItem(null);
-                    }}
-                    loading={loading.action}
-                  />
-                )}
-
-                {lineItems.length > 0 ? (
-                  <div className="space-y-2">
-                    {lineItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-3 bg-stone-900/50 rounded-md flex flex-col md:flex-row justify-between md:items-center gap-2"
-                      >
-                        <div>
-                          <p className="font-semibold text-stone-300">
-                            {item.material_name}
-                          </p>
-                          <p className="text-sm text-stone-400">
-                            {item.quantity} x $
-                            {parseFloat(item.unit_price).toFixed(2)}
-                          </p>
+            {lineItems.length > 0 ? (
+              <div className="space-y-2">
+                {lineItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-stone-900/50 rounded-md flex flex-col md:flex-row justify-between md:items-center gap-2"
+                  >
+                    <div>
+                      <p className="font-semibold text-stone-300">
+                        {item.material_name}
+                      </p>
+                      <p className="text-sm text-stone-400">
+                        {item.quantity} x $
+                        {parseFloat(item.unit_price).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <p className="font-semibold text-orange-400">
+                        ${parseFloat(item.total_price).toFixed(2)}
+                      </p>
+                      {isEditable && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditingItem(item)}
+                            className="p-2 text-indigo-400 hover:bg-indigo-500/20 rounded-lg"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteLineItem(item.id)}
+                            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <p className="font-semibold text-orange-400">
-                            ${parseFloat(item.total_price).toFixed(2)}
-                          </p>
-                          {isEditable && (
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => setEditingItem(item)}
-                                className="p-2 text-indigo-400 hover:bg-indigo-500/20 rounded-lg"
-                              >
-                                <Edit2 size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteLineItem(item.id)}
-                                className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-stone-400 italic text-center py-4">
-                    No items have been added to this order yet.
-                  </p>
-                )}
+                ))}
               </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+            ) : (
+              <p className="text-stone-400 italic text-center py-4">
+                No items have been added to this order yet.
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </Form>
   );
 };
 
