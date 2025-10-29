@@ -44,7 +44,7 @@ function Login({ setIsAuthenticated }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      <h2 className="text-4xl font-semibold text-stone-200 pt-3 flex items-center justify-center mb-5">
+      <h2 className="text-4xl font-semibold text-[#eeeade] pt-3 flex items-center justify-center mb-5">
         <img
           className="inline-block mr-2"
           style={{ height: "30px", marginBottom: "-16px" }}

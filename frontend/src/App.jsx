@@ -88,7 +88,7 @@ function App() {
       <div
         className={`${
           isAuthenticated ? "lg:mr-[450px] mt-24 lg:ml-[50px] mx-10" : ""
-        }`}
+        } mb-10`}
       >
         <Routes>
           {/* Map through protected routes */}

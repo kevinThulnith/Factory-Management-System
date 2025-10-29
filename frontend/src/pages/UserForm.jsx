@@ -229,7 +229,7 @@ function UserForm() {
               </div>
               <Link
                 to="/user"
-                className="px-3 py-2 rounded-xl font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl bg-card-sub"
+                className="px-3 pl-2 py-2 rounded-xl font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl bg-card-sub"
               >
                 <ChevronLeft size={18} className="mr-1" />
                 Users
