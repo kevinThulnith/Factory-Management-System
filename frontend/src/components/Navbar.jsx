@@ -119,7 +119,7 @@ function Navbar() {
 
               return (
                 <div key={group} className="mb-4">
-                  <h3 className="text-star-dust-500 mb-2 border-b border-star-dust-600 pb-1 text-[13px]">
+                  <h3 className="text-stone-400 font-semibold mb-2 pb-1 text-[14px]">
                     {capitalizeGroupName(group)}
                   </h3>
                   <div>

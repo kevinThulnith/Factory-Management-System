@@ -450,7 +450,7 @@ function Department() {
                       </div>
                     </div>
 
-                    <div className="mt-auto px-6 py-4 bg-card-sub">
+                    <div className="mt-auto px-6 py-2 bg-card-sub">
                       <div className="flex items-center justify-between">
                         <div className="text-gray-400 text-[14px] flex items-center">
                           <Calendar size={15} className="mr-2" />

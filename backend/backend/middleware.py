@@ -23,11 +23,18 @@ class RequestTimeLoggingMiddleware:
 
         # Calculate execution time
         execution_time = time.time() - start_time
+        execution_time_ms = execution_time * 1000
+
+        # Format execution time display
+        if execution_time_ms > 999:
+            time_display = f"{int(execution_time)}s"
+        else:
+            time_display = f"{execution_time_ms:.2f}ms"
 
         # Log the execution time
         logger.info(
             f"{request.method} {request.path} - Status: {response.status_code} - "
-            f"⌛: {execution_time:.4f}s {execution_time * 1000:.2f}ms"
+            f"⌛: {time_display}"
         )
 
         # Optionally add execution time to response headers
