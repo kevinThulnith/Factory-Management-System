@@ -18,3 +18,4 @@ backend/media/invoices/
 .idea/
 *.log
 schema/*.jpg
+testsprite_tests/

@@ -140,7 +140,7 @@ const menuItems = {
     {
       id: "productionLines",
       name: "Production Lines",
-      path: "/production-lines",
+      path: "/production-line",
       icon: <FaChartLine size={20} />,
       roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
     },

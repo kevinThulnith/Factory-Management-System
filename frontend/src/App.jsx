@@ -28,6 +28,8 @@ import Product from "./pages/Product";
 import ProductForm from "./pages/ProductForm";
 import Order from "./pages/Order";
 import OrderForm from "./pages/OrderForm";
+import ProductionLine from "./pages/ProductionLine";
+import ProductionLineForm from "./pages/ProductionLineForm";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -80,6 +82,16 @@ function App() {
     { path: "/order/add", element: <OrderForm /> },
     { path: "/order/edit/:orderId", element: <OrderForm /> },
     { path: "/order/view/:orderId", element: <OrderForm /> },
+    { path: "/production-line", element: <ProductionLine /> },
+    { path: "/production-line/add", element: <ProductionLineForm /> },
+    {
+      path: "/production-line/edit/:productionLineId",
+      element: <ProductionLineForm />,
+    },
+    {
+      path: "/production-line/view/:productionLineId",
+      element: <ProductionLineForm />,
+    },
   ];
 
   return (
