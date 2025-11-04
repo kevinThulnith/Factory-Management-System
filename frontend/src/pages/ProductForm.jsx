@@ -58,10 +58,7 @@ const ProductForm = () => {
     api
       .get("api/manufacturing-process/")
       .then((res) => setAllProcesses(res.data.results || res.data));
-  }, []);
 
-  // Fetch product data for view/edit
-  useEffect(() => {
     if (productId) {
       setLoading(true);
       api
@@ -133,18 +130,22 @@ const ProductForm = () => {
     setFormData((prev) => ({ ...prev, selected_processes: resequenced }));
   };
 
-  const validateForm = () => {
-    /* ... validation logic as before ... */ return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
     setLoading(true);
     setPageError("");
     setErrors({});
 
-    // NOTE: The main product is saved first. The process sequence is saved separately.
+    // Validate JSON specifications
+    try {
+      JSON.parse(formData.specifications);
+    } catch {
+      setErrors({ specifications: "Invalid JSON format" });
+      setLoading(false);
+      return;
+    }
+
+    // Product payload (without processes)
     const productPayload = {
       name: formData.name,
       code: formData.code,
@@ -153,33 +154,55 @@ const ProductForm = () => {
       specifications: JSON.parse(formData.specifications),
     };
 
-    const processPayload = {
-      processes: formData.selected_processes.map((p) => ({
-        process_id: p.id,
-        sequence: p.sequence,
-      })),
-    };
-
     try {
       let savedProduct;
       if (isEditMode) {
+        // Update existing product
         savedProduct = (
           await api.patch(`api/product/${productId}/`, productPayload)
         ).data;
+
+        // Delete existing processes for this product
+        const existingProcesses = (
+          await api.get(`api/product/${productId}/process/`)
+        ).data;
+        await Promise.all(
+          existingProcesses.map((pp) =>
+            api.delete(`api/product/${productId}/process/${pp.id}/`)
+          )
+        );
       } else {
+        // Create new product
         savedProduct = (await api.post("api/product/", productPayload)).data;
       }
 
-      // After saving the product, save its process sequence
-      await api.post(
-        `api/product/${savedProduct.id}/set_processes/`,
-        processPayload
+      // Create new process associations
+      await Promise.all(
+        formData.selected_processes.map((p) =>
+          api.post(`api/product/${savedProduct.id}/process/`, {
+            process: p.id,
+            sequence: p.sequence,
+          })
+        )
       );
 
       alert("Product saved successfully!");
-      navigate("/products");
+      navigate("/product");
     } catch (error) {
-      setPageError(error.response?.data?.detail || "An error occurred.");
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        if (typeof errorData === "object") {
+          setErrors(errorData);
+          setPageError(
+            Object.values(errorData).flat().join(", ") ||
+              "Failed to save product."
+          );
+        } else {
+          setPageError(errorData || "Failed to save product.");
+        }
+      } else {
+        setPageError("An error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -249,17 +272,17 @@ const ProductForm = () => {
               label="Product Code"
               value={product?.code}
             />
+            <InfoItem
+              icon={<ClipboardList />}
+              label="Unit of Measurement"
+              value={product?.unit_of_measurement}
+            />
             <div className="flex flex-col">
               <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
                 <Activity size={16} /> Status
               </label>
               {product?.status && getStatusBadge(product.status)}
             </div>
-            <InfoItem
-              icon={<ClipboardList />}
-              label="Unit of Measurement"
-              value={product?.unit_of_measurement}
-            />
           </div>
           <InfoItem
             icon={<FileText />}
@@ -278,7 +301,7 @@ const ProductForm = () => {
               {formData.selected_processes.map((p) => (
                 <div
                   key={p.id}
-                  className="p-3 bg-stone-900/50 rounded-md flex items-center"
+                  className="p-3 bg-card-sub rounded-md flex items-center"
                 >
                   <span className="font-semibold text-orange-400 w-8">
                     {p.sequence}.
@@ -355,7 +378,7 @@ const ProductForm = () => {
                 <select
                   value={processToAdd}
                   onChange={(e) => setProcessToAdd(e.target.value)}
-                  className="w-full px-4 text-slate-200 border-stone-600 border outline-none rounded-lg bg-card-sub h-10"
+                  className="w-full px-4 text-slate-200 appearance-none outline-none rounded-lg bg-card-sub h-10"
                 >
                   <option value="">Select a process...</option>
                   {allProcesses
@@ -385,10 +408,10 @@ const ProductForm = () => {
               {formData.selected_processes.map((p, i) => (
                 <div
                   key={p.id}
-                  className="p-2.5 bg-stone-900/50 border border-stone-700 rounded-md flex items-center justify-between"
+                  className="p-2.5 bg-card-sub rounded-md flex items-center justify-between"
                 >
                   <div className="flex items-center">
-                    <span className="font-semibold text-orange-400 w-8">
+                    <span className="font-semibold text-orange-400 w-8 indent-2">
                       {p.sequence}.
                     </span>
                     <span>{p.name}</span>
@@ -400,7 +423,7 @@ const ProductForm = () => {
                       disabled={i === 0}
                       className="p-1.5 text-stone-400 hover:text-white disabled:opacity-40 rounded-full hover:bg-stone-700"
                     >
-                      <ArrowUp size={16} />
+                      <ArrowUp size={18} />
                     </button>
                     <button
                       type="button"
@@ -408,14 +431,14 @@ const ProductForm = () => {
                       disabled={i === formData.selected_processes.length - 1}
                       className="p-1.5 text-stone-400 hover:text-white disabled:opacity-40 rounded-full hover:bg-stone-700"
                     >
-                      <ArrowDown size={16} />
+                      <ArrowDown size={18} />
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveProcess(p.id)}
                       className="p-1.5 text-red-500 hover:text-red-400 rounded-full hover:bg-red-500/20"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>

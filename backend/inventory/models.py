@@ -1,4 +1,4 @@
-from django.db.models import DecimalField, EmailField, ImageField
+from django.db.models import DecimalField, EmailField, FileField
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
@@ -123,7 +123,7 @@ class Order(Model):
     )
     updated_at = DateTimeField(_("updated at"), auto_now=True)
     total = DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    invoice = ImageField(upload_to="invoices/", blank=True, null=True)
+    invoice = FileField(upload_to="invoices/", blank=True, null=True)
 
     class Meta:
         ordering = ["-order_date"]

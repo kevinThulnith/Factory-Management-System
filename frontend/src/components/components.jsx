@@ -89,7 +89,7 @@ export const InfoItem = ({ icon, label, value }) => (
       {icon && cloneElement(icon, { size: 16 })}
       {label}
     </label>
-    <p className="text-base font-medium text-stone-300">
+    <p className="text-base font-medium text-stone-300 truncate">
       {value === null || value === undefined || value === "" ? (
         <span className="text-stone-500">N/A</span>
       ) : (

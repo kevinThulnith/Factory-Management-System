@@ -55,7 +55,7 @@ const Form = ({
 
       {/* Error Message */}
       {pageError && (
-        <div className="mb-6 bg-red-900/30 border border-red-500 text-red-400 p-4 rounded-lg">
+        <div className="mb-6 bg-red-900 text-red-300 p-4 rounded-lg shadow-md">
           {pageError}
         </div>
       )}

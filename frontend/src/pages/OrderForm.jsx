@@ -12,13 +12,17 @@ import {
   DollarSign,
   PlusCircle,
   UserCircle,
+  FileText,
   Building,
   XOctagon,
+  Download,
+  Upload,
   Trash2,
   Edit2,
   Save,
   Hash,
   Send,
+  X,
 } from "lucide-react";
 
 // --- Reusable Line Item Form Sub-Component ---
@@ -28,7 +32,7 @@ const LineItemForm = ({ itemToEdit, materials, onSave, onCancel, loading }) => {
     quantity: "1.00",
     unit_price: "0.00",
   });
-  const [formErrors, setFormErrors] = useState({});
+  const [, setFormErrors] = useState({});
 
   useEffect(() => {
     if (itemToEdit) {
@@ -68,7 +72,7 @@ const LineItemForm = ({ itemToEdit, materials, onSave, onCancel, loading }) => {
   };
 
   return (
-    <div className="bg-stone-900/50 rounded-lg p-4 my-6 border border-stone-700">
+    <div className="bg-stone-800 rounded-xl p-4 my-6 inset-shadow-2xl">
       <h4 className="text-md font-semibold text-stone-200 mb-4">
         {itemToEdit ? "Edit Item" : "Add New Item"}
       </h4>
@@ -134,9 +138,10 @@ const OrderForm = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [materials, setMaterials] = useState([]);
 
-  const [formData, setFormData] = useState({ supplier: "", status: "DRAFT" });
+  const [invoice, setInvoice] = useState(null);
   const [pageError, setPageError] = useState("");
   const [loading, setLoading] = useState({ page: true, action: false });
+  const [formData, setFormData] = useState({ supplier: "", status: "DRAFT" });
 
   const [showAddItemForm, setShowAddItemForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -256,9 +261,30 @@ const OrderForm = () => {
       !window.confirm(`Are you sure you want to change status to ${newStatus}?`)
     )
       return;
+
+    // Check if invoice is required for RECEIVED status
+    if (newStatus === "RECEIVED" && !order?.invoice && !invoice) {
+      setPageError("Please upload an invoice before marking as received.");
+      return;
+    }
+
     setLoading((prev) => ({ ...prev, action: true }));
     try {
-      await api.patch(`api/order/${orderId}/`, { status: newStatus });
+      const formDataToSend = new FormData();
+      formDataToSend.append("status", newStatus);
+
+      // If there's a new invoice, add it
+      if (invoice) {
+        formDataToSend.append("invoice", invoice);
+      }
+
+      await api.patch(`api/order/${orderId}/`, formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setInvoice(null); // Clear the invoice state after successful upload
       fetchOrderData();
     } catch (err) {
       setPageError(err.response?.data?.detail || "Failed to update status.");
@@ -302,7 +328,9 @@ const OrderForm = () => {
     >
       <form
         onSubmit={handleHeaderSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pb-6 mb-6 border-b border-stone-700"
+        className={`grid grid-cols-1 gap-6 items-start pb-6 mb-2 ${
+          isCreateMode ? "md:grid-cols-2" : "md:grid-cols-3"
+        }`}
       >
         <InfoItem
           icon={<CalendarDays />}
@@ -314,33 +342,46 @@ const OrderForm = () => {
           }
         />
         {!isCreateMode && (
-          <InfoItem
-            icon={<UserCircle />}
-            label="Created By"
-            value={order?.created_by_username || user?.username || "Pending"}
+          <>
+            <InfoItem
+              icon={<UserCircle />}
+              label="Created By"
+              value={order?.created_by_username || user?.username || "Pending"}
+            />
+            <InfoItem
+              icon={<UserCircle />}
+              label="Supplier"
+              value={
+                suppliers.find((s) => s.id === order?.supplier)?.name ||
+                "Unknown"
+              }
+            />
+          </>
+        )}
+        {isCreateMode && (
+          <SelectItem
+            label="Supplier"
+            name="supplier"
+            icon={<Building />}
+            value={formData.supplier}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, supplier: e.target.value }))
+            }
+            options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+            required
+            disabled={!isCreateMode}
           />
         )}
-        <SelectItem
-          label="Supplier"
-          name="supplier"
-          icon={<Building />}
-          value={formData.supplier}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, supplier: e.target.value }))
-          }
-          options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
-          required
-          disabled={!isCreateMode}
-        />
 
         {isCreateMode && canManage && (
-          <div className="md:col-span-3 flex justify-end">
+          <div className="md:col-span-2 flex justify-end">
             <button
               type="submit"
               disabled={loading.action}
               className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
             >
-              <Save size={18} /> Create Order to Add Items
+              Create Order
+              <Save size={18} />
             </button>
           </div>
         )}
@@ -369,42 +410,160 @@ const OrderForm = () => {
 
           {/* Order Actions */}
           {isViewMode && canManage && (
-            <div className="mt-6 pt-6 border-t border-stone-700 flex flex-wrap gap-3 items-center">
-              <span className="text-sm text-stone-400 mr-2">
-                Quick Actions:
-              </span>
-              {order?.status === "DRAFT" && lineItems.length > 0 && (
-                <button
-                  onClick={() => handleOrderStatusUpdate("ORDERED")}
-                  disabled={loading.action}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                >
-                  <Send size={16} /> Mark as Ordered
-                </button>
+            <div className="mt-6 pt-6 border-t border-star-dust-700">
+              {/* Invoice Upload Section (show for ORDERED status) or Display (show for RECEIVED status) */}
+              {(order?.status === "ORDERED" ||
+                order?.status === "RECEIVED") && (
+                <div className="p-3 bg-card-sub rounded-lg">
+                  <h4 className="text-md font-semibold text-stone-200 mb-3 flex items-center gap-2">
+                    <FileText size={18} /> Invoice Document
+                  </h4>
+
+                  {/* Show existing invoice if available */}
+                  {order?.invoice && !invoice && (
+                    <div className="mb-4 p-3 bg-card-accent rounded-md flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText size={16} className="text-green-400" />
+                        <span className="text-sm text-stone-300">
+                          Current Invoice Uploaded
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <a
+                          href={order.invoice}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors font-medium"
+                        >
+                          <FileText size={14} />
+                          View
+                        </a>
+                        <a
+                          href={order.invoice}
+                          download
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition-colors"
+                        >
+                          <Download size={14} />
+                          Download
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload new invoice (only for ORDERED status) */}
+                  {order?.status === "ORDERED" && (
+                    <div className="space-y-3">
+                      <label className="block cursor-pointer">
+                        <div
+                          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                            invoice
+                              ? "border-green-500 bg-green-500/10"
+                              : "border-stone-600 hover:border-stone-500 hover:bg-stone-800/50"
+                          }`}
+                        >
+                          {invoice ? (
+                            <div className="flex flex-col items-center gap-2">
+                              <FileText size={32} className="text-green-400" />
+                              <p className="text-sm font-medium text-stone-200">
+                                {invoice.name}
+                              </p>
+                              <p className="text-xs text-stone-400">
+                                {(invoice.size / 1024).toFixed(2)} KB
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-2">
+                              <Upload size={32} className="text-stone-400" />
+                              <p className="text-sm font-medium text-stone-300">
+                                {order?.invoice
+                                  ? "Upload New Invoice (Replace)"
+                                  : "Upload Invoice PDF"}
+                              </p>
+                              <p className="text-xs text-stone-400">
+                                Click to browse or drag & drop
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <input
+                          id="invoice-input"
+                          type="file"
+                          accept=".pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file && file.type === "application/pdf") {
+                              setInvoice(file);
+                            } else {
+                              alert("Please select a valid PDF file.");
+                            }
+                          }}
+                        />
+                      </label>
+                      {invoice && (
+                        <button
+                          onClick={() => setInvoice(null)}
+                          className="w-full bg-red-600 hover:bg-red-800 text-red-200 font-medium py-2 px-3 rounded-md flex items-center justify-center gap-2 transition text-sm"
+                        >
+                          <X size={16} /> Clear Selected File
+                        </button>
+                      )}
+                      {!order?.invoice && !invoice && (
+                        <p className="text-xs text-yellow-400 flex items-center gap-1">
+                          ⚠️ Invoice is required before marking order as
+                          received
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
-              {order?.status === "ORDERED" && (
-                <button
-                  onClick={() => handleOrderStatusUpdate("RECEIVED")}
-                  disabled={loading.action}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                >
-                  <CheckCircle size={16} /> Mark as Received
-                </button>
-              )}
-              {(order?.status === "DRAFT" || order?.status === "ORDERED") && (
-                <button
-                  onClick={() => handleOrderStatusUpdate("CANCELLED")}
-                  disabled={loading.action}
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                >
-                  <XOctagon size={16} /> Cancel Order
-                </button>
-              )}
+
+              {/* Status Action Buttons */}
+              <div
+                className={`flex flex-wrap gap-3 items-center ${
+                  order?.status === "ORDERED" ? "pt-4" : ""
+                }`}
+              >
+                {order?.status === "DRAFT" && lineItems.length > 0 && (
+                  <button
+                    onClick={() => handleOrderStatusUpdate("ORDERED")}
+                    disabled={loading.action}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 pl-2 rounded-lg flex items-center gap-2 transition text-[14px]"
+                  >
+                    <Send size={16} /> Mark as Ordered
+                  </button>
+                )}
+                {order?.status === "ORDERED" && (
+                  <button
+                    onClick={() => handleOrderStatusUpdate("RECEIVED")}
+                    disabled={loading.action || (!order?.invoice && !invoice)}
+                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 pl-2 rounded-lg flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      !order?.invoice && !invoice
+                        ? "Please upload an invoice first"
+                        : "Mark order as received"
+                    }
+                  >
+                    <CheckCircle size={16} /> Mark as Received
+                  </button>
+                )}
+                {(order?.status === "DRAFT" || order?.status === "ORDERED") && (
+                  <button
+                    onClick={() => handleOrderStatusUpdate("CANCELLED")}
+                    disabled={loading.action}
+                    className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 pl-2 rounded-lg flex items-center gap-2 transition text-[14px]"
+                  >
+                    <XOctagon size={16} />
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
           {/* Line Items Section */}
-          <div className="mt-8 pt-6 border-t border-stone-700">
+          <div className="mt-6 pt-5 border-t border-star-dust-700">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold text-stone-200 flex items-center gap-3">
                 <ListOrdered /> Order Items
@@ -437,7 +596,7 @@ const OrderForm = () => {
                 {lineItems.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-stone-900/50 rounded-md flex flex-col md:flex-row justify-between md:items-center gap-2"
+                    className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
                   >
                     <div>
                       <p className="font-semibold text-stone-300">

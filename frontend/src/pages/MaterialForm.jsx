@@ -85,7 +85,7 @@ const MaterialForm = () => {
       newErrors.quantity = "Quantity must be a non-negative number.";
     }
     if (
-      isisNaN(parseFloat(formData.reorder_level)) ||
+      isNaN(parseFloat(formData.reorder_level)) ||
       parseFloat(formData.reorder_level) < 0
     ) {
       newErrors.reorder_level = "Reorder level must be a non-negative number.";
@@ -115,7 +115,7 @@ const MaterialForm = () => {
         await api.post("api/material/", payload);
       }
       alert("Material saved successfully!");
-      navigate("/materials");
+      navigate("/material");
     } catch (error) {
       console.error("Form submission error:", error.response);
       const apiErrors = error.response?.data;

@@ -102,9 +102,9 @@ const Product = () => {
 
   const getStatusPill = (status) => {
     const styles = {
-      ACTIVE: "bg-green-900/50 text-green-300 border-green-500/50",
-      INACTIVE: "bg-yellow-900/50 text-yellow-300 border-yellow-500/50",
-      DISCONTINUED: "bg-red-900/50 text-red-300 border-red-500/50",
+      ACTIVE: "bg-green-200 text-green-800",
+      INACTIVE: "bg-yellow-200 text-yellow-800",
+      DISCONTINUED: "bg-red-200 text-red-800",
     };
     return (
       <span
@@ -246,7 +246,7 @@ const Product = () => {
                     className="text-lg font-bold text-orange-200 truncate mt-8 mb-2 flex gap-2 items-center"
                     title={product.name}
                   >
-                    <Package size={25}/>
+                    <Package size={25} />
                     {product.name}
                   </h2>
                   <div className="space-y-2 text-sm text-stone-400">

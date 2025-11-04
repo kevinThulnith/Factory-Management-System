@@ -102,7 +102,7 @@ const SupplierForm = () => {
         await api.post("api/supplier/", payload);
       }
       alert("Supplier saved successfully!");
-      navigate("/suppliers");
+      navigate("/supplier");
     } catch (error) {
       const apiErrors = error.response?.data;
       if (apiErrors && typeof apiErrors === "object") {
