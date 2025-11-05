@@ -123,10 +123,10 @@ const MySkillsPage = () => {
 
   const getLevelPill = (level) => {
     const styles = {
-      EXPERT: "bg-green-900/50 text-green-300 border-green-500/50",
-      ADVANCED: "bg-blue-900/50 text-blue-300 border-blue-500/50",
-      INTERMEDIATE: "bg-yellow-900/50 text-yellow-300 border-yellow-500/50",
-      BEGINNER: "bg-orange-900/50 text-orange-300 border-orange-500/50",
+      EXPERT: "bg-green-200 text-green-800",
+      ADVANCED: "bg-blue-200 text-blue-800",
+      INTERMEDIATE: "bg-yellow-200 text-yellow-800",
+      BEGINNER: "bg-orange-200 text-orange-800",
     };
 
     const icons = {
@@ -138,7 +138,7 @@ const MySkillsPage = () => {
 
     return (
       <span
-        className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 border ${
+        className={`px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 ${
           styles[level] || "bg-stone-700 text-stone-300 border-stone-600"
         }`}
       >

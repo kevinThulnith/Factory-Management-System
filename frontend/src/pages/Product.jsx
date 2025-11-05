@@ -108,7 +108,7 @@ const Product = () => {
     };
     return (
       <span
-        className={`absolute top-4 right-4 px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 border ${
+        className={`absolute top-4 right-4 px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 ${
           styles[status] || "bg-stone-700 text-stone-300 border-stone-600"
         }`}
       >
