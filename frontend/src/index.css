@@ -39,9 +39,9 @@ body {
   -webkit-backdrop-filter: blur(10px);
 
   .loader-grid {
+    gap: 12px;
     display: grid;
     grid-template-columns: repeat(4, 12px);
-    gap: 12px;
 
     .block {
       position: relative;
@@ -50,6 +50,9 @@ body {
       height: 15px;
       border-radius: 3px;
       background: #fff;
+      will-change: transform, opacity;
+      transform: translateZ(0);
+      animation-play-state: running !important;
     }
 
     .block:nth-child(4n + 1) {
@@ -73,17 +76,17 @@ body {
 
 @keyframes wave_61 {
   0% {
-    top: 0;
+    transform: translateY(0);
     opacity: 1;
   }
 
   50% {
-    top: 30px;
+    transform: translateY(30px);
     opacity: 0.2;
   }
 
   100% {
-    top: 0;
+    transform: translateY(0);
     opacity: 1;
   }
 }
