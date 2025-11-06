@@ -1,9 +1,9 @@
 import LoadingIndicator from "../components/LoadingIndicator";
 import { MdOutlineConfirmationNumber } from "react-icons/md";
 import { RotateCcwKey, UserRound } from "lucide-react";
-import React, { useState, useEffect } from "react";
 import { Buttons } from "../components/components";
 import { LuUserRoundPen } from "react-icons/lu";
+import { useState, useEffect } from "react";
 import api from "../api";
 
 import {
