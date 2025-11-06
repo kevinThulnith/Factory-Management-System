@@ -42,7 +42,7 @@ function App() {
       .finally(() => console.log("Checked authentication status"));
   }, []);
 
-  // Define routes as a configuration array
+  // TODO:Define routes as a configuration array
   const protectedRoutes = [
     { path: "/", element: <Home /> },
 
@@ -100,9 +100,9 @@ function App() {
     { path: "/order/add", element: <OrderForm /> },
     { path: "/order/edit/:orderId", element: <OrderForm /> },
     { path: "/order/view/:orderId", element: <OrderForm /> },
-    { path: "/production-line", element: <ProductionLine /> },
 
     // Production Line
+    { path: "/production-line", element: <ProductionLine /> },
     { path: "/production-line/add", element: <ProductionLineForm /> },
     {
       path: "/production-line/edit/:productionLineId",
