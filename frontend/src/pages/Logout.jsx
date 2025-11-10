@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import api from "../api";
 
-function Logout({ setIsAuthenticated }) {
+function Logout() {
   const navigate = useNavigate();
   const didRunRef = useRef(false);
 
@@ -13,9 +13,7 @@ function Logout({ setIsAuthenticated }) {
     didRunRef.current = true;
 
     const refreshToken = localStorage.getItem(REFRESH_TOKEN);
-    localStorage.removeItem(ACCESS_TOKEN);
-    localStorage.removeItem(REFRESH_TOKEN);
-    setIsAuthenticated(false);
+    localStorage.clear();
 
     if (refreshToken) {
       api
@@ -28,11 +26,11 @@ function Logout({ setIsAuthenticated }) {
     }
 
     navigate("/login");
+    window.location.reload();
     return () => (didRunRef.current = false);
-  }, [navigate, setIsAuthenticated]);
+  }, [navigate]);
 
   return null;
 }
 
-Logout.propTypes = { setIsAuthenticated: PropTypes.func.isRequired };
 export default Logout;

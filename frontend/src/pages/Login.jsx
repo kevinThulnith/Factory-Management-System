@@ -6,7 +6,7 @@ import logo from "../assets/logo1.png";
 import { useState } from "react";
 import api from "../api";
 
-function Login({ setIsAuthenticated }) {
+function Login() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -31,7 +31,6 @@ function Login({ setIsAuthenticated }) {
       .then((res) => {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
         localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-        setIsAuthenticated(true);
         navigate("/");
       })
       .catch((error) => {

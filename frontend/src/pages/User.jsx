@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -23,10 +24,10 @@ import {
 } from "lucide-react";
 
 function User() {
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [allUsers, setAllUsers] = useState([]);
-  const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [filters, setFilters] = useState({
     isActive: "all",
@@ -52,10 +53,6 @@ function User() {
   };
 
   useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => alert(error));
     fetchUsers();
   }, [fetchUsers]);
 
@@ -88,8 +85,8 @@ function User() {
   const userRoles = [
     "ADMIN",
     "MANAGER",
-    "SUPERVISOR",
     "OPERATOR",
+    "SUPERVISOR",
     "TECHNICIAN",
     "PURCHASING",
   ];

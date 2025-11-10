@@ -3,7 +3,8 @@ import { MdOutlineConfirmationNumber } from "react-icons/md";
 import { RotateCcwKey, UserRound } from "lucide-react";
 import { Buttons } from "../components/components";
 import { LuUserRoundPen } from "react-icons/lu";
-import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth.jsx";
+import { useState } from "react";
 import api from "../api";
 
 import {
@@ -49,23 +50,13 @@ const InputItem = ({ label, name, caption, ...props }) => (
 );
 
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
+  const { user, loading, setLoading } = useAuth();
   const handleEdit = () => setIsEditing(true);
-  const [loading, setLoading] = useState(false);
   const handleCancel = () => setIsEditing(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // TODO: Get user data from API
-  useEffect(() => {
-    setLoading(true);
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => alert(error))
-      .finally(() => setLoading(false));
-  }, []);
-
   const handleSaveChanges = (updatedData) => {
+    setLoading(true);
     const apiData = {
       username: user.username,
       first_name: updatedData.firstname,
@@ -84,11 +75,16 @@ const ProfilePage = () => {
     api
       .put("api/user/me/", apiData)
       .then((res) => {
-        console.log("API response:", res.data);
-        setUser(res.data);
+        localStorage.setItem("user", JSON.stringify(res.data));
+        alert("Profile updated successfully !!!");
         setIsEditing(false);
+        setLoading(false);
+        window.location.reload();
       })
-      .catch((error) => alert("API Error:", error.response?.data || error));
+      .catch((error) => {
+        alert("API Error:", error.response?.data || error);
+        setLoading(false);
+      });
   };
 
   return (
@@ -263,10 +259,10 @@ const ProfileEditForm = ({ user, onSave, onCancel }) => {
       </div>
 
       <div className="mt-6 pt-4 border-t border-stone-500">
-        <h3 className="font-medeium flex items-center gap-2">
+        <h3 className="font-medium flex items-center gap-2">
           <RotateCcwKey size={18} /> Change Password
         </h3>
-        <p className="text-secondary-text text-sm mt-1">
+        <p className="text-secondary-text text-sm mt-1 text-stone-400">
           Leave fields blank to keep your current password.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
