@@ -1,6 +1,6 @@
+import { useState, useCallback, useEffect, useMemo } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { Link } from "react-router-dom";
-import React from "react";
 import api from "../api";
 
 import {
@@ -23,13 +23,13 @@ import {
 } from "lucide-react";
 
 const MySkillsPage = () => {
-  const [mySkills, setMySkills] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [filterByCategory, setFilterByCategory] = React.useState("all");
+  const [mySkills, setMySkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterByCategory, setFilterByCategory] = useState("all");
 
-  const fetchMySkills = React.useCallback(() => {
+  const fetchMySkills = useCallback(() => {
     if (!refreshing) setLoading(true);
     api
       .get("api/skill-matrix/")
@@ -41,16 +41,14 @@ const MySkillsPage = () => {
       });
   }, [refreshing]);
 
-  React.useEffect(() => {
-    fetchMySkills();
-  }, [fetchMySkills]); // The dependency array is safe due to useCallback
+  useEffect(() => fetchMySkills(), [fetchMySkills]);
 
   const handleRefresh = () => {
     setRefreshing(true);
     // The useEffect will re-trigger the fetch
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (refreshing) {
       fetchMySkills();
     }
@@ -97,12 +95,12 @@ const MySkillsPage = () => {
     }
   };
 
-  const uniqueCategories = React.useMemo(
+  const uniqueCategories = useMemo(
     () => [...new Set(mySkills.map((s) => s.category))],
     [mySkills]
   );
 
-  const filteredSkills = React.useMemo(() => {
+  const filteredSkills = useMemo(() => {
     return mySkills.filter((skill) => {
       const searchTermLower = searchTerm.toLowerCase();
       const matchesSearch =

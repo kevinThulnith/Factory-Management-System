@@ -1,7 +1,6 @@
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import { useNavigate } from "react-router-dom";
+import { REFRESH_TOKEN } from "../constants";
 import { useEffect, useRef } from "react";
-import PropTypes from "prop-types";
 import api from "../api";
 
 function Logout() {
