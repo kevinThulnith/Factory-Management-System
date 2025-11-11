@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { MapPin, Truck, Phone, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -12,10 +13,10 @@ import {
 } from "../components/components";
 
 const SupplierForm = () => {
-  const { supplierId } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState({});
+  const { supplierId } = useParams();
 
   // Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
@@ -36,11 +37,6 @@ const SupplierForm = () => {
   const [pageError, setPageError] = useState("");
 
   useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-
     if (supplierId) {
       setLoading(true);
       api

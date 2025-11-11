@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { useState, useEffect } from "react";
 import Form from "../components/Form";
 import api from "../api";
@@ -27,10 +28,10 @@ import {
 } from "lucide-react";
 
 const ProductForm = () => {
-  const { productId } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState({});
+  const { productId } = useParams();
 
   // Determine mode
   const isViewMode = location.pathname.includes("/view/");
@@ -45,16 +46,15 @@ const ProductForm = () => {
     selected_processes: [],
   });
 
-  const [allProcesses, setAllProcesses] = useState([]);
-  const [processToAdd, setProcessToAdd] = useState("");
-  const [product, setProduct] = useState(null);
   const [errors, setErrors] = useState({});
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
+  const [allProcesses, setAllProcesses] = useState([]);
+  const [processToAdd, setProcessToAdd] = useState("");
 
   // Fetch user for permissions & all available processes
   useEffect(() => {
-    api.get("api/user/me/").then((res) => setUser(res.data));
     api
       .get("api/manufacturing-process/")
       .then((res) => setAllProcesses(res.data.results || res.data));

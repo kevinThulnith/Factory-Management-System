@@ -1,6 +1,7 @@
-import { Save, Star, ChevronLeft, Users, Briefcase, Edit2 } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Star, Users, Briefcase } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -14,26 +15,26 @@ import {
 
 // --- Constants (as in the original) ---
 const SKILL_CATEGORIES_MAP = {
+  OTHER: "Other",
+  SAFETY: "Safety",
+  DESIGN: "Design",
+  SOFTWARE: "Software",
+  LOGISTICS: "Logistics",
   TECHNICAL: "Technical",
   MECHANICAL: "Mechanical",
   ELECTRICAL: "Electrical",
-  SOFTWARE: "Software",
+  OPERATIONS: "Operations",
   MANAGEMENT: "Management",
+  MAINTENANCE: "Maintenance",
   ADMINISTRATION: "Administration",
   QUALITY_CONTROL: "Quality Control",
-  SAFETY: "Safety",
-  LOGISTICS: "Logistics",
-  MAINTENANCE: "Maintenance",
-  OPERATIONS: "Operations",
-  DESIGN: "Design",
-  OTHER: "Other",
 };
 
 const SKILL_LEVELS_MAP = {
-  BEGINNER: "Beginner",
-  INTERMEDIATE: "Intermediate",
-  ADVANCED: "Advanced",
   EXPERT: "Expert",
+  BEGINNER: "Beginner",
+  ADVANCED: "Advanced",
+  INTERMEDIATE: "Intermediate",
 };
 
 const ALL_SKILL_CATEGORIES = Object.keys(SKILL_CATEGORIES_MAP);
@@ -43,39 +44,39 @@ const ROLE_CATEGORY_MAP = {
   ADMIN: ALL_SKILL_CATEGORIES,
   SUPERVISOR: ALL_SKILL_CATEGORIES,
   MANAGER: [
+    "OTHER",
+    "SOFTWARE",
+    "TECHNICAL",
     "MANAGEMENT",
     "OPERATIONS",
-    "TECHNICAL",
-    "SOFTWARE",
     "ADMINISTRATION",
-    "OTHER",
   ],
   TECHNICIAN: [
+    "OTHER",
+    "SAFETY",
+    "SOFTWARE",
     "TECHNICAL",
     "MECHANICAL",
     "ELECTRICAL",
-    "MAINTENANCE",
-    "SAFETY",
     "OPERATIONS",
-    "SOFTWARE",
-    "OTHER",
+    "MAINTENANCE",
   ],
   OPERATOR: [
+    "OTHER",
+    "SAFETY",
+    "TECHNICAL",
     "OPERATIONS",
     "MECHANICAL",
     "MAINTENANCE",
-    "SAFETY",
     "QUALITY_CONTROL",
-    "TECHNICAL",
-    "OTHER",
   ],
 };
 
 const SkillForm = () => {
-  const { skillMatrixId } = useParams();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState({});
+  const { skillMatrixId } = useParams();
 
   const isMySkillsMode = useMemo(
     () => location.pathname.includes("/my-skills"),
@@ -107,7 +108,6 @@ const SkillForm = () => {
 
   // Fetch initial data
   useEffect(() => {
-    api.get("api/user/me/").then((res) => setUser(res.data));
     if (!isMySkillsMode) {
       api
         .get("api/user/")

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -21,9 +22,9 @@ import {
 } from "lucide-react";
 
 const Product = () => {
-  const [user, setUser] = useState({});
-  const [allProducts, setAllProducts] = useState([]);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({ searchTerm: "", status: "all" });
 
@@ -36,13 +37,7 @@ const Product = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    fetchProducts();
-  }, [fetchProducts]);
+  useEffect(() => fetchProducts(), [fetchProducts]);
 
   const handleRefresh = () => {
     setRefreshing(true);

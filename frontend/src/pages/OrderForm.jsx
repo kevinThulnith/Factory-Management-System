@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { SelectItem, InputItem, InfoItem } from "../components/components";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form.jsx";
 import api from "../api";
 
@@ -125,10 +126,10 @@ const LineItemForm = ({ itemToEdit, materials, onSave, onCancel, loading }) => {
 
 // --- Main Order Form/Detail Component ---
 const OrderForm = () => {
-  const { orderId } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState({});
+  const { orderId } = useParams();
 
   const isViewMode = location.pathname.includes("/view/");
   const isCreateMode = location.pathname.includes("/add");
@@ -180,7 +181,7 @@ const OrderForm = () => {
   }, [orderId]);
 
   useEffect(() => {
-    api.get("api/user/me/").then((res) => setUser(res.data));
+    // api.get("api/user/me/").then((res) => setUser(res.data));
     api
       .get("api/supplier/")
       .then((res) => setSuppliers(res.data.results || res.data));

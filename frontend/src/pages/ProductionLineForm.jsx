@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
 import {
-  SelectItem,
-  InputItem,
-  TextareaItem,
   InfoItem,
+  InputItem,
+  SelectItem,
+  TextareaItem,
 } from "../components/components";
 
 import {
@@ -31,7 +32,7 @@ const ProductionLineForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isCreateMode = location.pathname.includes("/add");
 
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [line, setLine] = useState(null);
   const [allMachines, setAllMachines] = useState([]);
   const [allWorkshops, setAllWorkshops] = useState([]);
@@ -58,7 +59,6 @@ const ProductionLineForm = () => {
 
   // Data Fetching
   useEffect(() => {
-    api.get("api/user/me/").then((res) => setUser(res.data));
     api
       .get("api/workshop/")
       .then((res) => setAllWorkshops(res.data.results || res.data));

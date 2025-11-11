@@ -105,7 +105,7 @@ const DepartmentForm = () => {
       if (apiErrors && typeof apiErrors === "object") {
         const newFormErrors = {};
         for (const key in apiErrors) {
-          if (formData.hasOwnProperty(key) && Array.isArray(apiErrors[key])) {
+          if (Object.hasOwn(formData, key) && Array.isArray(apiErrors[key])) {
             newFormErrors[key] = apiErrors[key].join(" ");
           }
         }

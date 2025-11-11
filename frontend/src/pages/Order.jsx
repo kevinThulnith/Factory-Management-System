@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 
 const Order = () => {
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,13 +42,7 @@ const Order = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    fetchOrders();
-  }, [fetchOrders]);
+  useEffect(() => fetchOrders(), [fetchOrders]);
 
   const handleRefresh = () => {
     setRefreshing(true);

@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { SKILL_CATEGORIES, SKILL_LEVELS } from "../constants";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -42,7 +43,7 @@ const TABLE_HEADERS = [
 ];
 
 const SkillMatrix = () => {
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [allSkills, setAllSkills] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,13 +66,7 @@ const SkillMatrix = () => {
       });
   }, []);
 
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => fetchData(), [fetchData]);
 
   const handleRefresh = () => {
     setRefreshing(true);

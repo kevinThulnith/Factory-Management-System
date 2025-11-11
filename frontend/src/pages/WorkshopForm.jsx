@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -38,7 +39,7 @@ const WorkshopForm = () => {
     operational_status: "ACTIVE",
   });
 
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [errors, setErrors] = useState({});
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -49,12 +50,6 @@ const WorkshopForm = () => {
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
 
   useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch(() => console.error("Failed to fetch user:"));
-    setDepartmentsLoading(true);
-
     api
       .get("api/department/")
       .then((response) =>

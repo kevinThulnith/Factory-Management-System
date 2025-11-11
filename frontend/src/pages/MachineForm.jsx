@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -46,7 +47,7 @@ const MachineForm = () => {
     specifications: "",
   });
 
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [errors, setErrors] = useState({});
   const [machine, setMachine] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -57,12 +58,6 @@ const MachineForm = () => {
   const [operatorsLoading, setOperatorsLoading] = useState(false);
 
   useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    setWorkshopsLoading(true);
-
     api
       .get("api/workshop/")
       .then((response) =>

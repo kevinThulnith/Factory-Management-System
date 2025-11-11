@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -32,7 +33,7 @@ function Department() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const isAdmin = user && user.role === "ADMIN";
 
   const fetchDepartments = useCallback(() => {
@@ -43,13 +44,8 @@ function Department() {
       .catch((error) => alert(error))
       .finally(() => setLoading(false));
   }, []);
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => alert(error));
-    fetchDepartments();
-  }, [fetchDepartments]);
+
+  useEffect(() => fetchDepartments(), [fetchDepartments]);
 
   const handleRefresh = () => {
     setRefreshing(true);

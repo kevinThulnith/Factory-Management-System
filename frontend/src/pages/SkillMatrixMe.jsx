@@ -12,17 +12,14 @@ import {
   BookOpen,
   Sparkles,
   UserStar,
-  Trash2,
   HardHat,
   Filter,
   Search,
   Trophy,
-  Edit3,
   Award,
   Users,
   Star,
   Zap,
-  User,
 } from "lucide-react";
 
 const MySkillsPage = () => {

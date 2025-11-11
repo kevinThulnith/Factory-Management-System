@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -24,10 +25,10 @@ import {
 } from "lucide-react";
 
 function Machine() {
-  const [refreshing, setRefreshing] = useState(false);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [allMachines, setAllMachines] = useState([]);
-  const [user, setUser] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -50,13 +51,7 @@ function Machine() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    fetchMachines();
-  }, [fetchMachines]);
+  useEffect(() => fetchMachines(), [fetchMachines]);
 
   const handleDeleteMachine = (machineId, machineName) => {
     if (user.role !== "ADMIN") {

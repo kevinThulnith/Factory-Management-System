@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -19,24 +20,15 @@ import {
 } from "lucide-react";
 
 const MaterialListPage = () => {
-  const [materials, setMaterials] = useState([]);
-  const [allMaterials, setAllMaterials] = useState([]);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState({});
+  const [allMaterials, setAllMaterials] = useState([]);
 
   const [filters, setFilters] = useState({
     searchTerm: "",
     status: "all", // all, low-stock, in-stock
   });
-
-  // Fetch current user
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-  }, []);
 
   // Fetch materials
   const fetchMaterials = useCallback(() => {
@@ -46,15 +38,12 @@ const MaterialListPage = () => {
       .then((res) => {
         const materialsData = res.data.results || res.data;
         setAllMaterials(materialsData);
-        setMaterials(materialsData);
       })
       .catch(() => alert("Failed to fetch materials. Please try again."))
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    fetchMaterials();
-  }, [fetchMaterials]);
+  useEffect(() => fetchMaterials(), [fetchMaterials]);
 
   const handleRefresh = () => {
     setRefreshing(true);

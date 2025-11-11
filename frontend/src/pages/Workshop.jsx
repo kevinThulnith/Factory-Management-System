@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 
 function Workshop() {
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [allWorkshops, setAllWorkshops] = useState([]);
@@ -42,13 +43,7 @@ function Workshop() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    fetchWorkshops();
-  }, [fetchWorkshops]);
+  useEffect(() => fetchWorkshops(), [fetchWorkshops]);
 
   const handleRefresh = () => {
     setRefreshing(true);

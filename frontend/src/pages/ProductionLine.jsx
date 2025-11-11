@@ -1,28 +1,29 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
 import {
+  CheckCircle2,
   PlusCircle,
   RefreshCw,
   RotateCcw,
   Activity,
   Factory,
+  XCircle,
   Trash2,
   Search,
+  Wrench,
   Filter,
   Users,
   Edit3,
   Cog,
   Eye,
-  CheckCircle2,
-  XCircle,
-  Wrench,
 } from "lucide-react";
 
 const ProductionLine = () => {
-  const [user, setUser] = useState({});
+  const { user } = useAuth();
   const [allLines, setAllLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,13 +38,7 @@ const ProductionLine = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUser(res.data))
-      .catch((error) => console.error("Failed to fetch user:", error));
-    fetchProductionLines();
-  }, [fetchProductionLines]);
+  useEffect(() => fetchProductionLines(), [fetchProductionLines]);
 
   const handleRefresh = () => {
     setRefreshing(true);
