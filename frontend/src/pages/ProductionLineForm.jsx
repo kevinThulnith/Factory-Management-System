@@ -77,12 +77,9 @@ const ProductionLineForm = () => {
       return;
     }
     setLoading(true);
-    console.log("Fetching production line data for ID:", productionLineId);
-
     api
       .get(`api/production-line/${productionLineId}/`)
       .then((res) => {
-        console.log("Production line data received:", res.data);
         setLine(res.data);
         // Extract machine IDs from the machines array for form data
         const machineIds = Array.isArray(res.data.machines)
