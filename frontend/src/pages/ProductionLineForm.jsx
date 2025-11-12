@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -14,7 +14,6 @@ import {
 import {
   Cog,
   Save,
-  Users,
   Factory,
   XCircle,
   FileText,
@@ -22,10 +21,12 @@ import {
   ListChecks,
   CheckCircle,
   SlidersHorizontal,
+  Wrench,
+  AlertTriangle,
 } from "lucide-react";
 
 const ProductionLineForm = () => {
-  const { lineId } = useParams();
+  const { productionLineId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -34,18 +35,18 @@ const ProductionLineForm = () => {
 
   const { user } = useAuth();
   const [line, setLine] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [pageError, setPageError] = useState("");
   const [allMachines, setAllMachines] = useState([]);
   const [allWorkshops, setAllWorkshops] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
     workshop: "",
-    operational_status: "ACTIVE",
+    description: "",
     production_capacity: "0.00",
+    operational_status: "ACTIVE",
     machines: [],
   });
-  const [pageError, setPageError] = useState("");
-  const [loading, setLoading] = useState({ page: true, action: false });
 
   // Permissions
   const canSubmitFullForm = useMemo(
@@ -54,29 +55,40 @@ const ProductionLineForm = () => {
   );
   const canEditStatusOnly = useMemo(
     () => user && user.role === "MANAGER" && !canSubmitFullForm,
-    [user]
+    [user, canSubmitFullForm]
   );
 
   // Data Fetching
   useEffect(() => {
-    api
-      .get("api/workshop/")
-      .then((res) => setAllWorkshops(res.data.results || res.data));
-    api
-      .get("api/machine/")
-      .then((res) => setAllMachines(res.data.results || res.data));
+    setLoading(true);
+    Promise.all([
+      api
+        .get("api/workshop/")
+        .then((res) => setAllWorkshops(res.data.results || res.data)),
+      api
+        .get("api/machine/")
+        .then((res) => setAllMachines(res.data.results || res.data)),
+    ]).finally(() => setLoading(false));
   }, []);
 
   const fetchLineData = useCallback(() => {
-    if (!lineId) {
-      setLoading((prev) => ({ ...prev, page: false }));
+    if (!productionLineId) {
+      setLoading(false);
       return;
     }
-    setLoading((prev) => ({ ...prev, page: true }));
+    setLoading(true);
+    console.log("Fetching production line data for ID:", productionLineId);
+
     api
-      .get(`api/production-line/${lineId}/`)
+      .get(`api/production-line/${productionLineId}/`)
       .then((res) => {
+        console.log("Production line data received:", res.data);
         setLine(res.data);
+        // Extract machine IDs from the machines array for form data
+        const machineIds = Array.isArray(res.data.machines)
+          ? res.data.machines.map((m) => (typeof m === "object" ? m.id : m))
+          : [];
+
         setFormData({
           name: res.data.name || "",
           description: res.data.description || "",
@@ -85,12 +97,15 @@ const ProductionLineForm = () => {
           production_capacity: parseFloat(
             res.data.production_capacity || 0
           ).toFixed(2),
-          machines: res.data.machines || [],
+          machines: machineIds,
         });
       })
-      .catch(() => setPageError("Failed to load production line details."))
-      .finally(() => setLoading((prev) => ({ ...prev, page: false })));
-  }, [lineId]);
+      .catch((error) => {
+        console.error("Failed to load production line details:", error);
+        setPageError("Failed to load production line details.");
+      })
+      .finally(() => setLoading(false));
+  }, [productionLineId]);
 
   useEffect(() => {
     fetchLineData();
@@ -112,7 +127,7 @@ const ProductionLineForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading((prev) => ({ ...prev, action: true }));
+    setLoading(true);
     setPageError("");
 
     let payload;
@@ -133,31 +148,31 @@ const ProductionLineForm = () => {
       if (isCreateMode) {
         await api.post("api/production-line/", payload);
       } else {
-        await api.patch(`api/production-line/${lineId}/`, payload);
+        await api.patch(`api/production-line/${productionLineId}/`, payload);
       }
       alert("Production Line saved successfully!");
-      navigate("/production-lines");
+      navigate("/production-line");
     } catch (err) {
       setPageError(
         err.response?.data?.detail || "Failed to save production line."
       );
     } finally {
-      setLoading((prev) => ({ ...prev, action: false }));
+      setLoading(false);
     }
   };
 
   const getStatusBadge = (status) => {
     const config = {
       ACTIVE: {
-        color: "bg-green-100 text-green-800",
+        color: "bg-green-200 text-green-800",
         icon: <CheckCircle size={14} />,
       },
       INACTIVE: {
-        color: "bg-red-100 text-red-800",
+        color: "bg-red-200 text-red-800",
         icon: <XCircle size={14} />,
       },
       MAINTENANCE: {
-        color: "bg-yellow-100 text-yellow-800",
+        color: "bg-yellow-200 text-yellow-800",
         icon: <Cog size={14} />,
       },
     }[status];
@@ -169,6 +184,46 @@ const ProductionLineForm = () => {
         {config.icon} {status}
       </span>
     );
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "OPERATIONAL":
+        return (
+          <CheckCircle
+            size={19}
+            className="text-green-800 bg-green-200 rounded-full p-[2.5px]"
+          />
+        );
+      case "IDLE":
+        return (
+          <Activity
+            size={19}
+            className="text-yellow-800 bg-yellow-200 rounded-full p-[2.5px]"
+          />
+        );
+      case "MAINTENANCE":
+        return (
+          <Wrench
+            size={19}
+            className="text-blue-800 bg-blue-200 rounded-full p-[2.5px]"
+          />
+        );
+      case "BROKEN":
+        return (
+          <AlertTriangle
+            size={19}
+            className="text-red-800 bg-red-200 rounded-full p-[2.5px]"
+          />
+        );
+      default:
+        return (
+          <XCircle
+            size={19}
+            className="text-gray-800 bg-gray-200 rounded-full p-1"
+          />
+        );
+    }
   };
 
   const isFieldDisabled = (fieldName) =>
@@ -193,11 +248,11 @@ const ProductionLineForm = () => {
       }
       text_02={"Production Lines"}
       onClick={() => navigate("/production-line")}
-      fnction={() => navigate("/production-line/edit/" + lineId)}
+      fnction={() => navigate("/production-line/edit/" + productionLineId)}
       gradient={"from-amber-600 to-amber-800"}
       isViewMode={isViewMode}
       pageError={pageError}
-      loading={loading.page}
+      loading={loading}
     >
       {isViewMode ? (
         <div className="space-y-8">
@@ -208,6 +263,11 @@ const ProductionLineForm = () => {
               label="Workshop"
               value={line?.workshop_name}
             />
+            <InfoItem
+              icon={<SlidersHorizontal />}
+              label="Production Capacity"
+              value={`${line?.production_capacity || "N/A"} units/hr`}
+            />
             <div className="flex flex-col">
               <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
                 Status
@@ -215,21 +275,6 @@ const ProductionLineForm = () => {
               {line?.operational_status &&
                 getStatusBadge(line.operational_status)}
             </div>
-            <InfoItem
-              icon={<Activity />}
-              label="Efficiency"
-              value={`${line?.efficiency || "N/A"}%`}
-            />
-            <InfoItem
-              icon={<SlidersHorizontal />}
-              label="Capacity"
-              value={`${line?.capacity || "N/A"} units/hr`}
-            />
-            <InfoItem
-              icon={<Users />}
-              label="Supervisor"
-              value={line?.supervisor_name || "N/A"}
-            />
           </div>
           <InfoItem
             icon={<FileText />}
@@ -240,14 +285,48 @@ const ProductionLineForm = () => {
             <h3 className="text-lg font-medium text-stone-300 mb-3 border-b border-stone-700 pb-2 flex items-center gap-2">
               <ListChecks /> Assigned Machines
             </h3>
-            {line?.machines_details?.length > 0 ? (
-              <ul className="space-y-2 mt-4">
-                {line.machines_details.map((machine) => (
+            {line?.machines && line.machines.length > 0 ? (
+              <ul className="space-y-4 mt-4">
+                {line.machines.map((machine) => (
                   <li
                     key={machine.id}
-                    className="p-3 bg-stone-900/50 rounded-md"
+                    className="p-4 bg-card-sub rounded-xl shadow-lg"
                   >
-                    {machine.name} ({machine.model_number})
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-stone-200">
+                          {machine.name}
+                        </h4>
+                        <p className="text-sm text-stone-400 mt-1">
+                          Model: {machine.model_number}
+                        </p>
+                        <div className="mt-2 flex items-center gap-4 text-sm text-stone-400">
+                          {machine.status === "OPERATIONAL" ? (
+                            machine.operator_name ? (
+                              <span className="flex items-center gap-1.5">
+                                {getStatusIcon(machine.status)}
+                                Operator: {machine.operator_name}
+                              </span>
+                            ) : (
+                              <span className="text-stone-500 italic flex items-center gap-1.5">
+                                {getStatusIcon(machine.status)}
+                                No operator assigned
+                              </span>
+                            )
+                          ) : (
+                            <span className="flex items-center gap-1.5">
+                              {getStatusIcon(machine.status)}
+                              {machine.status}
+                            </span>
+                          )}
+                        </div>
+                        {machine.operator_assignments > 0 && (
+                          <p className="text-xs text-stone-500 mt-1">
+                            Assignments: {machine.operator_assignments}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -350,19 +429,17 @@ const ProductionLineForm = () => {
             <button
               type="button"
               onClick={() => navigate("/production-lines")}
-              disabled={loading.action}
+              disabled={loading}
               className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
             >
               <XCircle size={18} /> Cancel
             </button>
             <button
               type="submit"
-              disabled={
-                loading.action || (!canSubmitFullForm && !canEditStatusOnly)
-              }
+              disabled={loading || (!canSubmitFullForm && !canEditStatusOnly)}
               className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading.action ? (
+              {loading ? (
                 "Saving..."
               ) : (
                 <>

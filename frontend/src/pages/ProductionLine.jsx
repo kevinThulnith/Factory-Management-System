@@ -18,6 +18,7 @@ import {
   Filter,
   Users,
   Edit3,
+  Star,
   Cog,
   Eye,
 } from "lucide-react";
@@ -292,12 +293,12 @@ const ProductionLine = () => {
                       </span>
                     </div>
                     <div className="flex items-center text-white">
-                      <Activity
+                      <Star
                         size={16}
                         className="mr-3 text-gray-400 flex-shrink-0"
                       />
                       <span className="truncate">
-                        Efficiency: {line.efficiency || "N/A"}%
+                        Capacity: {line.production_capacity || "N/A"} units/hr
                       </span>
                     </div>
                     <div className="flex items-center text-white">
@@ -306,19 +307,7 @@ const ProductionLine = () => {
                         className="mr-3 text-gray-400 flex-shrink-0"
                       />
                       <span className="truncate">
-                        Capacity: {line.capacity || "N/A"} units/hr
-                      </span>
-                    </div>
-                    <div className="flex items-center text-white">
-                      <Users
-                        size={16}
-                        className="mr-3 text-gray-400 flex-shrink-0"
-                      />
-                      <span
-                        className="truncate"
-                        title={line.supervisor_name || "Unassigned"}
-                      >
-                        {line.supervisor_name || "Unassigned"}
+                        {line.machines.length + " machines" || "Unassigned"}
                       </span>
                     </div>
                   </div>
