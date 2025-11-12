@@ -1,3 +1,4 @@
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.serializers import SocialLoginSerializer
 from .models import User, _
 
@@ -103,9 +104,6 @@ class UserUpdateSerializer(ModelSerializer):
             user.save()
 
         return user
-
-
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 
 
 class GoogleLoginSerializer(SocialLoginSerializer):

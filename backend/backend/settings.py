@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     # !Third Party Apps
+    "channels",
     "corsheaders",
     "django_filters",
     "whitenoise.runserver_nostatic",
@@ -126,10 +127,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
-
+ASGI_APPLICATION = "backend.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                (os.getenv("REDIS_HOST", "127.0.0.1"), os.getenv("REDIS_PORT", 6379))
+            ],
+        },
+    },
+}
 
 DATABASES = {
     "default": {
