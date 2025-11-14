@@ -5,7 +5,6 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { FaUser } from "react-icons/fa";
 import logo from "../assets/logo1.png";
-import api from "../api";
 
 const NavItem = memo(({ to, label, onClick, className, icon }) => (
   <NavLink to={to} className={className} onClick={onClick}>
