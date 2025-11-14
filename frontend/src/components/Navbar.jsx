@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { BsLayoutSidebarReverse } from "react-icons/bs";
 import MenuItems from "../assets/MenuItems";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { FaUser } from "react-icons/fa";
 import logo from "../assets/logo1.png";
 import api from "../api";
@@ -18,16 +19,11 @@ const capitalizeGroupName = (name) => {
 };
 
 function Navbar() {
-  const [userInfo, setUserInfo] = useState({});
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
 
   useEffect(() => {
-    api
-      .get("api/user/me/")
-      .then((res) => setUserInfo(res.data))
-      .catch((error) => alert(error));
-
     const checkWindowSize = () => {
       if (window.innerWidth >= 1024) setIsMenuOpen(true);
       else setIsMenuOpen(false);
@@ -59,10 +55,10 @@ function Navbar() {
   // Function to filter menu items based on user role
   const filterMenuItemsByRole = useCallback(
     (items) => {
-      if (!userInfo.role) return [];
-      return items.filter((item) => item.roles.includes(userInfo.role));
+      if (!user || !user.role) return [];
+      return items.filter((item) => item.roles.includes(user.role));
     },
-    [userInfo.role]
+    [user]
   );
 
   return (
@@ -83,14 +79,16 @@ function Navbar() {
 
         <div className="flex items-center gap-4">
           {/* Profile Indicator */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#5a5a5a] flex items-center justify-center">
-              <FaUser className="text-stone-200 text-1xl" />
+          {user && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#5a5a5a] flex items-center justify-center">
+                <FaUser className="text-stone-200 text-1xl" />
+              </div>
+              <span className="text-star-dust-200 capitalize text-[18px]">
+                {user.username}
+              </span>
             </div>
-            <span className="text-star-dust-200 capitalize text-[18px]">
-              {userInfo.username}
-            </span>
-          </div>
+          )}
 
           {/* Menu button */}
           <div className="lg:hidden" onClick={toggleMenu}>
