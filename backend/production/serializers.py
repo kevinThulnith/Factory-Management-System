@@ -71,7 +71,7 @@ class ProductionLineSerializer(ModelSerializer):
 
                 instance.machines.set(machines)
             except Exception as e:
-                raise ValidationError(f"Error setting machines: {str(e)}")
+                raise ValidationError("Invalid machine IDs provided.")
 
         return instance
 
