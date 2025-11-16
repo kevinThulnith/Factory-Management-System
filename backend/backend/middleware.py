@@ -1,13 +1,34 @@
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 from channels.db import database_sync_to_async
+from django.http import HttpResponse
 from urllib.parse import parse_qs
+import asyncio
 import logging
 import time
 
 logger = logging.getLogger(__name__)
 
 # TODO: Show execution for API requests
+
+
+class CancelledErrorMiddleware:
+    """
+    Middleware to handle CancelledError exceptions gracefully in ASGI.
+    Prevents error logs when client disconnects during request processing.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            response = self.get_response(request)
+            return response
+        except asyncio.CancelledError:
+            # Client disconnected, return empty response
+            logger.debug(f"Request cancelled: {request.method} {request.path}")
+            return HttpResponse(status=499)  # 499 Client Closed Request
 
 
 class RequestTimeLoggingMiddleware:
@@ -35,11 +56,12 @@ class RequestTimeLoggingMiddleware:
         else:
             time_display = f"{execution_time_ms:.2f}ms"
 
-        # Log the execution time
-        logger.info(
-            f"{request.method} {request.path} - Status: {response.status_code} - "
-            f"⌛: {time_display}"
-        )
+        # Log the execution time (skip logging for client cancelled requests)
+        if response.status_code != 499:
+            logger.info(
+                f"{request.method} {request.path} - Status: {response.status_code} - "
+                f"⌛: {time_display}"
+            )
 
         # Optionally add execution time to response headers
         response["X-Execution-Time"] = f"{execution_time:.4f}s"

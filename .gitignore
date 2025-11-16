@@ -11,6 +11,7 @@ dist/
 backend/media/invoices/
 .venv/
 .env
+.env.*
 
 # Project files
 .DS_Store
