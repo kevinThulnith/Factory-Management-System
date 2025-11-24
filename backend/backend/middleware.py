@@ -1,13 +1,18 @@
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken
+from django.utils.deprecation import MiddlewareMixin
 from channels.db import database_sync_to_async
 from django.http import HttpResponse
 from urllib.parse import parse_qs
+from rich.console import Console
+from rich.text import Text
 import asyncio
 import logging
 import time
 
 logger = logging.getLogger(__name__)
+console = Console()
+
 
 # TODO: Show execution for API requests
 
@@ -33,38 +38,65 @@ class CancelledErrorMiddleware:
 
 class RequestTimeLoggingMiddleware:
     """
-    Middleware to log the execution time of each request
+    Middleware to log the execution time of each request with stylized badges.
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        # Record start time
         start_time = time.time()
 
-        # Process the request
         response = self.get_response(request)
 
-        # Calculate execution time
         execution_time = time.time() - start_time
-        execution_time_ms = execution_time * 1000
 
-        # Format execution time display
-        if execution_time_ms > 999:
-            time_display = f"{int(execution_time)}s"
+        # Format time logic
+        if execution_time >= 1:
+            time_display = f"{execution_time:.2f}s"
         else:
-            time_display = f"{execution_time_ms:.2f}ms"
+            time_display = f"{execution_time * 1000:.2f}ms"
 
-        # Log the execution time (skip logging for client cancelled requests)
-        if response.status_code != 499:
-            logger.info(
-                f"{request.method} {request.path} - Status: {response.status_code} - "
-                f"⌛: {time_display}"
-            )
+        # Skip logging for client cancelled requests (499)
+        if response.status_code == 499:
+            return response
 
-        # Optionally add execution time to response headers
-        response["X-Execution-Time"] = f"{execution_time:.4f}s"
+        # --- STYLING LOGIC ---
+        status_code = response.status_code
+
+        # Default settings (Blue INFO)
+        badge_text = " INFO "
+        badge_style = "bold white on blue"
+
+        # Dynamic styling based on Status Code
+        if 200 <= status_code < 300:
+            badge_text = " SUCCESS "
+            badge_style = "bold black on green"  # Black text on green looks better
+        elif 400 <= status_code < 500:
+            badge_text = " WARNING "
+            badge_style = "bold black on yellow"
+        elif status_code >= 500:
+            badge_text = " ERROR "
+            badge_style = "bold white on red"
+
+        # Construct the log message
+        # 1. The Badge
+        log_text = Text(badge_text, style=badge_style)
+        log_text.append(" ")  # Spacer
+
+        # 2. The Request Info
+        log_text.append(f"{request.method} ", style="bold cyan")
+        log_text.append(f"{request.path} ", style="white")
+
+        # 3. The Status
+        status_style = "green" if status_code < 400 else "red"
+        log_text.append(f"- Status: {status_code} ", style=status_style)
+
+        # 4. The Time
+        log_text.append(f"- ⌛ {time_display}", style="yellow")
+
+        # Print using Rich Console
+        console.print(log_text)
 
         return response
 

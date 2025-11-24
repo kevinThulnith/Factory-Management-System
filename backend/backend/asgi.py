@@ -8,12 +8,31 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from .middleware import JWTAuthMiddleware
 
+# ! Routings
+import core.routing
+import main.routing
+import labor.routing
+import product.routing
+import project.routing
+import inventory.routing
+import production.routing
+
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
         "websocket": AllowedHostsOriginValidator(
             JWTAuthMiddleware(
-                URLRouter([])  # Import and add your websocket URL routes here
+                URLRouter(
+                    [
+                        core.routing.websocket_urlpatterns,
+                        main.routing.websocket_urlpatterns,
+                        labor.routing.websocket_urlpatterns,
+                        product.routing.websocket_urlpatterns,
+                        project.routing.websocket_urlpatterns,
+                        inventory.routing.websocket_urlpatterns,
+                        production.routing.websocket_urlpatterns,
+                    ]
+                )
             )
         ),
     }
