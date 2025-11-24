@@ -1,5 +1,7 @@
-from django.urls import re_path
 from .consumers import MaterialConsumer, SupplierConsumer, OrderConsumer
+from django.urls import re_path
+
+# ! WebSocket URL patterns for inventory app
 
 websocket_urlpatterns = [
     re_path(r"ws/materials/$", MaterialConsumer.as_asgi()),

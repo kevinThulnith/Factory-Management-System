@@ -1,4 +1,9 @@
+from .consumers import ProjectConsumer, TaskConsumer
 from django.urls import re_path
-from . import consumers
 
-websocket_urlpatterns = [re_path(r"ws/users/$", consumers.UserConsumer.as_asgi())]
+# ! WebSocket routing for project app
+
+websocket_urlpatterns = [
+    re_path(r"ws/projects/$", ProjectConsumer.as_asgi()),
+    re_path(r"ws/tasks/$", TaskConsumer.as_asgi()),
+]

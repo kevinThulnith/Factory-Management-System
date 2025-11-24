@@ -89,7 +89,7 @@ class RequestTimeLoggingMiddleware:
         log_text.append(f"{request.path} ", style="white")
 
         # 3. The Status
-        status_style = "green" if status_code < 400 else "red"
+        status_style = "black" if status_code < 400 else "blue"
         log_text.append(f"- Status: {status_code} ", style=status_style)
 
         # 4. The Time

@@ -23,15 +23,13 @@ application = ProtocolTypeRouter(
         "websocket": AllowedHostsOriginValidator(
             JWTAuthMiddleware(
                 URLRouter(
-                    [
-                        core.routing.websocket_urlpatterns,
-                        main.routing.websocket_urlpatterns,
-                        labor.routing.websocket_urlpatterns,
-                        product.routing.websocket_urlpatterns,
-                        project.routing.websocket_urlpatterns,
-                        inventory.routing.websocket_urlpatterns,
-                        production.routing.websocket_urlpatterns,
-                    ]
+                    core.routing.websocket_urlpatterns
+                    + main.routing.websocket_urlpatterns
+                    + labor.routing.websocket_urlpatterns
+                    + product.routing.websocket_urlpatterns
+                    + project.routing.websocket_urlpatterns
+                    + inventory.routing.websocket_urlpatterns
+                    + production.routing.websocket_urlpatterns
                 )
             )
         ),
