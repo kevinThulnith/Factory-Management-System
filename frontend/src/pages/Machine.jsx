@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   AlertTriangle,
@@ -36,14 +38,7 @@ function Machine() {
     workshop: "all",
   });
 
-  const fetchMachines = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/machine/")
-      .then((res) => setAllMachines(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch machines. Please try again."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchMachines = useFetchData("machine", setLoading, setAllMachines);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -51,29 +46,14 @@ function Machine() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  useEffect(() => fetchMachines(), [fetchMachines]);
+  useWebSocket("machines", setAllMachines, fetchMachines);
 
-  const handleDeleteMachine = (machineId, machineName) => {
-    if (user.role !== "ADMIN") {
-      alert("Only administrators can delete machines.");
-      return;
-    }
-    if (
-      window.confirm(
-        `Are you sure you want to delete machine "${machineName}"?`
-      )
-    ) {
-      api
-        .delete(`api/machines/${machineId}/`)
-        .then(() => {
-          setAllMachines((prevMachines) =>
-            prevMachines.filter((machine) => machine.id !== machineId)
-          );
-          alert(`Machine "${machineName}" has been deleted.`);
-        })
-        .catch(() => alert("Failed to delete machine. Please try again."));
-    }
-  };
+  const handleDeleteMachine = useDelete(
+    "machine",
+    setLoading,
+    "machine",
+    fetchMachines
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -451,9 +431,7 @@ function Machine() {
                             )}
                             {canDelete && (
                               <button
-                                onClick={() =>
-                                  handleDeleteMachine(machine.id, machine.name)
-                                }
+                                onClick={() => handleDeleteMachine(machine.id)}
                                 className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                                 title="Delete Machine"
                               >

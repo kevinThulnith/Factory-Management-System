@@ -23,7 +23,7 @@ class DepartmentViewSet(ModelViewSet):
     """
     Departments API
     - Admins: Full CRUD.
-    - Supervisors: Read-only access to their departments.
+    - Other users: Read-only access to their assigned department.
     """
 
     serializer_class = DepartmentSerializer
@@ -35,8 +35,8 @@ class DepartmentViewSet(ModelViewSet):
         if user.role == "ADMIN":
             return Department.objects.all().select_related("supervisor")
 
-        if user.role == "SUPERVISOR":
-            return Department.objects.filter(supervisor=user).select_related(
+        if user.department_id:
+            return Department.objects.filter(id=user.department_id).select_related(
                 "supervisor"
             )
 

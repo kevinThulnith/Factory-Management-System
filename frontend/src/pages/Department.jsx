@@ -1,12 +1,13 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useState, useMemo, useCallback } from "react";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   ChevronRight,
-  ChevronLeft,
   PlusCircle,
   Building2,
   UserCheck,
@@ -34,18 +35,16 @@ function Department() {
   const [filterBy, setFilterBy] = useState("all");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+
   const isAdmin = user && user.role === "ADMIN";
 
-  const fetchDepartments = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/department/")
-      .then((deptRes) => setAllDepartments(deptRes.data))
-      .catch((error) => alert(error))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchDepartments = useFetchData(
+    "department",
+    setLoading,
+    setAllDepartments
+  );
 
-  useEffect(() => fetchDepartments(), [fetchDepartments]);
+  useWebSocket("departments", setAllDepartments, fetchDepartments);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -53,27 +52,12 @@ function Department() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this department?")) {
-      setLoading(true);
-      api
-        .delete(`api/department/${id}/`)
-        .then(() => {
-          alert("Department deleted successfully");
-          fetchDepartments();
-        })
-        .catch((error) => {
-          if (error.response && error.response.status === 400) {
-            alert(
-              "Cannot delete department with assigned users. Please reassign or remove users first."
-            );
-          } else {
-            alert("An error occurred. Please try again later.");
-          }
-        })
-        .finally(() => setLoading(false));
-    }
-  };
+  const handleDelete = useDelete(
+    "department",
+    setLoading,
+    "department",
+    fetchDepartments
+  );
 
   const handleSearchChange = useCallback((event) => {
     setSearchTerm(event.target.value);
@@ -471,7 +455,7 @@ function Department() {
                                 <Edit3 size={20} />
                               </Link>
                               <button
-                                onClick={() => handleDelete(dept.id, dept.name)}
+                                onClick={() => handleDelete(dept.id)}
                                 className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                                 title="Delete Department"
                               >

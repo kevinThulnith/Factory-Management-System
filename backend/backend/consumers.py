@@ -16,7 +16,7 @@ class DummyRequest:
 
 
 class ConsumerBlock(AsyncWebsocketConsumer):
-    """Base consumer class for WebSocket consumers with permission checks."""
+    "Base consumer class for WebSocket consumers with permission checks."
 
     # !Essential
     group_name = None

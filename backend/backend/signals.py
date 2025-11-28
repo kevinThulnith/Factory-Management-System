@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 
 class DummyRequest:
-    """Dummy request object for serializer context"""
+    "Dummy request object for serializer context"
 
     def build_absolute_uri(self, location):
         return location
@@ -14,7 +14,7 @@ class DummyRequest:
 def create_model_change_signal(
     model, serializer_class, group_name, event_type, permission_class=None
 ):
-    """Factory function to create signal handlers for model changes with permission filtering."""
+    "Factory function to create signal handlers for model changes with permission filtering."
 
     @receiver([post_save, post_delete], sender=model)
     def model_change_handler(sender, instance, **kwargs):

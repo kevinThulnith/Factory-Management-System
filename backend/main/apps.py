@@ -15,3 +15,5 @@ class MainConfig(AppConfig):
         # Add the missing method to the base GoogleProvider class
         if not hasattr(GoogleProvider, "get_scope_from_request"):
             GoogleProvider.get_scope_from_request = get_scope_from_request
+
+        import main.signals

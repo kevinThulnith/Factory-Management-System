@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   PlusCircle,
@@ -32,16 +34,9 @@ const Supplier = () => {
     sortBy: "name-asc",
   });
 
-  const fetchSuppliers = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/supplier/")
-      .then((res) => setAllSuppliers(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch suppliers."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchSuppliers = useFetchData("supplier", setLoading, setAllSuppliers);
 
-  useEffect(() => fetchSuppliers(), [fetchSuppliers]);
+  useWebSocket("suppliers", setAllSuppliers, fetchSuppliers);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -49,23 +44,12 @@ const Supplier = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (id, supplierName) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete supplier "${supplierName}"?`
-      )
-    ) {
-      api
-        .delete(`api/supplier/${id}/`)
-        .then(() => {
-          setAllSuppliers((prev) => prev.filter((sup) => sup.id !== id));
-          alert(`Supplier "${supplierName}" has been deleted.`);
-        })
-        .catch(() =>
-          alert("Failed to delete supplier. It may be linked to other records.")
-        );
-    }
-  };
+  const handleDelete = useDelete(
+    "supplier",
+    allSuppliers,
+    setAllSuppliers,
+    "Supplier"
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -306,9 +290,7 @@ const Supplier = () => {
                           <Edit3 size={20} />
                         </Link>
                         <button
-                          onClick={() =>
-                            handleDelete(supplier.id, supplier.name)
-                          }
+                          onClick={() => handleDelete(supplier.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Supplier"
                         >

@@ -1,6 +1,5 @@
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken
-from django.utils.deprecation import MiddlewareMixin
 from channels.db import database_sync_to_async
 from django.http import HttpResponse
 from urllib.parse import parse_qs
@@ -37,9 +36,7 @@ class CancelledErrorMiddleware:
 
 
 class RequestTimeLoggingMiddleware:
-    """
-    Middleware to log the execution time of each request with stylized badges.
-    """
+    "Middleware to log the execution time of each request with stylized badges."
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -103,10 +100,10 @@ class RequestTimeLoggingMiddleware:
 
 @database_sync_to_async
 def get_user(token_key):
-    """
-    Asynchronously get the user from the database given a token.
-    """
-    from django.contrib.auth.models import User, AnonymousUser
+    "Asynchronously get the user from the database given a token."
+
+    from main.models import User
+    from django.contrib.auth.models import AnonymousUser
 
     try:
         # Validate the token
@@ -121,9 +118,7 @@ def get_user(token_key):
 
 
 class JWTAuthMiddleware:
-    """
-    Custom middleware for JWT authentication with WebSockets.
-    """
+    "Custom middleware for JWT authentication with WebSockets."
 
     def __init__(self, app):
         self.app = app

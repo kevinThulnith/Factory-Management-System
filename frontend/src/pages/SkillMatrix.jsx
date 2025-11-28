@@ -1,9 +1,11 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { SKILL_CATEGORIES, SKILL_LEVELS } from "../constants";
+import useFetchData from "../hooks/useFetchData";
+import useWebSocket from "../hooks/useWebSocket";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   PlusCircle,
@@ -47,26 +49,13 @@ const SkillMatrix = () => {
   const [loading, setLoading] = useState(false);
   const [allSkills, setAllSkills] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [allEmployees, setAllEmployees] = useState([]);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [sortConfig, setSortConfig] = useState(INITIAL_SORT);
 
-  const fetchData = useCallback(() => {
-    setLoading(true);
-    Promise.all([api.get("api/skill-matrix/"), api.get("api/user/")])
-      .then(([skillsRes, usersRes]) => {
-        setAllSkills(skillsRes.data.results || skillsRes.data);
-        setAllEmployees(usersRes.data.results || usersRes.data);
-      })
-      .catch(() => {
-        alert("Failed to fetch data. Please try again.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const fetchData = useFetchData("skill-matrix", setLoading, setAllSkills);
 
-  useEffect(() => fetchData(), [fetchData]);
+  // useEffect(() => fetchData(), [fetchData]);
+  useWebSocket("skill-matrix", setAllSkills, fetchData);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -74,21 +63,12 @@ const SkillMatrix = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (skillId, skillName, employeeName) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete skill "${skillName}" for ${employeeName}?`
-      )
-    ) {
-      api
-        .delete(`api/skill-matrix/${skillId}/`)
-        .then(() => {
-          setAllSkills((prev) => prev.filter((s) => s.id !== skillId));
-          alert(`Skill entry for ${employeeName} has been deleted.`);
-        })
-        .catch(() => alert("Failed to delete skill entry."));
-    }
-  };
+  const handleDelete = useDelete(
+    "skill entry",
+    setLoading,
+    "skill-matrix",
+    fetchData
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -105,20 +85,25 @@ const SkillMatrix = () => {
     }));
   };
 
-  // Memoized processed skills
+  // Memoized processed skills - employee_name comes from API
   const processedSkills = useMemo(() => {
-    const employeeMap = new Map(
-      allEmployees.map((emp) => [
-        emp.id,
-        `${emp.first_name || ""} ${emp.last_name || ""}`.trim() || emp.username,
-      ])
-    );
     return allSkills.map((skill) => ({
       ...skill,
-      employee_name: employeeMap.get(skill.employee) || "Unknown User",
+      employee_name: skill.employee_name || "Unknown User",
       category_display: skill.category?.replace(/_/g, " ") || "N/A",
     }));
-  }, [allSkills, allEmployees]);
+  }, [allSkills]);
+
+  // Get unique employees from skills data for filter dropdown
+  const uniqueEmployees = useMemo(() => {
+    const employeeMap = new Map();
+    allSkills.forEach((skill) => {
+      if (skill.employee && !employeeMap.has(skill.employee)) {
+        employeeMap.set(skill.employee, skill.employee_name || "Unknown User");
+      }
+    });
+    return Array.from(employeeMap, ([id, name]) => ({ id, name }));
+  }, [allSkills]);
 
   // Client-side filtering and sorting
   const filteredAndSortedSkills = useMemo(() => {
@@ -286,10 +271,9 @@ const SkillMatrix = () => {
               className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
             >
               <option value="">All Employees</option>
-              {allEmployees.map((emp) => (
+              {uniqueEmployees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
-                  {`${emp.first_name || ""} ${emp.last_name || ""}`.trim() ||
-                    emp.username}
+                  {emp.name}
                 </option>
               ))}
             </select>
@@ -418,13 +402,7 @@ const SkillMatrix = () => {
                               <Edit3 size={18} />
                             </Link>
                             <button
-                              onClick={() =>
-                                handleDelete(
-                                  skill.id,
-                                  skill.name,
-                                  skill.employee_name
-                                )
-                              }
+                              onClick={() => handleDelete(skill.id)}
                               className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                               title="Delete Skill"
                             >

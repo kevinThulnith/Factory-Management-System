@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   CheckCircle2,
@@ -16,7 +18,6 @@ import {
   Search,
   Wrench,
   Filter,
-  Users,
   Edit3,
   Star,
   Cog,
@@ -30,16 +31,13 @@ const ProductionLine = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({ searchTerm: "", status: "all" });
 
-  const fetchProductionLines = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/production-line/")
-      .then((res) => setAllLines(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch production lines."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchProductionLines = useFetchData(
+    "production-line",
+    setLoading,
+    setAllLines
+  );
 
-  useEffect(() => fetchProductionLines(), [fetchProductionLines]);
+  useWebSocket("production-lines", setAllLines, fetchProductionLines);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -47,21 +45,12 @@ const ProductionLine = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (id, lineName) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete production line "${lineName}"?`
-      )
-    ) {
-      api
-        .delete(`api/production-line/${id}/`)
-        .then(() => {
-          setAllLines((prev) => prev.filter((line) => line.id !== id));
-          alert(`Production line "${lineName}" has been deleted.`);
-        })
-        .catch(() => alert("Failed to delete line. It might be in use."));
-    }
-  };
+  const handleDelete = useDelete(
+    "production line",
+    setLoading,
+    "production-line",
+    fetchProductionLines
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -333,7 +322,7 @@ const ProductionLine = () => {
                             <Edit3 size={20} />
                           </Link>
                           <button
-                            onClick={() => handleDelete(line.id, line.name)}
+                            onClick={() => handleDelete(line.id)}
                             className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                             title="Delete Production Line"
                           >

@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   ClipboardList,
@@ -28,16 +30,9 @@ const Product = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({ searchTerm: "", status: "all" });
 
-  const fetchProducts = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/product/")
-      .then((res) => setAllProducts(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch products."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchProducts = useFetchData("product", setLoading, setAllProducts);
 
-  useEffect(() => fetchProducts(), [fetchProducts]);
+  useWebSocket("products", setAllProducts, fetchProducts);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -45,21 +40,12 @@ const Product = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (id, productName) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete product "${productName}"?`
-      )
-    ) {
-      api
-        .delete(`api/product/${id}/`)
-        .then(() => {
-          setAllProducts((prev) => prev.filter((p) => p.id !== id));
-          alert(`Product "${productName}" has been deleted.`);
-        })
-        .catch(() => alert("Failed to delete product. It may be in use."));
-    }
-  };
+  const handleDelete = useDelete(
+    "product",
+    setLoading,
+    "product",
+    setAllProducts
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -279,7 +265,7 @@ const Product = () => {
                           <Edit3 size={20} />
                         </Link>
                         <button
-                          onClick={() => handleDelete(product.id, product.name)}
+                          onClick={() => handleDelete(product.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Product"
                         >

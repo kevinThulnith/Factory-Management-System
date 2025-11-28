@@ -186,11 +186,11 @@ const SkillForm = () => {
     };
 
     const mySkillsEndpoint = skillMatrixId
-      ? `api/skill/my-skills/${skillMatrixId}/`
-      : `api/skill/my-skills/`;
+      ? `api/skill-matrix/${skillMatrixId}/`
+      : `api/skill-matrix/`;
     const adminEndpoint = skillMatrixId
-      ? `api/skill/${skillMatrixId}/`
-      : `api/skill/`;
+      ? `api/skill-matrix/${skillMatrixId}/`
+      : `api/skill-matrix/`;
     const endpoint = isMySkillsMode ? mySkillsEndpoint : adminEndpoint;
     const method = skillMatrixId ? "patch" : "post";
 

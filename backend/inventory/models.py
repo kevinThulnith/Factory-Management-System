@@ -38,7 +38,7 @@ class Material(Model):
 
     class Meta:
         ordering = ["name"]
-        indexes = [Index(fields=["name"]), Index(fields=["quantity"])]
+        indexes = [Index(fields=["quantity"])]
         constraints = [
             CheckConstraint(
                 check=Q(quantity__gte=0), name="material_quantity_non_negative"
@@ -148,15 +148,12 @@ class Order(Model):
         else:
             # !cant create an order as RECEIVED
             if self.status == self.OrderStatus.RECEIVED:
-                raise ValueError(_("Cannot create an order directly as RECEIVED."))
+                raise ValidationError(_("Cannot create an order directly as RECEIVED."))
 
-        # Perform the check before saving
-        if is_receiving:
-            # <-- ADD THIS CHECK
-            if not self.invoice:
-                raise ValidationError(
-                    _("Cannot change status to RECEIVED without uploading an invoice.")
-                )
+        if is_receiving and (not self.invoice):
+            raise ValidationError(
+                _("Cannot change status to RECEIVED without uploading an invoice.")
+            )
 
         super().save(*args, **kwargs)
 
@@ -190,6 +187,19 @@ class OrderMaterial(Model):
         ordering = ["order"]
         unique_together = ["order", "material"]
         indexes = [Index(fields=["order"]), Index(fields=["material"])]
+        constraints = [
+            CheckConstraint(
+                check=Q(quantity__gt=0), name="order_material_quantity_positive"
+            ),
+            CheckConstraint(
+                check=Q(unit_price__gte=0),
+                name="order_material_unit_price_non_negative",
+            ),
+            CheckConstraint(
+                check=Q(total_price__gte=0),
+                name="order_material_total_price_non_negative",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.material.name} - {self.unit_price} - {self.quantity} -> {self.total_price}"
@@ -205,12 +215,23 @@ class OrderMaterial(Model):
         super().save(*args, **kwargs)
         self.update_order_total()
 
+    def delete(self, *args, **kwargs):
+        order = self.order
+        super().delete(*args, **kwargs)
+        self._calculate_and_save_order_total(order)
+
     def update_order_total(self):
-        "Recalculate the order total based on all materials."
+        self._calculate_and_save_order_total(self.order)
+
+    @transaction.atomic
+    def _calculate_and_save_order_total(self, order):
+        "Recalculate and save order total. Triggers Order signals."
         total = (
-            OrderMaterial.objects.filter(order=self.order).aggregate(
+            OrderMaterial.objects.filter(order=order).aggregate(
                 total=Sum("total_price")
             )["total"]
             or 0.00
         )
-        Order.objects.filter(pk=self.order.pk).update(total=total)
+
+        order.total = total
+        order.save(update_fields=["total", "updated_at"])

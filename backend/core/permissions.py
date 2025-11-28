@@ -24,15 +24,16 @@ class DepartmentPermissions(PermissionBlock):
     """
     Custom permissions for Department API:
     - Admins: Full CRUD.
-    - Supervisors: Read-only access to their departments.
+    - Other users: Read-only access to their assigned department.
     """
 
     def has_permission(self, request, view):
         if super().has_permission(request, view):
             return True
 
+        # Allow read-only access for authenticated users with assigned department
         if request.method in SAFE_METHODS:
-            return request.user.role == "SUPERVISOR"
+            return request.user.department_id is not None
 
         return False
 
@@ -40,8 +41,9 @@ class DepartmentPermissions(PermissionBlock):
         if super().has_object_permission(request, view, obj):
             return True
 
-        if request.user.role == "SUPERVISOR":
-            return obj.supervisor == request.user
+        # Allow any user to see the department they are assigned to
+        if request.user.department == obj:
+            return True
 
         return False
 

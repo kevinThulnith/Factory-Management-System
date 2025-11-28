@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   AlertTriangle,
@@ -27,23 +29,12 @@ const MaterialListPage = () => {
 
   const [filters, setFilters] = useState({
     searchTerm: "",
-    status: "all", // all, low-stock, in-stock
+    status: "all",
   });
 
-  // Fetch materials
-  const fetchMaterials = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/material/")
-      .then((res) => {
-        const materialsData = res.data.results || res.data;
-        setAllMaterials(materialsData);
-      })
-      .catch(() => alert("Failed to fetch materials. Please try again."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchMaterials = useFetchData("material", setLoading, setAllMaterials);
 
-  useEffect(() => fetchMaterials(), [fetchMaterials]);
+  useWebSocket("materials", setAllMaterials, fetchMaterials);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -51,27 +42,12 @@ const MaterialListPage = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (id, materialName) => {
-    if (user.role !== "ADMIN") {
-      alert("Only administrators can delete materials.");
-      return;
-    }
-    if (
-      window.confirm(
-        `Are you sure you want to delete material "${materialName}"?`
-      )
-    ) {
-      api
-        .delete(`api/materials/${id}/`)
-        .then(() => {
-          setAllMaterials((prevMaterials) =>
-            prevMaterials.filter((material) => material.id !== id)
-          );
-          alert(`Material "${materialName}" has been deleted.`);
-        })
-        .catch(() => alert("Failed to delete material. Please try again."));
-    }
-  };
+  const handleDelete = useDelete(
+    "material",
+    setLoading,
+    "Material",
+    fetchMaterials
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -408,9 +384,7 @@ const MaterialListPage = () => {
                               )}
                               {canDelete && (
                                 <button
-                                  onClick={() =>
-                                    handleDelete(material.id, material.name)
-                                  }
+                                  onClick={() => handleDelete(material.id)}
                                   className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                                   title="Delete Material"
                                 >

@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   AlertTriangle,
@@ -34,16 +36,9 @@ function Workshop() {
     department: "all",
   });
 
-  const fetchWorkshops = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/workshop/")
-      .then((res) => setAllWorkshops(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch workshops. Please try again."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchWorkshops = useFetchData("workshop", setLoading, setAllWorkshops);
 
-  useEffect(() => fetchWorkshops(), [fetchWorkshops]);
+  useWebSocket("workshops", setAllWorkshops, fetchWorkshops);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -51,23 +46,12 @@ function Workshop() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDeleteWorkshop = (workshopId, workshopName) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete workshop "${workshopName}"?`
-      )
-    ) {
-      api
-        .delete(`api/workshop/${workshopId}/`)
-        .then(() => {
-          setAllWorkshops((prevWorkshops) =>
-            prevWorkshops.filter((workshop) => workshop.id !== workshopId)
-          );
-          alert(`Workshop "${workshopName}" has been deleted.`);
-        })
-        .catch(() => alert("Failed to delete workshop. Please try again."));
-    }
-  };
+  const handleDeleteWorkshop = useDelete(
+    "workshop",
+    setLoading,
+    "workshop",
+    fetchWorkshops
+  );
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -420,10 +404,7 @@ function Workshop() {
                             {canDelete && (
                               <button
                                 onClick={() =>
-                                  handleDeleteWorkshop(
-                                    workshop.id,
-                                    workshop.name
-                                  )
+                                  handleDeleteWorkshop(workshop.id)
                                 }
                                 className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                                 title="Delete Workshop"

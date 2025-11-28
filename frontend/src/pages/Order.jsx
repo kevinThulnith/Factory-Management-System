@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   PackageCheck,
@@ -33,16 +35,9 @@ const Order = () => {
     direction: "desc",
   });
 
-  const fetchOrders = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/order/")
-      .then((res) => setAllOrders(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch purchase orders."))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchOrders = useFetchData("order", setLoading, setAllOrders);
 
-  useEffect(() => fetchOrders(), [fetchOrders]);
+  useWebSocket("orders", setAllOrders, fetchOrders);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -50,23 +45,7 @@ const Order = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleDelete = (id) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete Order #${id}? This can only be done for Draft orders.`
-      )
-    ) {
-      api
-        .delete(`api/order/${id}/`)
-        .then(() => {
-          setAllOrders((prev) => prev.filter((o) => o.id !== id));
-          alert(`Order #${id} has been deleted.`);
-        })
-        .catch(() =>
-          alert("Failed to delete order. It may have been processed already.")
-        );
-    }
-  };
+  const handleDelete = useDelete("order", setLoading, "order", fetchOrders);
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));

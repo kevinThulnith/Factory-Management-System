@@ -13,7 +13,7 @@ class ProductSerializer(ModelSerializer):
         read_only_fields = ["updated_at"]
 
     def get_processes(self, obj):
-        return (
+        return list(
             obj.product_processes.select_related("process")
             .order_by("sequence")
             .values("sequence", "process__name")
