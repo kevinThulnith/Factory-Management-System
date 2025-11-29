@@ -197,12 +197,8 @@ const ProductForm = () => {
             Object.values(errorData).flat().join(", ") ||
               "Failed to save product."
           );
-        } else {
-          setPageError(errorData || "Failed to save product.");
-        }
-      } else {
-        setPageError("An error occurred. Please try again.");
-      }
+        } else setPageError(errorData || "Failed to save product.");
+      } else setPageError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

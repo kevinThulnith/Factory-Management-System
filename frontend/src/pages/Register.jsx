@@ -3,7 +3,7 @@ import { USER_ROLES, USER_ROLE_LABELS } from "../constants";
 import { useState, useEffect } from "react";
 import api from "../api";
 
-// Render input fiels
+// !Render input fields
 const InputItem = ({ label, name, caption, ...props }) => (
   <div className="flex flex-col mb-[-5px]">
     <label htmlFor={name} className="mb-2 text-sm ml-1">
@@ -60,7 +60,7 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate passwords match
+    // !Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match");
       return;
@@ -85,7 +85,7 @@ function Register() {
       };
 
       await api.post("api/user/", submitData);
-      alert("New user created succesfully!!!");
+      alert("New user created successfully !!!");
       window.location.href = "/";
     } catch (err) {
       const errorMessage =

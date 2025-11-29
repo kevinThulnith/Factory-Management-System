@@ -14,15 +14,15 @@ import {
 import {
   Cog,
   Save,
+  Wrench,
   Factory,
   XCircle,
   FileText,
   Activity,
   ListChecks,
   CheckCircle,
-  SlidersHorizontal,
-  Wrench,
   AlertTriangle,
+  SlidersHorizontal,
 } from "lucide-react";
 
 const ProductionLineForm = () => {
@@ -137,7 +137,7 @@ const ProductionLineForm = () => {
         workshop: formData.workshop,
         operational_status: formData.operational_status,
         production_capacity: formData.production_capacity,
-        machines: formData.machines,
+        machine_ids: formData.machines,
       };
     }
 

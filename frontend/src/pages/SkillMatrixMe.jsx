@@ -25,8 +25,8 @@ import {
 const MySkillsPage = () => {
   const [mySkills, setMySkills] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [filterByCategory, setFilterByCategory] = useState("all");
 
   const fetchMySkills = useCallback(() => {
@@ -45,13 +45,10 @@ const MySkillsPage = () => {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    // The useEffect will re-trigger the fetch
   };
 
   useEffect(() => {
-    if (refreshing) {
-      fetchMySkills();
-    }
+    if (refreshing) fetchMySkills();
   }, [refreshing, fetchMySkills]);
 
   const resetFiltersHandler = () => {

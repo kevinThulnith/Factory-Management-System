@@ -26,9 +26,9 @@ import {
 
 const Supplier = () => {
   const { user } = useAuth();
-  const [allSuppliers, setAllSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [allSuppliers, setAllSuppliers] = useState([]);
   const [filters, setFilters] = useState({
     searchTerm: "",
     sortBy: "name-asc",

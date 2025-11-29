@@ -68,9 +68,7 @@ const ProfilePage = () => {
     };
 
     // ?Only include password if it's being changed
-    if (updatedData.newPassword) {
-      apiData.password = updatedData.newPassword;
-    }
+    if (updatedData.newPassword) apiData.password = updatedData.newPassword;
 
     api
       .put("api/user/me/", apiData)

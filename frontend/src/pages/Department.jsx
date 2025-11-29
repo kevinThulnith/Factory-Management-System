@@ -36,8 +36,6 @@ function Department() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const isAdmin = user && user.role === "ADMIN";
-
   const fetchDepartments = useFetchData(
     "department",
     setLoading,
@@ -116,16 +114,14 @@ function Department() {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       } else if (aValue === null || aValue === undefined) {
-        return sortDirection === "asc" ? -1 : 1; // Nulls/undefined first on asc, last on desc
+        return sortDirection === "asc" ? -1 : 1;
       } else if (bValue === null || bValue === undefined) {
-        return sortDirection === "asc" ? 1 : -1; // Nulls/undefined first on asc, last on desc
+        return sortDirection === "asc" ? 1 : -1;
       }
 
-      if (sortDirection === "asc") {
+      if (sortDirection === "asc")
         return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-      } else {
-        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-      }
+      else return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
     });
 
     return sorted;
@@ -134,6 +130,7 @@ function Department() {
   const totalPages = Math.ceil(
     filteredAndSortedDepartments.length / itemsPerPage
   );
+
   const paginatedDepartments = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAndSortedDepartments.slice(
@@ -142,9 +139,7 @@ function Department() {
     );
   }, [filteredAndSortedDepartments, currentPage, itemsPerPage]);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page) => setCurrentPage(page);
 
   const stats = useMemo(() => {
     const totalDepartments = departmentsWithSupervisors.length;
@@ -246,7 +241,7 @@ function Department() {
                   <Download size={18} className="mr-2" />
                   Export CSV
                 </button>
-                {isAdmin && (
+                {user.role === "ADMIN" && (
                   <Link
                     to="/department/add"
                     className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600 text-stone-200"
@@ -338,7 +333,7 @@ function Department() {
                   ? "Try adjusting your search criteria or filters."
                   : "Get started by adding your first department."}
               </p>
-              {isAdmin && !searchTerm && filterBy === "all" && (
+              {user.role === "ADMIN" && !searchTerm && filterBy === "all" && (
                 <Link
                   to="/departments/add"
                   className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -445,7 +440,7 @@ function Department() {
                           >
                             <Eye size={20} />
                           </Link>
-                          {isAdmin && (
+                          {user.role === "ADMIN" && (
                             <>
                               <Link
                                 to={`/department/edit/${dept.id}`}

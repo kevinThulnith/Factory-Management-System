@@ -59,9 +59,7 @@ const SupplierForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
   const validateForm = () => {
@@ -92,11 +90,8 @@ const SupplierForm = () => {
     }, {});
 
     try {
-      if (isEditMode) {
-        await api.patch(`api/supplier/${supplierId}/`, payload);
-      } else {
-        await api.post("api/supplier/", payload);
-      }
+      if (isEditMode) await api.patch(`api/supplier/${supplierId}/`, payload);
+      else await api.post("api/supplier/", payload);
       alert("Supplier saved successfully!");
       navigate("/supplier");
     } catch (error) {
@@ -104,9 +99,7 @@ const SupplierForm = () => {
       if (apiErrors && typeof apiErrors === "object") {
         setErrors(apiErrors);
         setPageError("Please correct the errors below.");
-      } else {
-        setPageError(apiErrors?.detail || "An unexpected error occurred.");
-      }
+      } else setPageError(apiErrors?.detail || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }

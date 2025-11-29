@@ -17,7 +17,7 @@ class MaterialSerializer(ModelSerializer):
         extra_kwargs = {"updated_at": {"read_only": True}}
 
     def to_representation(self, instance):
-        """Convert Decimal fields to strings for msgpack serialization"""
+        "Convert Decimal fields to strings for msgpack serialization"
         data = super().to_representation(instance)
         if "quantity" in data and data["quantity"] is not None:
             data["quantity"] = str(data["quantity"])
@@ -46,7 +46,7 @@ class OrderMaterialSerializer(ModelSerializer):
         return super().create(validated_data)
 
     def to_representation(self, instance):
-        """Convert Decimal fields to strings for msgpack serialization"""
+        "Convert Decimal fields to strings for msgpack serialization"
         data = super().to_representation(instance)
         if "quantity" in data and data["quantity"] is not None:
             data["quantity"] = str(data["quantity"])

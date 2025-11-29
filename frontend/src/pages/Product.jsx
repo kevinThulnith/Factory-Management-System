@@ -101,8 +101,6 @@ const Product = () => {
     );
   };
 
-  const canManage = user && user.role === "ADMIN";
-
   return (
     <div className="min-h-screen p-6">
       <div className="container mx-auto">
@@ -150,7 +148,7 @@ const Product = () => {
                 />
                 {refreshing ? "Refreshing..." : "Refresh"}
               </button>
-              {canManage && (
+              {user.role === "ADMIN" && (
                 <Link
                   to="/product/add"
                   className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
@@ -255,7 +253,7 @@ const Product = () => {
                     >
                       <Eye size={20} />
                     </Link>
-                    {canManage && (
+                    {user.role === "ADMIN" && (
                       <>
                         <Link
                           to={`/product/edit/${product.id}`}

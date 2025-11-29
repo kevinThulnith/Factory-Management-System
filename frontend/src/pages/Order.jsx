@@ -51,9 +51,8 @@ const Order = () => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const resetFiltersHandler = () => {
+  const resetFiltersHandler = () =>
     setFilters({ searchTerm: "", status: "all" });
-  };
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -119,8 +118,7 @@ const Order = () => {
     );
   };
 
-  const canManage =
-    user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+  const canManage = user.role === "ADMIN" || user.role === "SUPERVISOR";
 
   return (
     <div className="min-h-screen p-6">

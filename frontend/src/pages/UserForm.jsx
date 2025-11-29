@@ -162,10 +162,8 @@ function UserForm() {
       errors.first_name = "First name is required.";
     if (!formData.last_name.trim()) errors.last_name = "Last name is required.";
     if (!formData.email.trim()) errors.email = "Email is required.";
-    // Username is read-only, no validation needed here for it
     if (formData.password && formData.password.length < 8)
       errors.password = "New password must be at least 8 characters.";
-    // Other validations (NIC, mobile, DOB) as in RegisterPage if needed
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -179,7 +177,7 @@ function UserForm() {
     api
       .put(`api/user/${userId}/`, submitData)
       .then(() => {
-        alert("User updated Succesfully !!!");
+        alert("User updated Successfully !!!");
         navigate("/user");
       })
       .catch((error) => {

@@ -53,13 +53,11 @@ function Workshop() {
     fetchWorkshops
   );
 
-  const handleFilterChange = (e) => {
+  const handleFilterChange = (e) =>
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
-  const resetFiltersHandler = () => {
+  const resetFiltersHandler = () =>
     setFilters({ searchTerm: "", status: "all", department: "all" });
-  };
 
   const applyFilters = () => fetchWorkshops();
 
