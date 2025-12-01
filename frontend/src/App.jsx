@@ -114,8 +114,8 @@ function App() {
 
       <div
         className={`${
-          isAuthenticated ? "lg:mr-[340px] mt-20 lg:ml-8 mx-4 md:mx-6" : ""
-        } mb-10`}
+          isAuthenticated ? "lg:mr-[340px] mt-20 lg:ml-4 mx-4 md:mx-6" : ""
+        } mb-10 sm:px-6 sm:pt-4`}
       >
         <Suspense>
           <Routes>

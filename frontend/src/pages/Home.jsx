@@ -257,18 +257,23 @@ function Home() {
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="mb-8 bg-card-main p-8 rounded-lg shadow-lg flex flex-col sm:flex-row items-center justify-between">
-        <div className="p-2 rounded-2xl mb-4 sm:mb-0 sm:ml-2 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
-          <MdDashboard size={95} className="text-stone-200" />
+      <div className="mb-8 bg-card-main sm:p-8 p-6 rounded-lg shadow-lg flex flex-col sm:flex-row sm:items-center justify-between">
+        <div className="flex items-center justify-center mb-4 sm:mb-0">
+          <div className="p-2 sm:rounded-2xl rounded-xl sm:ml-2 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
+            <MdDashboard className="text-stone-200 w-[50px] h-[50px] sm:w-[95px] sm:h-[95px]" />
+          </div>
+          <h1 className="text-4xl sm:font-bold font-medium text-stone-200 ml-4 tracking-wide sm:hidden">
+            Dashboard
+          </h1>
         </div>
-        <div className="flex-1 text-center sm:text-left sm:ml-6">
-          <h1 className="text-4xl font-bold text-stone-200 mb-1 tracking-wide ">
+        <div className="flex-1 sm:ml-6">
+          <h1 className="hidden sm:block text-4xl font-bold text-stone-200 mb-1 tracking-wide">
             Dashboard
           </h1>
           <p className="text-1xl font-medium text-stone-400">
             Welcome back {userInfo.name} !!!
           </p>
-          <div className="flex items-center justify-center sm:justify-start mt-3 text-star-dust-300">
+          <div className="flex sm:items-center mt-3 text-star-dust-300">
             <span className="mr-2">Current role :</span>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm ${
@@ -320,12 +325,12 @@ function Home() {
 
       {/* admin management panel */}
       {userInfo.role == "ADMIN" && (
-        <div className="mb-8 shadow-lg bg-card-main p-8 rounded-lg px-8">
+        <div className="mb-8 shadow-lg bg-card-main sm:p-8 p-6 rounded-lg">
           <div className="flex items-center mb-6">
             <div className="p-2 rounded-md mr-3 shadow-md bg-star-dust-700">
               <UserStar size={28} className="text-stone-200" />
             </div>
-            <h3 className={`text-3xl font-medium text-star-dust-200`}>
+            <h3 className="sm:text-3xl text-xl font-medium text-star-dust-200">
               Admin Control Panel
             </h3>
           </div>
@@ -432,17 +437,14 @@ function Home() {
           <Link
             key={index}
             to={stat.link}
-            className="bg-card-main rounded-lg p-6 shadow-lg transition-all duration-300 hover:scale-105 hover:-translate-y-1 group"
+            className="bg-card-main rounded-lg sm:p-6 p-4 shadow-lg transition-all duration-300 hover:scale-105 hover:-translate-y-1 group sm:block flex gap-4 items-center"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex  sm:mb-4">
               <div className="p-2 bg-star-dust-700 rounded-md text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
                 {React.cloneElement(stat.icon, {
                   className: "mx-auto text-white",
                 })}
               </div>
-              <div
-                className={`w-2 h-2 rounded-full bg-${stat.color}-400 animate-pulse`}
-              ></div>
             </div>
             <div className="text-stone-400">
               {stat.title}:
@@ -454,7 +456,7 @@ function Home() {
         ))}
       </div>
 
-      {/* NEW SECTION: Recent Activity & Alerts */}
+      {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Recent Tasks */}
         <div className="bg-[#2a2a2a] rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -463,7 +465,9 @@ function Home() {
               <div className="p-2 bg-star-dust-700 rounded-lg mr-3">
                 <Clock size={20} className="text-white" />
               </div>
-              <h3 className="text-xl font-bold text-stone-200">Recent Tasks</h3>
+              <h3 className="text-xl sm:font-bold font-medium text-stone-200">
+                Recent Tasks
+              </h3>
             </div>
             <div className="text-xs text-gray-500 bg-[#3a3a3a] px-2 py-1 rounded-full">
               Last {userStats.myTasks?.length || 0} tasks
@@ -526,7 +530,7 @@ function Home() {
               <div className="p-2 bg-star-dust-700 rounded-lg mr-3">
                 <Bell size={20} className="text-white" />
               </div>
-              <h3 className="text-xl font-bold text-stone-200">
+              <h3 className="sm:text-xl sm:font-bold font-medium text-stone-200">
                 Alerts & Notifications
               </h3>
             </div>
