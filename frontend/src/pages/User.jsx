@@ -163,16 +163,16 @@ function User() {
 
   return (
     <>
-      <div className="min-h-screen p-6">
-        <div className="container mx-auto">
+      <div className="min-h-screen py-6">
+        <div className="w-full">
           {/* Header Section with Modern Design */}
           <div className="rounded-2xl p-8 shadow-md mb-8 bg-card-main">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-2xl mr-6 shadow-lg bg-gradient-to-r from-blue-600 to-blue-800 transform hover:scale-105 transition-all duration-300">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start">
+                <div className="p-3 rounded-2xl mb-4 sm:mb-0 sm:mr-6 shadow-lg bg-gradient-to-r from-blue-600 to-blue-800 transform hover:scale-105 transition-all duration-300">
                   <UsersRound size={90} className="text-stone-200" />
                 </div>
-                <div>
+                <div className="text-center sm:text-left">
                   <h1 className="text-2xl font-medium mb-2 tracking-tight">
                     User Management
                   </h1>
@@ -180,7 +180,7 @@ function User() {
                     Manage system users, roles, and permissions with advanced
                     controls.
                   </p>
-                  <div className="flex items-center mt-3 space-x-4">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start mt-3 gap-2">
                     <span className="text-sm text-gray-200 px-3 py-1 rounded-2xl bg-orange-600">
                       Total Users:{" "}
                       <span className="font-medium">{allUsers.length}</span>

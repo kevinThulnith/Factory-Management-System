@@ -15,10 +15,10 @@ const Form = ({
   isViewMode,
   children,
 }) => (
-  <div className="container mx-auto text-star-dust-200">
+  <div className="w-full text-star-dust-200">
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-6 rounded-xl shadow-lg">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card-main p-4 sm:p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div
@@ -33,7 +33,7 @@ const Form = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:mt-0 mt-4">
           <button
             onClick={onClick}
             className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 pl-2 hover:shadow-sm"

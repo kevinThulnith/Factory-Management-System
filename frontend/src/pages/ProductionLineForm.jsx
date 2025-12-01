@@ -425,7 +425,7 @@ const ProductionLineForm = () => {
           <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
             <button
               type="button"
-              onClick={() => navigate("/production-lines")}
+              onClick={() => navigate("/production-line")}
               disabled={loading}
               className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
             >

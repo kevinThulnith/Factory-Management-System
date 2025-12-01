@@ -42,8 +42,8 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <h2 className="text-4xl font-semibold text-[#eeeade] pt-3 flex items-center justify-center mb-5">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <h2 className="text-3xl md:text-4xl font-semibold text-[#eeeade] pt-3 flex items-center justify-center mb-5 text-center">
         <img
           className="inline-block mr-2"
           style={{ height: "30px", marginBottom: "-16px" }}
@@ -53,7 +53,7 @@ function Login() {
         <div className="mt-5">KY Biscuits</div>
       </h2>
 
-      <div className="form-container w-[380px] bg-card-main rounded-lg shadow-md p-5 mx-auto">
+      <div className="form-container w-full max-w-[380px] bg-card-main rounded-lg shadow-md p-5 mx-auto">
         <p className="mt-2 font-medium text-xl text-star-dust-100">
           Login to your account
         </p>

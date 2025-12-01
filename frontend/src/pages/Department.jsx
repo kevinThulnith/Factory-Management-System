@@ -188,16 +188,16 @@ function Department() {
 
   return (
     <>
-      <div className="min-h-screen p-6">
-        <div className="container mx-auto">
+      <div className="min-h-screen py-6">
+        <div className="w-full">
           {/* Header Section */}
           <div className="mb-8 bg-card-main p-6 rounded-lg shadow-md text-star-dust-200">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="flex items-center">
-                <div className="p-3  rounded-2xl mr-6 shadow-lg transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-red-600 to-red-800">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start">
+                <div className="p-3  rounded-2xl mb-4 sm:mb-0 sm:mr-6 shadow-lg transform hover:scale-105 transition-all duration-300 bg-gradient-to-r from-red-600 to-red-800">
                   <Building2 size={90} className="text-stone-200" />
                 </div>
-                <div>
+                <div className="text-center sm:text-left">
                   <h1 className="text-2xl font-medium mb-3 tracking-tight">
                     Department Management
                   </h1>
@@ -205,7 +205,7 @@ function Department() {
                     Organize and manage your company departments with
                     comprehensive tracking.
                   </p>
-                  <div className="flex items-center mt-3 space-x-4">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start mt-3 gap-2">
                     <span className="text-sm text-stone-200 px-3 py-1 rounded-2xl bg-orange-600">
                       Total Departments:{" "}
                       <span className="font-medium">
@@ -241,7 +241,7 @@ function Department() {
                   <Download size={18} className="mr-2" />
                   Export CSV
                 </button>
-                {user.role === "ADMIN" && (
+                {user && user.role === "ADMIN" && (
                   <Link
                     to="/department/add"
                     className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600 text-stone-200"
@@ -333,15 +333,18 @@ function Department() {
                   ? "Try adjusting your search criteria or filters."
                   : "Get started by adding your first department."}
               </p>
-              {user.role === "ADMIN" && !searchTerm && filterBy === "all" && (
-                <Link
-                  to="/departments/add"
-                  className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <PlusCircle size={18} className="mr-2" />
-                  Add First Department
-                </Link>
-              )}
+              {user &&
+                user.role === "ADMIN" &&
+                !searchTerm &&
+                filterBy === "all" && (
+                  <Link
+                    to="/departments/add"
+                    className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <PlusCircle size={18} className="mr-2" />
+                    Add First Department
+                  </Link>
+                )}
             </div>
           ) : (
             <>
@@ -440,7 +443,7 @@ function Department() {
                           >
                             <Eye size={20} />
                           </Link>
-                          {user.role === "ADMIN" && (
+                          {user && user.role === "ADMIN" && (
                             <>
                               <Link
                                 to={`/department/edit/${dept.id}`}

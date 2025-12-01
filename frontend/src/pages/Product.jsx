@@ -102,23 +102,23 @@ const Product = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="container mx-auto">
+    <div className="min-h-screen py-6">
+      <div className="w-full">
         {/* Header Section */}
         <div className="rounded-2xl p-8 shadow-md mb-8 bg-card-main">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-2xl mr-6 shadow-lg bg-gradient-to-r from-amber-600 to-amber-800 transform hover:scale-105 transition-all duration-300">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start">
+              <div className="p-3 rounded-2xl mb-4 sm:mb-0 sm:mr-6 shadow-lg bg-gradient-to-r from-amber-600 to-amber-800 transform hover:scale-105 transition-all duration-300">
                 <Package size={90} className="text-stone-200" />
               </div>
-              <div>
+              <div className="text-center sm:text-left">
                 <h1 className="text-2xl font-medium mb-2 tracking-tight">
                   Product Catalog
                 </h1>
                 <p className="text-star-dust-400 text-1xl">
                   Manage and organize your company's products.
                 </p>
-                <div className="flex items-center flex-wrap mt-3 gap-2">
+                <div className="flex items-center flex-wrap justify-center sm:justify-start mt-3 gap-2">
                   <span className="text-sm px-3 py-1 rounded-2xl bg-orange-600">
                     Total: <span className="font-medium">{stats.total}</span>
                   </span>
@@ -148,7 +148,7 @@ const Product = () => {
                 />
                 {refreshing ? "Refreshing..." : "Refresh"}
               </button>
-              {user.role === "ADMIN" && (
+              {user && user.role === "ADMIN" && (
                 <Link
                   to="/product/add"
                   className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
@@ -253,7 +253,7 @@ const Product = () => {
                     >
                       <Eye size={20} />
                     </Link>
-                    {user.role === "ADMIN" && (
+                    {user && user.role === "ADMIN" && (
                       <>
                         <Link
                           to={`/product/edit/${product.id}`}

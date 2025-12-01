@@ -136,7 +136,6 @@ function Home() {
 
     if (["ADMIN", "SUPERVISOR"].includes(userInfo.role)) {
       stats.push(
-
         {
           title: "Departments",
           value: dashboardData.departments.length,
@@ -163,7 +162,7 @@ function Home() {
 
     if (["ADMIN", "SUPERVISOR", "MANAGER"].includes(userInfo.role)) {
       stats.push(
-              {
+        {
           title: "Total Users",
           value: dashboardData.users.length,
           icon: <Users size={28} />,
@@ -256,20 +255,20 @@ function Home() {
   }, [dashboardData, userInfo]);
 
   return (
-    <div className="w-full lg:mr-[-50px]">
+    <div className="w-full">
       {/* Header */}
-      <div className="mb-8 bg-card-main p-8 rounded-lg shadow-lg flex items-center justify-between">
-        <div className="p-2 rounded-2xl ml-2 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
+      <div className="mb-8 bg-card-main p-8 rounded-lg shadow-lg flex flex-col sm:flex-row items-center justify-between">
+        <div className="p-2 rounded-2xl mb-4 sm:mb-0 sm:ml-2 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
           <MdDashboard size={95} className="text-stone-200" />
         </div>
-        <div className="flex-1 ml-6">
-          <h1 className="text-4xl font-bold text-stone-200 mb-1 tracking-wide">
+        <div className="flex-1 text-center sm:text-left sm:ml-6">
+          <h1 className="text-4xl font-bold text-stone-200 mb-1 tracking-wide ">
             Dashboard
           </h1>
           <p className="text-1xl font-medium text-stone-400">
             Welcome back {userInfo.name} !!!
           </p>
-          <div className="flex items-center mt-3 text-star-dust-300">
+          <div className="flex items-center justify-center sm:justify-start mt-3 text-star-dust-300">
             <span className="mr-2">Current role :</span>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm ${
