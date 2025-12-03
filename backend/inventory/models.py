@@ -283,7 +283,11 @@ class MaterialUsage(Model):
             raise ValidationError(_("Quantity used must be greater than zero."))
 
         if self.material_id:
-            material = Material.objects.get(pk=self.material_id)
+            try:
+                material = Material.objects.get(pk=self.material_id)
+            except Material.DoesNotExist:
+                raise ValidationError(_("Material does not exist."))
+
             if material.quantity < self.quantity_used:
                 raise ValidationError(
                     _(
