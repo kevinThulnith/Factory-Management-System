@@ -235,3 +235,102 @@ class OrderMaterial(Model):
 
         order.total = total
         order.save(update_fields=["total", "updated_at"])
+
+
+class MaterialUsage(Model):
+    """
+    MaterialUsage Model
+
+    Tracks the consumption of materials for specific tasks/projects.
+
+    - Many-to-One with Material (a material can have many usage records) ☑️
+    - Many-to-One with User (a user can have many usage records) ☑️
+    """
+
+    material = ForeignKey(
+        Material, on_delete=CASCADE, related_name="material_usages"
+    )
+    task_name = CharField(_("task name"), max_length=255)
+    task_description = TextField(_("task description"), blank=True, null=True)
+    quantity_used = DecimalField(_("quantity used"), max_digits=10, decimal_places=2)
+    used_by = ForeignKey(
+        "main.User", on_delete=CASCADE, related_name="material_usages"
+    )
+    usage_date = DateTimeField(_("usage date"), auto_now_add=True)
+    notes = TextField(_("notes"), blank=True, null=True)
+
+    class Meta:
+        ordering = ["-usage_date"]
+        indexes = [
+            Index(fields=["material"]),
+            Index(fields=["used_by"]),
+            Index(fields=["usage_date"]),
+            Index(fields=["task_name"]),
+        ]
+        constraints = [
+            CheckConstraint(
+                check=Q(quantity_used__gt=0),
+                name="material_usage_quantity_positive",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.material.name} - {self.quantity_used} used for {self.task_name}"
+
+    def clean(self):
+        """Validate that sufficient material quantity is available."""
+        if self.quantity_used is not None and self.quantity_used <= 0:
+            raise ValidationError(_("Quantity used must be greater than zero."))
+
+        if self.material_id:
+            material = Material.objects.get(pk=self.material_id)
+            if material.quantity < self.quantity_used:
+                raise ValidationError(
+                    _(
+                        f"Insufficient material quantity. Available: {material.quantity}, "
+                        f"Requested: {self.quantity_used}"
+                    )
+                )
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        """
+        Save the usage record and update material quantity atomically.
+        """
+        is_new = self.pk is None
+
+        if is_new:
+            # Validate before saving
+            self.clean()
+
+            # Lock the material row to prevent race conditions
+            material = Material.objects.select_for_update().get(pk=self.material_id)
+
+            # Double-check quantity after acquiring lock
+            if material.quantity < self.quantity_used:
+                raise ValidationError(
+                    _(
+                        f"Insufficient material quantity. Available: {material.quantity}, "
+                        f"Requested: {self.quantity_used}"
+                    )
+                )
+
+            # Reduce material quantity
+            material.quantity -= self.quantity_used
+            material.save(update_fields=["quantity", "updated_at"])
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete the usage record and restore material quantity atomically.
+        """
+        with transaction.atomic():
+            # Lock the material row
+            material = Material.objects.select_for_update().get(pk=self.material_id)
+
+            # Restore the material quantity
+            material.quantity += self.quantity_used
+            material.save(update_fields=["quantity", "updated_at"])
+
+            super().delete(*args, **kwargs)
