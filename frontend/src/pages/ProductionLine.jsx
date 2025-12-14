@@ -46,9 +46,9 @@ const ProductionLine = () => {
   };
 
   const handleDelete = useDelete(
-    "production line",
-    setLoading,
     "production-line",
+    setLoading,
+    "production line",
     fetchProductionLines
   );
 

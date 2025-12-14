@@ -3,7 +3,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import { lazy, Suspense } from "react";
 
-const Home = lazy(() => import("./pages/Home"));
 const ProductionLineForm = lazy(() => import("./pages/ProductionLineForm"));
 const SkillMatrixForm = lazy(() => import("./pages/SkillMatrixForm"));
 const DepartmentForm = lazy(() => import("./pages/DepartmentForm"));
@@ -30,7 +29,20 @@ const Product = lazy(() => import("./pages/Product"));
 const Logout = lazy(() => import("./pages/Logout"));
 const Login = lazy(() => import("./pages/Login"));
 const Order = lazy(() => import("./pages/Order"));
+const Home = lazy(() => import("./pages/Home"));
 const User = lazy(() => import("./pages/User"));
+
+const ManufacturingProcess = lazy(() => import("./pages/ManufacturingProcess"));
+
+const ManufacturingProcessForm = lazy(() =>
+  import("./pages/ManufacturingProcessForm")
+);
+
+const ProductionScheduleList = lazy(() => import("./pages/ProductionSchedule"));
+
+const ProductionScheduleListForm = lazy(() =>
+  import("./pages/ProductionScheduleListForm")
+);
 
 function App() {
   const { user } = useAuth();
@@ -105,6 +117,39 @@ function App() {
     {
       path: "/production-line/view/:productionLineId",
       element: <ProductionLineForm />,
+    },
+
+    // Manufacturing Process
+    { path: "/manufacturing-process", element: <ManufacturingProcess /> },
+    {
+      path: "/manufacturing-process/add",
+      element: <ManufacturingProcessForm />,
+    },
+    {
+      path: "/manufacturing-process/edit/:processId",
+      element: <ManufacturingProcessForm />,
+    },
+    {
+      path: "/manufacturing-process/view/:processId",
+      element: <ManufacturingProcessForm />,
+    },
+
+    // Production Schedule
+    {
+      path: "/production-schedule",
+      element: <ProductionScheduleList />,
+    },
+    {
+      path: "/production-schedule/new",
+      element: <ProductionScheduleListForm />,
+    },
+    {
+      path: "/production-schedule/edit/:scheduleId",
+      element: <ProductionScheduleListForm />,
+    },
+    {
+      path: "/production-schedule/view/:scheduleId",
+      element: <ProductionScheduleListForm />,
     },
   ];
 

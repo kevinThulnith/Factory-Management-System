@@ -64,9 +64,9 @@ const SkillMatrix = () => {
   };
 
   const handleDelete = useDelete(
-    "skill entry",
-    setLoading,
     "skill-matrix",
+    setLoading,
+    "skill entry",
     fetchData
   );
 

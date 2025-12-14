@@ -6,8 +6,15 @@ const useFetchData = (link, setLoading, setData) => {
     setLoading(true);
     api
       .get(`api/${link}/`)
-      .then((deptRes) => setData(deptRes.data))
-      .catch((error) => alert(error))
+      .then((response) => {
+        // !Handle both paginated and non-paginated responses
+        const data = response.data.results || response.data;
+        setData(data);
+      })
+      .catch((error) => {
+        console.error(`Error fetching ${link}:`, error);
+        alert(`Failed to fetch ${link}. Please try again.`);
+      })
       .finally(() => setLoading(false));
   }, [link, setLoading, setData]);
 };

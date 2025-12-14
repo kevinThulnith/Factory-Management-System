@@ -105,6 +105,7 @@ class ProductionLineSerializer(ModelSerializer):
 
 class ProductionScheduleSerializer(ModelSerializer):
     product_name = CharField(source="product.name", read_only=True)
+    production_line_name = CharField(source="production_line.name", read_only=True)
     workshop_name = CharField(source="production_line.workshop.name", read_only=True)
 
     class Meta:

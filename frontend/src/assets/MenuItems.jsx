@@ -147,14 +147,14 @@ const menuItems = {
     {
       id: "manufacturingProcesses",
       name: "Processes",
-      path: "/manufacturing-processes",
+      path: "/manufacturing-process",
       icon: <FaWrench size={20} />,
       roles: ["ADMIN", "SUPERVISOR", "MANAGER", "TECHNICIAN"],
     },
     {
       id: "productionSchedules",
       name: "Schedules",
-      path: "/production-schedules",
+      path: "/production-schedule",
       icon: <FaCalendarAlt size={20} />,
       roles: ["ADMIN", "SUPERVISOR", "MANAGER", "OPERATOR"],
     },

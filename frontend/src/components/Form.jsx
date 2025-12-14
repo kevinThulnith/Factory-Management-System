@@ -27,8 +27,8 @@ const Form = ({
               {icon && cloneElement(icon, { size: 40 })}
             </div>
             <div>
-              <h1 className="text-2xl font-medium">{heading}</h1>
-              <p className="text-stone-400 mt-1 text-1xl">{text_01}</p>
+              <h1 className="text-3xl sm:text-2xl font-medium">{heading}</h1>
+              <p className="text-stone-400 mt-1 text-1xl hidden sm:block">{text_01}</p>
             </div>
           </div>
         </div>
@@ -61,7 +61,7 @@ const Form = ({
       )}
 
       {/* Body Content */}
-      <div className="bg-card-main rounded-xl shadow-md p-6 sm:p-8">
+      <div className="bg-card-main rounded-xl shadow-md p-4 sm:p-8">
         {children}
       </div>
       {loading && <LoadingIndicator />}

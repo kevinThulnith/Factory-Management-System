@@ -1,0 +1,330 @@
+import LoadingIndicator from "../components/LoadingIndicator";
+import useWebSocket from "../hooks/useWebSocket";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
+import { useAuth } from "../hooks/useAuth";
+import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+
+import {
+  PlusCircle,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Filter,
+  Trash2,
+  Edit3,
+  Eye,
+  ListChecks,
+  Clock,
+  SlidersHorizontal,
+  Download,
+  FileText,
+} from "lucide-react";
+
+function ManufacturingProcessList() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [allProcesses, setAllProcesses] = useState([]);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    hasParams: "all",
+  });
+
+  const fetchProcesses = useFetchData(
+    "manufacturing-process",
+    setLoading,
+    setAllProcesses
+  );
+
+  useWebSocket("manufacturing-processes", setAllProcesses, fetchProcesses);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchProcesses();
+    setTimeout(() => setRefreshing(false), 1000);
+  };
+
+  const handleDeleteProcess = useDelete(
+    "manufacturing-process",
+    setLoading,
+    "manufacturing process",
+    fetchProcesses
+  );
+
+  const handleFilterChange = (e) =>
+    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const resetFiltersHandler = () =>
+    setFilters({ searchTerm: "", hasParams: "all" });
+
+  const handleExport = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      "Name,Description,Standard Time,Quality Params Count\n" +
+      filteredProcesses
+        .map(
+          (p) =>
+            `"${p.name}","${p.description || ""}","${p.standard_time}","${
+              Object.keys(p.quality_parameters || {}).length
+            }"`
+        )
+        .join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `processes_export_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // --- Memos ---
+  const filteredProcesses = useMemo(() => {
+    return allProcesses.filter((proc) => {
+      const term = filters.searchTerm.toLowerCase();
+
+      const matchesSearch =
+        !term ||
+        proc.name?.toLowerCase().includes(term) ||
+        proc.description?.toLowerCase().includes(term);
+
+      const matchesParams =
+        filters.hasParams === "all" ||
+        (filters.hasParams === "yes" &&
+          Object.keys(proc.quality_parameters || {}).length > 0) ||
+        (filters.hasParams === "no" &&
+          Object.keys(proc.quality_parameters || {}).length === 0);
+
+      return matchesSearch && matchesParams;
+    });
+  }, [allProcesses, filters]);
+
+  const stats = useMemo(() => {
+    return {
+      total: allProcesses.length,
+      withParams: allProcesses.filter(
+        (p) => Object.keys(p.quality_parameters || {}).length > 0
+      ).length,
+      avgDuration: "N/A",
+    };
+  }, [allProcesses]);
+
+  // Helper to render JSON count/badge
+  const renderQualityBadge = (params) => {
+    const count = Object.keys(params || {}).length;
+    if (count === 0) {
+      return (
+        <span className="text-slate-500 text-xs italic">None defined</span>
+      );
+    }
+    return (
+      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-800 inline-flex items-center gap-1">
+        <SlidersHorizontal size={12} />
+        {count} Parameter{count !== 1 ? "s" : ""}
+      </span>
+    );
+  };
+
+  return (
+    <>
+      <div className="min-h-screen py-6">
+        <div className="w-full">
+          {/* Header Section */}
+          <div className="rounded-2xl p-8 shadow-md mb-8 bg-card-main">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start">
+                <div className="p-3 rounded-2xl mb-4 sm:mb-0 sm:mr-6 shadow-lg bg-gradient-to-r from-purple-600 to-purple-800 transform hover:scale-105 transition-all duration-300">
+                  <ListChecks size={90} className="text-stone-200" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl font-medium mb-2 tracking-tight">
+                    Manufacturing Processes
+                  </h1>
+                  <p className="text-star-dust-400 text-1xl">
+                    Define standard operating procedures and quality parameters.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start mt-3 gap-2">
+                    <span className="text-sm text-gray-200 px-3 py-1 rounded-2xl bg-purple-600">
+                      Total Processes:{" "}
+                      <span className="font-medium">{stats.total}</span>
+                    </span>
+                    <span className="text-sm text-gray-200 px-3 py-1 rounded-2xl bg-indigo-600">
+                      With Quality Checks:{" "}
+                      <span className="font-medium">{stats.withParams}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mt-3 lg:mt-0">
+                <button
+                  onClick={handleExport}
+                  disabled={filteredProcesses.length === 0}
+                  className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl disabled:opacity-50 hover:scale-105 bg-blue-700 text-stone-200"
+                >
+                  <Download size={18} className="mr-2" />
+                  Export
+                </button>
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
+                >
+                  <RefreshCw
+                    size={18}
+                    className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
+                  />
+                  {refreshing ? "Refreshing..." : "Refresh"}
+                </button>
+                {user && user.role === "ADMIN" && (
+                  <Link
+                    to="/manufacturing-process/new"
+                    className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
+                  >
+                    <PlusCircle size={20} className="mr-2" />
+                    New Process
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-card-main rounded-xl p-6 mb-8 shadow-md">
+            <h3 className="flex items-center text-slate-300 mb-4">
+              <Filter size={15} className="mr-2" /> Search & Filters
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="relative lg:col-span-2">
+                <Search
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  name="searchTerm"
+                  placeholder="Search processes..."
+                  value={filters.searchTerm}
+                  onChange={handleFilterChange}
+                  className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
+                />
+              </div>
+              <select
+                name="hasParams"
+                value={filters.hasParams}
+                onChange={handleFilterChange}
+                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none py-2"
+              >
+                <option value="all">All Types</option>
+                <option value="yes">With Parameters</option>
+                <option value="no">No Parameters</option>
+              </select>
+              <button
+                onClick={resetFiltersHandler}
+                className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
+              >
+                <RotateCcw size={16} className="mr-2" /> Reset
+              </button>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          {allProcesses.length === 0 && !loading ? (
+            <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
+              <ListChecks size={64} className="mx-auto text-gray-500 mb-4" />
+              <h3 className="text-xl font-semibold text-stone-300 mb-2">
+                No Processes Found
+              </h3>
+              <p className="text-stone-400">
+                Try adjusting your filters or add your first manufacturing
+                process.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProcesses.map((proc) => (
+                <div
+                  key={proc.id}
+                  className="bg-card-main shadow-md rounded-xl flex flex-col transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="p-5 flex-grow">
+                    <div className="flex justify-between items-start mb-3">
+                      <h2
+                        className="text-2xl font-medium text-stone-200 truncate"
+                        title={proc.name}
+                      >
+                        <ListChecks
+                          size={28}
+                          className="inline-block mr-2 text-purple-300"
+                        />
+                        {proc.name || "N/A"}
+                      </h2>
+                    </div>
+                    <div className="space-y-2 text-sm text-stone-400">
+                      <p className="flex items-center my-5">
+                        <Clock size={15} className="mr-2 flex-shrink-0" />
+                        <span className="text-stone-300 mr-4 ">
+                          {proc.standard_time}
+                        </span>
+                        <div>{renderQualityBadge(proc.quality_parameters)}</div>
+                      </p>
+                      {proc.description && (
+                        <p className="flex items-start mt-3 pt-3 border-t border-stone-600">
+                          <FileText
+                            size={15}
+                            className="mr-2 mt-0.5 flex-shrink-0"
+                          />
+                          <span className="text-stone-400 line-clamp-2">
+                            {proc.description}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-auto px-6 py-2 bg-card-sub rounded-b-xl">
+                    <div className="flex items-center justify-end space-x-2">
+                      <Link
+                        to={`/manufacturing-process/view/${proc.id}`}
+                        className="text-purple-200 hover:text-black transition duration-200 p-2 hover:bg-purple-200 rounded-full shadow-sm"
+                        title="View Details"
+                      >
+                        <Eye size={20} />
+                      </Link>
+                      {user && user.role === "ADMIN" && (
+                        <Link
+                          to={`/manufacturing-process/edit/${proc.id}`}
+                          className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
+                          title="Edit Process"
+                        >
+                          <Edit3 size={20} />
+                        </Link>
+                      )}
+                      {user && user.role === "ADMIN" && (
+                        <button
+                          onClick={() => handleDeleteProcess(proc.id)}
+                          className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
+                          title="Delete Process"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {loading && <LoadingIndicator />}
+    </>
+  );
+}
+
+export default ManufacturingProcessList;

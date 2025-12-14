@@ -45,7 +45,7 @@ const MaterialListPage = () => {
   const handleDelete = useDelete(
     "material",
     setLoading,
-    "Material",
+    "material",
     fetchMaterials
   );
 

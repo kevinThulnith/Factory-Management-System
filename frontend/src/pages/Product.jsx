@@ -44,7 +44,7 @@ const Product = () => {
     "product",
     setLoading,
     "product",
-    setAllProducts
+    fetchProducts
   );
 
   const handleFilterChange = (e) => {

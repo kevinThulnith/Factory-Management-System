@@ -46,9 +46,9 @@ const Supplier = () => {
 
   const handleDelete = useDelete(
     "supplier",
-    allSuppliers,
-    setAllSuppliers,
-    "Supplier"
+    setLoading,
+    "supplier",
+    fetchSuppliers
   );
 
   const handleFilterChange = (e) => {
