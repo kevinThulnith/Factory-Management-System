@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Star, Users, Briefcase } from "lucide-react";
+import { Star, Users, Award } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -239,7 +239,7 @@ const SkillForm = () => {
 
   return (
     <Form
-      icon={<Briefcase />}
+      icon={<Award />}
       heading={pageTitle}
       text_01={
         isMySkillsMode

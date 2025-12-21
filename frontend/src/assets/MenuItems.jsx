@@ -165,21 +165,21 @@ const menuItems = {
     {
       id: "projects",
       name: "Projects",
-      path: "/projects",
+      path: "/project",
       icon: <FaTasks size={20} />,
       roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
     },
     {
       id: "tasks",
       name: "Tasks",
-      path: "/tasks",
+      path: "/task",
       icon: <FaClipboardCheck size={20} />, // Changed from FaListCheck
       roles: ["ADMIN", "SUPERVISOR", "MANAGER", "OPERATOR", "TECHNICIAN"],
     },
     {
       id: "laborAllocations",
       name: "Labor Allocations",
-      path: "/allocations",
+      path: "/labor-allocation",
       icon: <FaUsers size={20} />,
       roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
     },

@@ -44,6 +44,13 @@ const ProductionScheduleListForm = lazy(() =>
   import("./pages/ProductionScheduleListForm")
 );
 
+const Projects = lazy(() => import("./pages/Projects"));
+const ProjectsForm = lazy(() => import("./pages/ProjectsForm"));
+const Tasks = lazy(() => import("./pages/Tasks"));
+const TasksForm = lazy(() => import("./pages/TasksForm"));
+const LaborAllocations = lazy(() => import("./pages/LaborAllocations"));
+const LaborAllocationForm = lazy(() => import("./pages/LaborAllocationForm"));
+
 function App() {
   const { user } = useAuth();
   const isAuthenticated = !!user;
@@ -150,6 +157,60 @@ function App() {
     {
       path: "/production-schedule/view/:scheduleId",
       element: <ProductionScheduleListForm />,
+    },
+
+    // Projects
+    {
+      path: "/project",
+      element: <Projects />,
+    },
+    {
+      path: "/project/add",
+      element: <ProjectsForm />,
+    },
+    {
+      path: "/project/edit/:projectId",
+      element: <ProjectsForm />,
+    },
+    {
+      path: "/project/view/:projectId",
+      element: <ProjectsForm />,
+    },
+
+    // Tasks
+    {
+      path: "/task",
+      element: <Tasks />,
+    },
+    {
+      path: "/task/add",
+      element: <TasksForm />,
+    },
+    {
+      path: "/task/edit/:taskId",
+      element: <TasksForm />,
+    },
+    {
+      path: "/task/view/:taskId",
+      element: <TasksForm />,
+    },
+
+    // Labor Allocations
+    {
+      path: "/labor-allocation",
+      element: <LaborAllocations />,
+    },
+    {
+      path: "/labor-allocation/add",
+      element: <LaborAllocationForm />,
+    },
+    {
+      path: "/labor-allocation/edit/:allocationId",
+      element: <LaborAllocationForm />,
+    },
+    {
+      path: "/labor-allocation/view/:allocationId",
+      element: <LaborAllocationForm />,
     },
   ];
 
