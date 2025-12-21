@@ -106,6 +106,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # !Custom Middleware
     "backend.middleware.CancelledErrorMiddleware",
     "backend.middleware.RequestTimeLoggingMiddleware",
 ]
@@ -151,6 +152,7 @@ DATABASES = {
     }
 }
 
+# ! When using online databases
 # DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
 
 # Password validation

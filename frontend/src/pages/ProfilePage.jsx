@@ -87,7 +87,7 @@ const ProfilePage = () => {
 
   return (
     <div className="p-4 sm:p-6 flex justify-center text-star-dust-200">
-      <div className="w-full max-w-4xl bg-card-main shadow-md rounded-xl p-9 sm:p-7">
+      <div className="w-full max-w-4xl bg-card-main shadow-md rounded-xl p-5 sm:p-7">
         {!user ? (
           <div className="text-center py-8">
             <p className="text-stone-400">Loading profile...</p>
@@ -96,14 +96,17 @@ const ProfilePage = () => {
           <>
             {/* Profile Header */}
             <div className="flex flex-col sm:flex-row items-center mb-5 pb-3 border-b gap-[-5px] border-stone-500">
-              <div className="bg-yellow-500 rounded-lg p-2 sm:mr-6 mb-4 sm:mb-0 shadow-lg">
-                <UserRound size={30} className="text-stone-800" />
+              <div className="flex">
+                <div className="bg-yellow-500 rounded-lg sm:p-2 p-1 sm:mr-6 mb-4 sm:mb-0 shadow-lg">
+                  <UserRound className="text-stone-800 sm:h-30 sm:w-30 h-[30px] w-[30px]" />
+                </div>
+                <h1 className="font-medium text-2xl sm:hidden ml-4 mt-1">
+                  {user.name || user.name || "Unknown User"}
+                </h1>
               </div>
               <div className="text-center sm:text-left">
-                <h1 className="font-medium">
-                  {user.name ||
-                    user.first_name + " " + user.last_name ||
-                    "Unknown User"}
+                <h1 className="font-medium hidden sm:block text-2xl">
+                  {user.name || user.name || "Unknown User"}
                 </h1>
                 <p className="text-stone-400 text-sm">
                   {user.role || "No Role"} •{" "}

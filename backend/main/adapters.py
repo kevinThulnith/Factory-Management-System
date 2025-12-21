@@ -6,9 +6,8 @@ import json
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
-        """
-        Check if user exists and is active before allowing social login.
-        """
+        "Check if user exists and is active before allowing social login."
+
         # !Check if this social account already exists
         if sociallogin.is_existing:
             return

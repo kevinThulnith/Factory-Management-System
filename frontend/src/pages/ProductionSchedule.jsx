@@ -305,9 +305,7 @@ const ProductionSchedule = () => {
                           <CalendarClock size={28} className="text-cyan-400" />
                           Schedule {schedule.id}
                         </h3>
-                        <div className="flex items-center gap-2 mt-2">
-                          {getStatusBadge(schedule.status)}
-                        </div>
+                        <div>{getStatusBadge(schedule.status)}</div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

@@ -262,7 +262,7 @@ function Home() {
           <div className="p-2 sm:rounded-2xl rounded-xl sm:ml-2 shadow-lg transform hover:scale-105 transition-all duration-300 bg-star-dust-800">
             <MdDashboard className="text-stone-200 w-[50px] h-[50px] sm:w-[95px] sm:h-[95px]" />
           </div>
-          <h1 className="text-4xl sm:font-bold font-medium text-stone-200 ml-4 tracking-wide sm:hidden">
+          <h1 className="text-[42px] sm:text-4xl sm:font-bold font-medium text-stone-200 ml-4 tracking-wide sm:hidden">
             Dashboard
           </h1>
         </div>
@@ -271,7 +271,7 @@ function Home() {
             Dashboard
           </h1>
           <p className="text-1xl font-medium text-stone-400">
-            Welcome back {userInfo.name} !!!
+            Welcome back {userInfo.name}!
           </p>
           <div className="flex sm:items-center mt-3 text-star-dust-300">
             <span className="mr-2">Current role :</span>

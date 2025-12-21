@@ -113,11 +113,10 @@ function Department() {
       } else if (typeof aValue === "string" && aValue && bValue) {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
-      } else if (aValue === null || aValue === undefined) {
+      } else if (aValue === null || aValue === undefined)
         return sortDirection === "asc" ? -1 : 1;
-      } else if (bValue === null || bValue === undefined) {
+      else if (bValue === null || bValue === undefined)
         return sortDirection === "asc" ? 1 : -1;
-      }
 
       if (sortDirection === "asc")
         return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;

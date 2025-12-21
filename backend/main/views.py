@@ -1,14 +1,12 @@
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import UserSerializer, GoogleLoginSerializer
 from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from .permissions import UserPermissions
-from rest_framework import status
 from dotenv import load_dotenv
 from .models import User
 import logging
@@ -16,8 +14,7 @@ import os
 
 load_dotenv()
 
-# Configure logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # !Configure logging
 
 # TODO: Create user views.
 
