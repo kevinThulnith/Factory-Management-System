@@ -3,7 +3,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import { lazy, Suspense } from "react";
 
+const ManufacturingProcess = lazy(() => import("./pages/ManufacturingProcess"));
+const ProductionScheduleList = lazy(() => import("./pages/ProductionSchedule"));
+const LaborAllocationForm = lazy(() => import("./pages/LaborAllocationForm"));
 const ProductionLineForm = lazy(() => import("./pages/ProductionLineForm"));
+const LaborAllocations = lazy(() => import("./pages/LaborAllocation"));
 const SkillMatrixForm = lazy(() => import("./pages/SkillMatrixForm"));
 const DepartmentForm = lazy(() => import("./pages/DepartmentForm"));
 const MaterialFormPage = lazy(() => import("./pages/MaterialForm"));
@@ -11,6 +15,7 @@ const ProductionLine = lazy(() => import("./pages/ProductionLine"));
 const MySkillsPage = lazy(() => import("./pages/SkillMatrixMe"));
 const WorkshopForm = lazy(() => import("./pages/WorkshopForm"));
 const SupplierForm = lazy(() => import("./pages/SupplierForm"));
+const ProjectsForm = lazy(() => import("./pages/ProjectForm"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const MachineForm = lazy(() => import("./pages/MachineForm"));
 const SkillMatrix = lazy(() => import("./pages/Skillmatrix"));
@@ -18,38 +23,30 @@ const ProductForm = lazy(() => import("./pages/ProductForm"));
 const Department = lazy(() => import("./pages/Department"));
 const OrderForm = lazy(() => import("./pages/OrderForm"));
 const Navbar = lazy(() => import("./components/Navbar"));
+const TasksForm = lazy(() => import("./pages/TaskForm"));
 const Workshop = lazy(() => import("./pages/Workshop"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Register = lazy(() => import("./pages/Register"));
 const UserForm = lazy(() => import("./pages/UserForm"));
 const Material = lazy(() => import("./pages/Material"));
 const Supplier = lazy(() => import("./pages/Supplier"));
+const Projects = lazy(() => import("./pages/Project"));
 const Machine = lazy(() => import("./pages/Machine"));
 const Product = lazy(() => import("./pages/Product"));
 const Logout = lazy(() => import("./pages/Logout"));
 const Login = lazy(() => import("./pages/Login"));
 const Order = lazy(() => import("./pages/Order"));
+const Tasks = lazy(() => import("./pages/Task"));
 const Home = lazy(() => import("./pages/Home"));
 const User = lazy(() => import("./pages/User"));
-
-const ManufacturingProcess = lazy(() => import("./pages/ManufacturingProcess"));
 
 const ManufacturingProcessForm = lazy(() =>
   import("./pages/ManufacturingProcessForm")
 );
 
-const ProductionScheduleList = lazy(() => import("./pages/ProductionSchedule"));
-
 const ProductionScheduleListForm = lazy(() =>
   import("./pages/ProductionScheduleListForm")
 );
-
-const Projects = lazy(() => import("./pages/Projects"));
-const ProjectsForm = lazy(() => import("./pages/ProjectsForm"));
-const Tasks = lazy(() => import("./pages/Tasks"));
-const TasksForm = lazy(() => import("./pages/TasksForm"));
-const LaborAllocations = lazy(() => import("./pages/LaborAllocations"));
-const LaborAllocationForm = lazy(() => import("./pages/LaborAllocationForm"));
 
 function App() {
   const { user } = useAuth();
@@ -160,40 +157,16 @@ function App() {
     },
 
     // Projects
-    {
-      path: "/project",
-      element: <Projects />,
-    },
-    {
-      path: "/project/add",
-      element: <ProjectsForm />,
-    },
-    {
-      path: "/project/edit/:projectId",
-      element: <ProjectsForm />,
-    },
-    {
-      path: "/project/view/:projectId",
-      element: <ProjectsForm />,
-    },
+    { path: "/project", element: <Projects /> },
+    { path: "/project/add", element: <ProjectsForm /> },
+    { path: "/project/edit/:projectId", element: <ProjectsForm /> },
+    { path: "/project/view/:projectId", element: <ProjectsForm /> },
 
     // Tasks
-    {
-      path: "/task",
-      element: <Tasks />,
-    },
-    {
-      path: "/task/add",
-      element: <TasksForm />,
-    },
-    {
-      path: "/task/edit/:taskId",
-      element: <TasksForm />,
-    },
-    {
-      path: "/task/view/:taskId",
-      element: <TasksForm />,
-    },
+    { path: "/task", element: <Tasks /> },
+    { path: "/task/add", element: <TasksForm /> },
+    { path: "/task/edit/:taskId", element: <TasksForm /> },
+    { path: "/task/view/:taskId", element: <TasksForm /> },
 
     // Labor Allocations
     {

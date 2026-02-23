@@ -168,8 +168,8 @@ const ProductForm = () => {
         ).data;
         await Promise.all(
           existingProcesses.map((pp) =>
-            api.delete(`api/product/${productId}/process/${pp.id}/`)
-          )
+            api.delete(`api/product/${productId}/process/${pp.id}/`),
+          ),
         );
       } else {
         // Create new product
@@ -182,8 +182,8 @@ const ProductForm = () => {
           api.post(`api/product/${savedProduct.id}/process/`, {
             process: p.id,
             sequence: p.sequence,
-          })
-        )
+          }),
+        ),
       );
 
       alert("Product saved successfully!");
@@ -195,7 +195,7 @@ const ProductForm = () => {
           setErrors(errorData);
           setPageError(
             Object.values(errorData).flat().join(", ") ||
-              "Failed to save product."
+              "Failed to save product.",
           );
         } else setPageError(errorData || "Failed to save product.");
       } else setPageError("An error occurred. Please try again.");
@@ -239,8 +239,8 @@ const ProductForm = () => {
         isViewMode
           ? "Product Details"
           : isEditMode
-          ? "Edit Product"
-          : "Add New Product"
+            ? "Edit Product"
+            : "Add New Product"
       }
       text_01={
         isViewMode ? "View product information" : "Manage product details"
@@ -280,15 +280,17 @@ const ProductForm = () => {
               {product?.status && getStatusBadge(product.status)}
             </div>
           </div>
-          <InfoItem
-            icon={<FileText />}
-            label="Specifications (JSON)"
-            value={
-              <pre className="text-sm bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap">
-                {formData.specifications}
-              </pre>
-            }
-          />
+          <div className="bg-card-sub p-2 pl-3 rounded-lg border-l-4 border-orange-600">
+            <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+              <FileText size={16} />
+              Specifications (JSON)
+            </label>
+            <pre className="bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap text-base font-medium text-stone-300">
+              {formData.specifications || (
+                <span className="text-stone-500">N/A</span>
+              )}
+            </pre>
+          </div>
           <div>
             <h3 className="text-lg font-medium text-stone-300 mb-3 border-b border-stone-700 pb-2">
               Manufacturing Steps
@@ -381,8 +383,8 @@ const ProductForm = () => {
                     .filter(
                       (p) =>
                         !formData.selected_processes.find(
-                          (sp) => sp.id === p.id
-                        )
+                          (sp) => sp.id === p.id,
+                        ),
                     )
                     .map((p) => (
                       <option key={p.id} value={p.id}>

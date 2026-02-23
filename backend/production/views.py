@@ -1,4 +1,4 @@
-from .models import ManufacturingProcess, ProductionLine, ProductionSchedule
+from .models import ManufacturingProcess, ProductionLine, ProductionSchedule, ProductionMaterialConsumption
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -14,6 +14,7 @@ from .serializers import (
     ManufacturingProcessSerializer,
     ProductionScheduleSerializer,
     ProductionLineSerializer,
+    ProductionMaterialConsumptionSerializer,
 )
 
 
@@ -132,3 +133,40 @@ class ProductionScheduleViewSet(ModelViewSet):
                 production_line__workshop__department=user.department
             )
         return self.queryset
+
+
+class ProductionMaterialConsumptionViewSet(ModelViewSet):
+    """
+    Production Material Consumption API:
+    - Admins: Full CRUD
+    - Supervisors: Full CRUD for their department's production
+    - Managers: Full CRUD for their workshops
+    - Operators: Read and Create for their department
+    """
+    
+    serializer_class = ProductionMaterialConsumptionSerializer
+    permission_classes = [ProductionSchedulePermission]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.role == "ADMIN":
+            return ProductionMaterialConsumption.objects.all()
+        if user.role == "SUPERVISOR":
+            return ProductionMaterialConsumption.objects.filter(
+                production_schedule__production_line__workshop__department__supervisor=user
+            )
+        if user.role == "MANAGER":
+            return ProductionMaterialConsumption.objects.filter(
+                production_schedule__production_line__workshop__manager=user
+            )
+        if user.role == "OPERATOR":
+            return ProductionMaterialConsumption.objects.filter(
+                production_schedule__production_line__workshop__department=user.department
+            )
+        
+        return ProductionMaterialConsumption.objects.none()
+    
+    def perform_create(self, serializer):
+        # Set the consumed_by field to the current user
+        serializer.save(consumed_by=self.request.user)

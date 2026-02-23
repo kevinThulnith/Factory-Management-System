@@ -97,8 +97,8 @@ const ProfilePage = () => {
             {/* Profile Header */}
             <div className="flex flex-col sm:flex-row items-center mb-5 pb-3 border-b gap-[-5px] border-stone-500">
               <div className="flex">
-                <div className="bg-yellow-500 rounded-lg sm:p-2 p-1 sm:mr-6 mb-4 sm:mb-0 shadow-lg">
-                  <UserRound className="text-stone-800 sm:h-30 sm:w-30 h-[30px] w-[30px]" />
+                <div className="bg-yellow-500 rounded-lg p-1 sm:mr-6 mb-4 sm:mb-0 shadow-lg">
+                  <UserRound className="text-stone-800 sm:h-[40px] sm:w-[40px] h-[30px] w-[30px]" />
                 </div>
                 <h1 className="font-medium text-2xl sm:hidden ml-4 mt-1">
                   {user.name || user.name || "Unknown User"}

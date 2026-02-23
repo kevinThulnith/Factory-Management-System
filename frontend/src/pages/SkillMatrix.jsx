@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import {
   PlusCircle,
   TrendingUp,
+  UserRound,
   Briefcase,
   RefreshCw,
   RotateCcw,
@@ -22,7 +23,6 @@ import {
   Target,
   Edit3,
   Award,
-  Users,
   Star,
   Eye,
   Zap,
@@ -371,7 +371,10 @@ const SkillMatrix = () => {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <Users size={16} className="mr-2 text-slate-400" />
+                          <UserRound
+                            size={16}
+                            className="mr-2 text-slate-400"
+                          />
                           <div>{skill.employee_name}</div>
                         </div>
                       </td>

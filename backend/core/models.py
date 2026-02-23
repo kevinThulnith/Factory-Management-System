@@ -448,6 +448,14 @@ class MachineOperatorAssignment(Model):
                 {"removed_at": "Removal time cannot be earlier than assignment time"}
             )
 
+        if self.operator.department != self.machine.workshop.department:
+            raise ValidationError(
+                "Operator's department does not match the machine's workshop department."
+            )
+
+        if self.operator.role != "OPERATOR":
+            raise ValidationError("Assigned user must have the OPERATOR role.")
+
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)

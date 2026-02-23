@@ -71,13 +71,7 @@ const MachineForm = () => {
       .get("api/user/")
       .then((response) => {
         const allUsers = response.data.results || response.data || [];
-        // Filter for operators, technicians, or relevant roles
-        const operatorUsers = allUsers.filter(
-          (u) =>
-            u.role === "OPERATOR" ||
-            u.role === "TECHNICIAN" ||
-            u.role === "SUPERVISOR"
-        );
+        const operatorUsers = allUsers.filter((u) => u.role === "OPERATOR"); // !Filter for operators only
         setOperators(operatorUsers);
       })
       .catch((error) => console.error("Failed to fetch operators:", error))

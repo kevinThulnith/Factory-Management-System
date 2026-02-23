@@ -1,5 +1,5 @@
 from django.utils.translation import gettext_lazy as _
-from .models import Project, Task
+from .models import Project, Task, TaskMaterialConsumption
 from core.models import User
 
 from rest_framework.serializers import (
@@ -82,3 +82,16 @@ class ProjectSerializer(ModelSerializer):
             # For list view, show fewer tasks
             recent_tasks = obj.tasks.all().order_by("-updated_at")[:3]
         return TaskSummarySerializer(recent_tasks, many=True).data
+
+
+class TaskMaterialConsumptionSerializer(ModelSerializer):
+    task_name = CharField(source="task.name", read_only=True)
+    project_name = CharField(source="task.project.name", read_only=True)
+    material_name = CharField(source="material.name", read_only=True)
+    material_unit = CharField(source="material.unit_of_measurement", read_only=True)
+    consumed_by_name = CharField(source="consumed_by.name", read_only=True)
+    
+    class Meta:
+        model = TaskMaterialConsumption
+        fields = "__all__"
+        read_only_fields = ["consumed_at", "updated_at"]

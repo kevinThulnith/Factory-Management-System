@@ -88,7 +88,7 @@ class MachineSerializer(ModelSerializer):
                 workshop=workshop,
                 model_number=model_number,
                 purchase_date=purchase_date,
-                **validated_data
+                **validated_data,
             )
             return machine
         else:
@@ -104,6 +104,32 @@ class MachineSerializer(ModelSerializer):
     def get_operator_assignments(self, obj):
         return MachineOperatorAssignment.objects.filter(machine=obj).count()
 
+    def validate(self, attrs):
+        """Validate machine data including operator assignment"""
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        operator = attrs.get("operator")
+        workshop = attrs.get("workshop", getattr(self.instance, "workshop", None))
+
+        # Validate operator role and department if operator is being assigned
+        if operator:
+            if operator.role != "OPERATOR":
+                raise ValidationError(
+                    {"operator": ["Assigned user must have the OPERATOR role."]}
+                )
+
+            if workshop and operator.department != workshop.department:
+                raise ValidationError(
+                    {
+                        "operator": [
+                            f"Cannot assign operator from {operator.department} department "
+                            f"to machine in {workshop.department} department."
+                        ]
+                    }
+                )
+
+        return attrs
+
 
 class MachineOperatorAssignmentSerializer(ModelSerializer):
     machine_name = StringRelatedField(source="machine", read_only=True)
@@ -113,3 +139,21 @@ class MachineOperatorAssignmentSerializer(ModelSerializer):
         model = MachineOperatorAssignment
         fields = "__all__"
         read_only_fields = ["assigned_at", "auto_remove_at", "removed_at"]
+
+    def validate(self, attrs):
+        """Validate the assignment before saving"""
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        # Create a temporary instance for validation
+        instance = MachineOperatorAssignment(**attrs)
+
+        try:
+            instance.clean()
+        except DjangoValidationError as e:
+            # Convert Django ValidationError to DRF ValidationError
+            if hasattr(e, "message_dict"):
+                raise ValidationError(e.message_dict)
+            else:
+                raise ValidationError({"non_field_errors": [str(e)]})
+
+        return attrs

@@ -254,9 +254,9 @@ function Department() {
           </div>
 
           {/* Advanced Filters and Search */}
-          <div className={`bg-card-main  rounded-xl p-6 mb-8 shadow-lg`}>
+          <div className="bg-card-main  rounded-xl p-6 mb-8 shadow-lg">
             <div className="flex items-center mb-4">
-              <Filter size={15} className={` mx-2`} />
+              <Filter size={15} className="mx-2" />
               <h3>Search & Filters</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

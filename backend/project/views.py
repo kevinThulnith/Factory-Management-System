@@ -1,8 +1,8 @@
 from .permissions import ProjectPermissions, TaskPermissions
-from .serializers import ProjectSerializer, TaskSerializer
+from .serializers import ProjectSerializer, TaskSerializer, TaskMaterialConsumptionSerializer
 from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
-from .models import Project, Task
+from .models import Project, Task, TaskMaterialConsumption
 
 
 class ProjectViewSet(ModelViewSet):
@@ -97,3 +97,38 @@ class ProjectTaskViewSet(ModelViewSet):
         project_id = self.kwargs.get("project_pk")
         project = get_object_or_404(Project, pk=project_id)
         serializer.save(project=project)
+
+
+class TaskMaterialConsumptionViewSet(ModelViewSet):
+    """
+    Task Material Consumption API:
+    - Admins: Full CRUD
+    - Managers: Full CRUD for their projects
+    - Supervisors: Full CRUD for their department's projects
+    - Operators: Read and Create for assigned tasks
+    """
+    
+    serializer_class = TaskMaterialConsumptionSerializer
+    permission_classes = [TaskPermissions]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.role == "ADMIN":
+            return TaskMaterialConsumption.objects.all()
+        if user.role == "SUPERVISOR":
+            return TaskMaterialConsumption.objects.filter(
+                task__project__project_manager__department=user.department
+            )
+        if user.role == "MANAGER":
+            return TaskMaterialConsumption.objects.filter(
+                task__project__project_manager=user
+            )
+        if user.role == "OPERATOR":
+            return TaskMaterialConsumption.objects.filter(task__assigned_to=user)
+        
+        return TaskMaterialConsumption.objects.none()
+    
+    def perform_create(self, serializer):
+        # Set the consumed_by field to the current user
+        serializer.save(consumed_by=self.request.user)

@@ -244,7 +244,7 @@ function UserForm() {
             /* Form Section with Modern Design */
             <div className="rounded-2xl shadow-md bg-card-main overflow-hidden mb-10 text-star-dust-200 p-1">
               <form onSubmit={handleSubmit}>
-                <div className="p-8 space-y-8">
+                <div className="sm:p-8 p-4 space-y-8">
                   {pageError && (
                     <div className="bg-red-500 rounded-xl p-4 flex items-center">
                       <AlertTriangle

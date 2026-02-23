@@ -1,6 +1,7 @@
 import { Building2, FileText, MapPin, House, User } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -28,6 +29,7 @@ const DepartmentForm = () => {
     description: "",
   });
 
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -65,7 +67,7 @@ const DepartmentForm = () => {
         })
         .finally(() => setLoading(false));
     }
-  }, [departmentId]);
+  }, [departmentId, isEditMode, isViewMode, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -157,7 +159,7 @@ const DepartmentForm = () => {
       onClick={() => navigate("/department")}
       fnction={() => navigate(`/department/edit/${departmentId}`)}
       gradient="from-red-600 to-red-800"
-      isViewMode={isViewMode}
+      isViewMode={user && user.role === "ADMIN"}
       pageError={pageError}
       loading={loading}
     >

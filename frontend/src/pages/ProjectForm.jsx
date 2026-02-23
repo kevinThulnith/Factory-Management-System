@@ -12,7 +12,7 @@ import {
 } from "../components/components";
 
 import {
-  Briefcase,
+  FolderKanban,
   Save,
   XCircle,
   Info,
@@ -257,7 +257,7 @@ const ProjectsForm = () => {
 
   return (
     <Form
-      icon={<Briefcase />}
+      icon={<FolderKanban />}
       heading={
         isViewMode
           ? "View Project"
@@ -284,7 +284,7 @@ const ProjectsForm = () => {
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <InfoItem
-              icon={<Briefcase />}
+              icon={<FolderKanban />}
               label="Project Name"
               value={project?.name}
             />
@@ -371,7 +371,7 @@ const ProjectsForm = () => {
               <InputItem
                 label="Project Name"
                 name="name"
-                icon={<Briefcase />}
+                icon={<FolderKanban />}
                 value={formData.name}
                 onChange={handleChange}
                 required

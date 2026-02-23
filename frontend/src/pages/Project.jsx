@@ -7,7 +7,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  Briefcase,
+  FolderKanban,
   CheckCircle,
   PlusCircle,
   RefreshCw,
@@ -196,7 +196,7 @@ const Projects = () => {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start">
                 <div className="p-3 rounded-2xl mb-4 sm:mb-0 sm:mr-6 shadow-lg bg-gradient-to-r from-indigo-600 to-indigo-800 transform hover:scale-105 transition-all duration-300">
-                  <Briefcase size={90} className="text-stone-200" />
+                  <FolderKanban size={90} className="text-stone-200" />
                 </div>
                 <div className="text-center sm:text-left">
                   <h1 className="text-2xl font-medium mb-2 tracking-tight">
@@ -294,7 +294,7 @@ const Projects = () => {
           {/* Content Area */}
           {allProjects.length === 0 && !loading ? (
             <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-              <Briefcase size={64} className="mx-auto text-gray-500 mb-4" />
+              <FolderKanban size={64} className="mx-auto text-gray-500 mb-4" />
               <h3 className="text-xl font-semibold text-stone-300 mb-2">
                 No Projects Found
               </h3>
@@ -312,15 +312,13 @@ const Projects = () => {
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     {/* Left Section - Main Info */}
                     <div className="flex-grow space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-2xl font-medium text-stone-200 flex items-center gap-2 mb-4">
-                            <Briefcase size={28} className="text-indigo-400" />
-                            {project.name}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-2">
-                            {getStatusBadge(project.project_status)}
-                          </div>
+                      <div div className="flex items-start justify-between">
+                        <h3 className="text-2xl font-medium text-stone-200 flex items-center gap-2 mb-4">
+                          <FolderKanban size={28} className="text-indigo-300" />
+                          {project.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-2">
+                          {getStatusBadge(project.project_status)}
                         </div>
                       </div>
 

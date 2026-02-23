@@ -3,34 +3,34 @@ import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  Users,
+  AlertTriangle,
+  CalendarDays,
   PlusCircle,
+  UserCircle,
+  ListChecks,
   RefreshCw,
+  Briefcase,
   RotateCcw,
+  UsersRound,
+  Factory,
   Trash2,
   Search,
   Filter,
+  Users,
   Edit3,
   Clock,
   Eye,
-  CalendarDays,
-  Briefcase,
-  ListChecks,
-  Factory,
-  AlertTriangle,
-  UserCircle,
 } from "lucide-react";
-import api from "../api";
 
 const LaborAllocations = () => {
   const { user } = useAuth();
-  const [allAllocations, setAllAllocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [allAllocations, setAllAllocations] = useState([]);
   const [filters, setFilters] = useState({
     searchTerm: "",
     employeeId: "",
@@ -129,12 +129,12 @@ const LaborAllocations = () => {
     (user.role === "ADMIN" ||
       user.role === "SUPERVISOR" ||
       user.role === "MANAGER");
-  const canEdit = (alloc) =>
+  const canEdit = () =>
     user &&
     (user.role === "ADMIN" ||
       user.role === "SUPERVISOR" ||
       user.role === "MANAGER");
-  const canDelete = (alloc) =>
+  const canDelete = () =>
     user &&
     (user.role === "ADMIN" ||
       user.role === "SUPERVISOR" ||
@@ -176,7 +176,7 @@ const LaborAllocations = () => {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start">
                 <div className="p-3 rounded-2xl mb-4 sm:mb-0 sm:mr-6 shadow-lg bg-gradient-to-r from-orange-600 to-orange-800 transform hover:scale-105 transition-all duration-300">
-                  <Users size={90} className="text-stone-200" />
+                  <UsersRound size={90} className="text-stone-200" />
                 </div>
                 <div className="text-center sm:text-left">
                   <h1 className="text-2xl font-medium mb-2 tracking-tight">

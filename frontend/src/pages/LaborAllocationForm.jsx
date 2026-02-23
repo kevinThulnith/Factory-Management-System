@@ -1,26 +1,33 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
 import {
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  createElement,
+} from "react";
+
+import {
+  Buttons,
   InfoItem,
   InputItem,
   SelectItem,
-  Buttons,
 } from "../components/components";
 
 import {
   Users,
   Info,
-  CalendarDays,
   Clock,
+  Factory,
   Briefcase,
   ListChecks,
-  Factory,
-  AlertTriangle,
   UserCircle,
+  CalendarDays,
+  AlertTriangle,
 } from "lucide-react";
 
 const LaborAllocationForm = () => {
@@ -32,12 +39,12 @@ const LaborAllocationForm = () => {
   const isCreateMode = location.pathname.includes("/add");
 
   const { user } = useAuth();
-  const [allocation, setAllocation] = useState(null);
+  const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
-  const [allEmployees, setAllEmployees] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
-  const [allTasks, setAllTasks] = useState([]);
+  const [allocation, setAllocation] = useState(null);
+  const [allEmployees, setAllEmployees] = useState([]);
   const [allProductionLines, setAllProductionLines] = useState([]);
   const [formData, setFormData] = useState({
     employee: "",
@@ -155,9 +162,8 @@ const LaborAllocationForm = () => {
   useEffect(() => {
     if (formData.allocation_type === "task" && formData.project) {
       fetchTasksForProject(formData.project);
-    } else {
-      setAllTasks([]);
-    }
+    } else setAllTasks([]);
+    
   }, [formData.project, formData.allocation_type, fetchTasksForProject]);
 
   const handleChange = (e) => {
@@ -438,7 +444,7 @@ const LaborAllocationForm = () => {
 
           {/* Target */}
           <InfoItem
-            icon={React.createElement(
+            icon={createElement(
               getTypeIconComponent(
                 allocation?.task
                   ? "task"

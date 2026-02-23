@@ -1,33 +1,31 @@
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useState, useMemo, useEffect } from "react";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
-import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
+import api from "../api";
 
 import {
-  ListChecks,
+  AlertTriangle,
+  CalendarDays,
   CheckCircle,
+  ListChecks,
+  PlayCircle,
   PlusCircle,
   RefreshCw,
+  Briefcase,
   RotateCcw,
-  Activity,
   XCircle,
   Target,
   Trash2,
   Search,
   Filter,
   Edit3,
-  Clock,
-  Eye,
   Users,
-  CalendarDays,
-  PlayCircle,
-  AlertTriangle,
-  Briefcase,
+  Eye,
 } from "lucide-react";
-import api from "../api";
 
 const Tasks = () => {
   const { user } = useAuth();
