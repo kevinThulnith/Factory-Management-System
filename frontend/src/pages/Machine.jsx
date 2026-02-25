@@ -156,6 +156,7 @@ function Machine() {
     user &&
     (user.role === "ADMIN" ||
       user.role === "SUPERVISOR" ||
+      user.role === "TECHNICIAN" ||
       user.role === "MANAGER");
   const canDelete = user && user.role === "ADMIN";
 

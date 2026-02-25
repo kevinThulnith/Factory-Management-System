@@ -50,7 +50,7 @@ function Workshop() {
     "workshop",
     setLoading,
     "workshop",
-    fetchWorkshops
+    fetchWorkshops,
   );
 
   const handleFilterChange = (e) =>
@@ -137,17 +137,22 @@ function Workshop() {
       active: allWorkshops.filter((w) => w.operational_status === "ACTIVE")
         .length,
       maintenance: allWorkshops.filter(
-        (w) => w.operational_status === "MAINTENANCE"
+        (w) => w.operational_status === "MAINTENANCE",
       ).length,
       inactive: allWorkshops.filter((w) => w.operational_status === "INACTIVE")
         .length,
     };
   }, [allWorkshops]);
 
-  // Check permissions
+  // !Check permissions
   const canCreate = user && (user.role === "ADMIN" || user.role === "MANAGER");
   const canDelete =
     user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+  const canEdit =
+    user &&
+    (user.role === "ADMIN" ||
+      user.role === "MANAGER" ||
+      user.role === "SUPERVISOR");
 
   return (
     <>
@@ -284,9 +289,9 @@ function Workshop() {
 
           {/* Workshops Table */}
           {allWorkshops.length === 0 && !loading ? (
-            <div className="border rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
+            <div className="bg-card-main rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
               <Factory size={64} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-200 mb-2">
                 No Workshops Found
               </h3>
               <p className="text-gray-500">
@@ -392,13 +397,15 @@ function Workshop() {
                             >
                               <Eye size={18} />
                             </Link>
-                            <Link
-                              to={`/workshop/edit/${workshop.id}`}
-                              className="p-2 text-indigo-200 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors duration-200"
-                              title="Edit Workshop"
-                            >
-                              <Edit3 size={18} />
-                            </Link>
+                            {canEdit && (
+                              <Link
+                                to={`/workshop/edit/${workshop.id}`}
+                                className="p-2 text-indigo-200 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors duration-200"
+                                title="Edit Workshop"
+                              >
+                                <Edit3 size={18} />
+                              </Link>
+                            )}
                             {canDelete && (
                               <button
                                 onClick={() =>

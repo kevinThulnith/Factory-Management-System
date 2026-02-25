@@ -1,8 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from django.db import transaction
 from django.db.models import (
-    CheckConstraint,
     ManyToManyField,
     DurationField,
     DateTimeField,
@@ -12,11 +10,9 @@ from django.db.models import (
     JSONField,
     CharField,
     TextField,
-    SET_NULL,
     CASCADE,
     Model,
     Index,
-    Q,
 )
 
 #  TODO: Create production models
@@ -229,111 +225,3 @@ class ProductionSchedule(Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-
-
-class ProductionMaterialConsumption(Model):
-    """
-    Production Material Consumption Model
-    
-    Tracks material consumption for production schedules/lines
-    - Many-to-One with ProductionSchedule (a schedule can consume many materials) ☑️
-    - Many-to-One with Material (a material can be consumed by many schedules) ☑️
-    - Many-to-One with User (records who logged the consumption) ☑️
-    """
-    
-    production_schedule = ForeignKey(
-        ProductionSchedule,
-        on_delete=CASCADE,
-        related_name="material_consumptions",
-        verbose_name=_("production schedule"),
-    )
-    material = ForeignKey(
-        "inventory.Material",
-        on_delete=CASCADE,
-        related_name="production_consumptions",
-        verbose_name=_("material"),
-    )
-    quantity = DecimalField(
-        _("quantity consumed"),
-        max_digits=10,
-        decimal_places=2,
-    )
-    consumed_at = DateTimeField(
-        _("consumed at"),
-        auto_now_add=True,
-    )
-    consumed_by = ForeignKey(
-        "main.User",
-        on_delete=SET_NULL,
-        null=True,
-        blank=True,
-        related_name="production_material_consumptions",
-        verbose_name=_("consumed by"),
-    )
-    notes = TextField(
-        _("notes"),
-        blank=True,
-        null=True,
-    )
-    updated_at = DateTimeField(_("updated at"), auto_now=True)
-    
-    class Meta:
-        ordering = ["-consumed_at"]
-        indexes = [
-            Index(fields=["production_schedule", "material"]),
-            Index(fields=["consumed_at"]),
-        ]
-        constraints = [
-            CheckConstraint(
-                check=Q(quantity__gt=0),
-                name="production_consumption_quantity_positive",
-            ),
-        ]
-        verbose_name = _("Production Material Consumption")
-        verbose_name_plural = _("Production Material Consumptions")
-    
-    def __str__(self):
-        return f"{self.production_schedule.product.name if self.production_schedule.product else 'N/A'} - {self.material.name}: {self.quantity} {self.material.unit_of_measurement}"
-    
-    def clean(self):
-        if self.quantity <= 0:
-            raise ValidationError(_("Quantity must be greater than zero."))
-        
-        # Check if material has sufficient stock
-        if self.material.quantity < self.quantity:
-            raise ValidationError(
-                _(f"Insufficient stock. Available: {self.material.quantity} {self.material.unit_of_measurement}")
-            )
-    
-    @transaction.atomic
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        old_quantity = None
-        
-        if not is_new:
-            try:
-                old_instance = ProductionMaterialConsumption.objects.get(pk=self.pk)
-                old_quantity = old_instance.quantity
-            except ProductionMaterialConsumption.DoesNotExist:
-                pass
-        
-        self.clean()
-        super().save(*args, **kwargs)
-        
-        # Update material inventory
-        if is_new:
-            # Deduct new consumption from inventory
-            self.material.quantity -= self.quantity
-            self.material.save(update_fields=["quantity"])
-        elif old_quantity is not None and old_quantity != self.quantity:
-            # Adjust inventory based on quantity change
-            quantity_diff = self.quantity - old_quantity
-            self.material.quantity -= quantity_diff
-            self.material.save(update_fields=["quantity"])
-    
-    @transaction.atomic
-    def delete(self, *args, **kwargs):
-        # Return material to inventory when consumption is deleted
-        self.material.quantity += self.quantity
-        self.material.save(update_fields=["quantity"])
-        super().delete(*args, **kwargs)

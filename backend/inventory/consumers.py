@@ -1,4 +1,4 @@
-from .permissions import BasePermissions, OrderPermission
+from .permissions import BasePermissions, OrderPermission, MaterialConsumptionPermission
 from backend.consumers import ConsumerBlock
 
 # TODO: Create consumer classes for inventory models
@@ -35,3 +35,14 @@ class OrderConsumer(ConsumerBlock):
         from .models import Order
 
         return Order
+
+
+class MaterialConsumptionConsumer(ConsumerBlock):
+    group_name = "material_consumptions"
+    permission_class = MaterialConsumptionPermission
+
+    @property
+    def model_class(self):
+        from .models import MaterialConsumption
+
+        return MaterialConsumption

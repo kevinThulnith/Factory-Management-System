@@ -1,4 +1,4 @@
-from .models import ProductionLine, ProductionSchedule, ManufacturingProcess, ProductionMaterialConsumption
+from .models import ProductionLine, ProductionSchedule, ManufacturingProcess
 from core.serializers import MachineSerializer
 from rest_framework.serializers import (
     SerializerMethodField,
@@ -112,17 +112,3 @@ class ProductionScheduleSerializer(ModelSerializer):
         model = ProductionSchedule
         fields = "__all__"
         read_only_fields = ["created_at", "updated_at"]
-
-
-class ProductionMaterialConsumptionSerializer(ModelSerializer):
-    production_schedule_id = IntegerField(source="production_schedule.id", read_only=True)
-    product_name = CharField(source="production_schedule.product.name", read_only=True)
-    production_line_name = CharField(source="production_schedule.production_line.name", read_only=True)
-    material_name = CharField(source="material.name", read_only=True)
-    material_unit = CharField(source="material.unit_of_measurement", read_only=True)
-    consumed_by_name = CharField(source="consumed_by.name", read_only=True)
-    
-    class Meta:
-        model = ProductionMaterialConsumption
-        fields = "__all__"
-        read_only_fields = ["consumed_at", "updated_at"]

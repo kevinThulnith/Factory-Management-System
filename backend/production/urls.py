@@ -4,7 +4,6 @@ from .views import (
     ManufacturingProcessViewSet,
     ProductionScheduleViewSet,
     ProductionLineViewSet,
-    ProductionMaterialConsumptionViewSet,
 )
 
 router = DefaultRouter()
@@ -16,11 +15,6 @@ router.register(
     r"manufacturing-process",
     ManufacturingProcessViewSet,
     basename="manufacturing-process",
-)
-router.register(
-    r"production-material-consumption",
-    ProductionMaterialConsumptionViewSet,
-    basename="production-material-consumption",
 )
 
 urlpatterns = [path("", include(router.urls))]

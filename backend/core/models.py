@@ -1,6 +1,7 @@
 from .task import complete_assignment, create_assignment
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
 from django.db import transaction, connection
 from project.models import Project
@@ -247,6 +248,9 @@ class Machine(Model):
             ]
         )
 
+        # !Fire post_save signal so WebSocket consumers receive the update
+        post_save.send(sender=Machine, instance=self, created=False)
+
         # !Create new assignment record using task function
         create_assignment(timezone.now() + timedelta(hours=8), self, operator)
 
@@ -283,6 +287,9 @@ class Machine(Model):
             ]
         )
 
+        # !Fire post_save signal so WebSocket consumers receive the update
+        post_save.send(sender=Machine, instance=self, created=False)
+
         logger.info(f"Cleared operator from machine {self.pk}")
 
     def clean(self):
@@ -311,16 +318,40 @@ class Machine(Model):
 
         is_new = self.pk is None
         old_operator_id = None
+        old_status = None
 
-        # !Get old operator ID for comparison (only if updating)
+        # !Get old operator ID and status for comparison (only if updating)
         if not is_new:
-            old_operator_id = (
+            old = (
                 Machine.objects.filter(pk=self.pk)
-                .values_list("operator_id", flat=True)
+                .values_list("operator_id", "status")
                 .first()
             )
+            if old:
+                old_operator_id, old_status = old
 
         super().save(*args, **kwargs)
+
+        # !If status changed to BROKEN, clear the operator without resetting status
+        if (
+            self.status == self.Status.BROKEN
+            and old_status != self.Status.BROKEN
+            and self.operator_id
+        ):
+            complete_assignment(self)
+            Machine.objects.filter(pk=self.pk).update(
+                operator=None,
+                operator_assigned_at=None,
+                operator_auto_remove_at=None,
+            )
+            self.refresh_from_db(
+                fields=["operator", "operator_assigned_at", "operator_auto_remove_at"]
+            )
+            post_save.send(sender=Machine, instance=self, created=False)
+            logger.info(
+                f"Cleared operator from machine {self.pk} because status changed to BROKEN"
+            )
+            return
 
         # !Handle operator assignment logic
         if is_new and self.operator:
@@ -335,7 +366,7 @@ class Machine(Model):
 
     @classmethod
     def get_expired_assignments(cls):
-        """Get machines with expired operator assignments"""
+        "Get machines with expired operator assignments"
         now = timezone.now()
         return cls.objects.filter(
             operator__isnull=False,
@@ -344,7 +375,7 @@ class Machine(Model):
 
     @classmethod
     def clear_expired_assignments(cls):
-        """Clear all expired operator assignments"""
+        "Clear all expired operator assignments"
         expired_machines = cls.get_expired_assignments()
         count = expired_machines.count()
 
@@ -368,6 +399,17 @@ class Machine(Model):
                         status=cls.Status.IDLE,
                     )
 
+                    # !Refresh and fire signal so WebSocket consumers receive the update
+                    machine.refresh_from_db(
+                        fields=[
+                            "status",
+                            "operator",
+                            "operator_assigned_at",
+                            "operator_auto_remove_at",
+                        ]
+                    )
+                    post_save.send(sender=cls, instance=machine, created=False)
+
                     cleared_count += 1
                     logger.info(f"Cleared expired operator from machine {machine.pk}")
             except Exception as e:
@@ -379,29 +421,29 @@ class Machine(Model):
 
     @property
     def is_operational(self):
-        """Check if machine is operational"""
+        "Chek if machine is operational"
         return self.status == self.Status.OPERATIONAL
 
     @property
     def has_operator(self):
-        """Check if machine has an operator assigned"""
+        "Chec if machine has an operator assigned"
         return self.operator is not None
 
     @property
     def is_assignment_expired(self):
-        """Check if current operator assignment is expired"""
+        "Check i current operator assignment is expired"
         if not self.operator_auto_remove_at:
             return False
         return timezone.now() >= self.operator_auto_remove_at
 
     def get_current_assignment(self):
-        """Get the current active assignment for this machine"""
+        "Get the crrent active assignment for this machine"
         return self.operator_assignments.filter(
             status="ACTIVE", removed_at__isnull=True
         ).first()
 
     def get_assignment_history(self):
-        """Get assignment history for this machine"""
+        "Get assignmet history for this machine"
         return self.operator_assignments.all().order_by("-assigned_at")
 
 
@@ -462,7 +504,7 @@ class MachineOperatorAssignment(Model):
 
 
 class OperatorCheckerThread(threading.Thread):
-    """Background thread to check and clear expired operator assignments"""
+    "Background thread to check and clear expired operator assignments"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -482,7 +524,7 @@ class OperatorCheckerThread(threading.Thread):
         logger.info("Operator checker thread finished")
 
     def _check_and_clear_expired(self):
-        """Check and clear expired operator assignments"""
+        "Check and clear expired operator assignments"
         # Close any existing database connections to avoid connection issues
         connection.close()
 
@@ -494,13 +536,13 @@ class OperatorCheckerThread(threading.Thread):
             logger.error(f"Error clearing expired assignments: {e}")
 
     def stop(self):
-        """Stop the thread gracefully"""
+        "Stop the thread gracefully"
         self.running = False
         logger.info("Stopping operator checker thread...")
 
 
 def cleanup_operator_thread():
-    """Cleanup function to ensure thread stops on app shutdown"""
+    "Cleanup function to ensure thread stops on app shutdown"
     stop_operator_checker_thread()
 
 
@@ -509,7 +551,7 @@ atexit.register(cleanup_operator_thread)
 
 
 def start_operator_checker_thread():
-    """Start the operator checker thread if it's not already running"""
+    "Start the operator checker thread if it's not already running"
     global _operator_checker_thread
 
     # Check if thread exists and is still alive
@@ -527,7 +569,7 @@ def start_operator_checker_thread():
 
 
 def stop_operator_checker_thread():
-    """Stop the operator checker thread"""
+    "Stop the operator checker thread"
     global _operator_checker_thread
 
     if _operator_checker_thread and _operator_checker_thread.is_alive():

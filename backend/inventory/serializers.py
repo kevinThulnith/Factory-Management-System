@@ -1,9 +1,11 @@
-from .models import Supplier, Material, Order, OrderMaterial, _
+from .models import Supplier, Material, Order, OrderMaterial, MaterialConsumption, _
 from rest_framework.serializers import (
     StringRelatedField,
+    ValidationError,
     ModelSerializer,
     ReadOnlyField,
     IntegerField,
+    CharField,
 )
 
 
@@ -76,3 +78,48 @@ class OrderSerializer(ModelSerializer):
         if "total" in data and data["total"] is not None:
             data["total"] = str(data["total"])
         return data
+
+
+class MaterialConsumptionSerializer(ModelSerializer):
+    material_name = CharField(source="material.name", read_only=True)
+    material_unit = CharField(source="material.unit_of_measurement", read_only=True)
+    consumed_by_name = CharField(source="consumed_by.name", read_only=True)
+
+    # Task-related read-only fields
+    task_name = CharField(source="task.name", read_only=True)
+    project_name = CharField(source="task.project.name", read_only=True)
+
+    # Production-related read-only fields
+    product_name = ReadOnlyField(source="production_schedule.product.name")
+    production_line_name = ReadOnlyField(
+        source="production_schedule.production_line.name"
+    )
+
+    class Meta:
+        model = MaterialConsumption
+        fields = "__all__"
+        read_only_fields = ["consumed_at", "updated_at", "consumption_type"]
+
+    def validate(self, attrs):
+        task = attrs.get("task")
+        production_schedule = attrs.get("production_schedule")
+
+        if task and production_schedule:
+            raise ValidationError(
+                {
+                    "non_field_errors": [
+                        "Cannot link to both a task and a production schedule."
+                    ]
+                }
+            )
+
+        if not task and not production_schedule:
+            raise ValidationError(
+                {
+                    "non_field_errors": [
+                        "Must link to either a task or a production schedule."
+                    ]
+                }
+            )
+
+        return attrs

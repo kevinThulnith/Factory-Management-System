@@ -49,6 +49,8 @@ class WorkshopViewSet(ModelViewSet):
     - Admins: Full CRUD access
     - Supervisors: Can view workshops in their department and update managers, operational_status
     - Managers: Update 'operational_status' in their workshops.
+    - Operators: Read-only access to workshops in their own department.
+    - TECHNICIAN: Read-only access to all workshops.
     """
 
     serializer_class = WorkshopSerializer
@@ -57,10 +59,10 @@ class WorkshopViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        if user.role == "ADMIN":
+        if user.role in ["ADMIN", "TECHNICIAN"]:
             return Workshop.objects.all().select_related("department", "manager")
 
-        if user.role == "SUPERVISOR":
+        if user.role in ["SUPERVISOR", "OPERATOR"]:
             return Workshop.objects.filter(department=user.department).select_related(
                 "department", "manager"
             )

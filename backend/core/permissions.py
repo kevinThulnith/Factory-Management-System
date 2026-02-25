@@ -54,6 +54,8 @@ class WorkshopPermissions(PermissionBlock):
     - Admins: Full CRUD.
     - Supervisors: Update 'manager', 'operational_status' in their departments.
     - Managers: Update 'operational_status' in their workshops.
+    - Operators: Read-only access to workshops in their own department.
+    - TECHNICIAN: Read-only access to all workshops.
     """
 
     SUPERVISOR_ALLOWED_FIELDS = {"manager", "operational_status"}
@@ -67,7 +69,7 @@ class WorkshopPermissions(PermissionBlock):
         user = request.user
 
         if request.method in SAFE_METHODS:
-            return user.role in ["SUPERVISOR", "MANAGER"]
+            return user.role in ["SUPERVISOR", "MANAGER", "TECHNICIAN", "OPERATOR"]
 
         if (
             request.method in ["PATCH", "PUT"]
@@ -90,11 +92,14 @@ class WorkshopPermissions(PermissionBlock):
 
         user = request.user
 
-        if user.role == "SUPERVISOR":
+        if user.role in ["SUPERVISOR", "OPERATOR"]:
             return obj.department == user.department
 
         if user.role == "MANAGER":
             return obj.manager == user
+        
+        if user.role == "TECHNICIAN":
+            return True
 
         return False
 

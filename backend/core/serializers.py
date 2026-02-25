@@ -105,7 +105,7 @@ class MachineSerializer(ModelSerializer):
         return MachineOperatorAssignment.objects.filter(machine=obj).count()
 
     def validate(self, attrs):
-        """Validate machine data including operator assignment"""
+        "Validate machine data including operator assignment"
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         operator = attrs.get("operator")
@@ -141,7 +141,7 @@ class MachineOperatorAssignmentSerializer(ModelSerializer):
         read_only_fields = ["assigned_at", "auto_remove_at", "removed_at"]
 
     def validate(self, attrs):
-        """Validate the assignment before saving"""
+        "Validate the assignment before saving"
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         # Create a temporary instance for validation

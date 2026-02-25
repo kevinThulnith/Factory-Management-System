@@ -22,7 +22,87 @@ import {
   CheckCircle,
   PauseCircle,
   AlertCircle,
+  PlusCircle,
+  Trash2,
+  Beaker,
+  FileText,
 } from "lucide-react";
+
+// --- Material Consumption Line Item Form ---
+const ConsumptionItemForm = ({ materials, onSave, onCancel, loading }) => {
+  const [formData, setFormData] = useState({
+    material: "",
+    quantity: "1.00",
+    notes: "",
+  });
+
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.material || parseFloat(formData.quantity) <= 0) return;
+    onSave({
+      material: parseInt(formData.material),
+      quantity: formData.quantity,
+      notes: formData.notes || null,
+    });
+    setFormData({ material: "", quantity: "1.00", notes: "" });
+  };
+
+  return (
+    <div className="bg-stone-800 rounded-xl p-4 my-4 inset-shadow-2xl">
+      <h4 className="text-md font-semibold text-stone-200 mb-4">
+        Add Material Consumption
+      </h4>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <SelectItem
+            label="Material"
+            name="material"
+            value={formData.material}
+            onChange={handleChange}
+            options={materials.map((m) => ({
+              value: m.id,
+              label: `${m.name} (${m.quantity} ${m.unit_of_measurement || ""})`,
+            }))}
+            required
+          />
+          <InputItem
+            label="Quantity"
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChange}
+            type="number"
+            required
+          />
+          <InputItem
+            label="Notes (optional)"
+            name="notes"
+            value={formData.notes}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="bg-stone-600 hover:bg-stone-700 text-stone-200 py-2 px-3 rounded-md text-[14px]"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md text-[14px]"
+          >
+            {loading ? "Saving..." : "Add Consumption"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
 
 const ProductionScheduleListForm = () => {
   const { scheduleId } = useParams();
@@ -38,6 +118,10 @@ const ProductionScheduleListForm = () => {
   const [pageError, setPageError] = useState("");
   const [allProductionLines, setAllProductionLines] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [allMaterials, setAllMaterials] = useState([]);
+  const [consumptions, setConsumptions] = useState([]);
+  const [showAddConsumption, setShowAddConsumption] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [formData, setFormData] = useState({
     production_line: "",
     product: "",
@@ -49,8 +133,12 @@ const ProductionScheduleListForm = () => {
 
   // Permissions
   const canManage = useMemo(
-    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR" || user.role === "MANAGER"),
-    [user]
+    () =>
+      user &&
+      (user.role === "ADMIN" ||
+        user.role === "SUPERVISOR" ||
+        user.role === "MANAGER"),
+    [user],
   );
 
   // Data Fetching
@@ -63,6 +151,9 @@ const ProductionScheduleListForm = () => {
       api
         .get("api/product/")
         .then((res) => setAllProducts(res.data.results || res.data)),
+      api
+        .get("api/material/")
+        .then((res) => setAllMaterials(res.data.results || res.data)),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -70,7 +161,9 @@ const ProductionScheduleListForm = () => {
     if (!scheduleId) {
       // Set default start time to 5 minutes in the future
       const nowPlus5Min = new Date(new Date().getTime() + 5 * 60000);
-      const localTime = new Date(nowPlus5Min.getTime() - (nowPlus5Min.getTimezoneOffset() * 60000))
+      const localTime = new Date(
+        nowPlus5Min.getTime() - nowPlus5Min.getTimezoneOffset() * 60000,
+      )
         .toISOString()
         .slice(0, 16);
       setFormData((prev) => ({ ...prev, start_time: localTime }));
@@ -89,7 +182,7 @@ const ProductionScheduleListForm = () => {
           start_time: res.data.start_time
             ? new Date(
                 new Date(res.data.start_time).getTime() -
-                  new Date().getTimezoneOffset() * 60000
+                  new Date().getTimezoneOffset() * 60000,
               )
                 .toISOString()
                 .slice(0, 16)
@@ -97,7 +190,7 @@ const ProductionScheduleListForm = () => {
           end_time: res.data.end_time
             ? new Date(
                 new Date(res.data.end_time).getTime() -
-                  new Date().getTimezoneOffset() * 60000
+                  new Date().getTimezoneOffset() * 60000,
               )
                 .toISOString()
                 .slice(0, 16)
@@ -115,6 +208,68 @@ const ProductionScheduleListForm = () => {
   useEffect(() => {
     fetchScheduleData();
   }, [fetchScheduleData]);
+
+  // Fetch material consumptions for this schedule
+  const fetchConsumptions = useCallback(() => {
+    if (!scheduleId) return;
+    api
+      .get("api/material-consumption/")
+      .then((res) => {
+        const all = res.data.results || res.data || [];
+        setConsumptions(
+          all.filter((c) => c.production_schedule === parseInt(scheduleId)),
+        );
+      })
+      .catch((err) => console.error("Error fetching consumptions:", err));
+  }, [scheduleId]);
+
+  useEffect(() => {
+    fetchConsumptions();
+  }, [fetchConsumptions]);
+
+  // Material consumption handlers
+  const handleAddConsumption = async (payload) => {
+    setActionLoading(true);
+    try {
+      await api.post("api/material-consumption/", {
+        ...payload,
+        production_schedule: parseInt(scheduleId),
+      });
+      setShowAddConsumption(false);
+      fetchConsumptions();
+      // Refresh materials to get updated stock
+      api
+        .get("api/material/")
+        .then((res) => setAllMaterials(res.data.results || res.data));
+    } catch (err) {
+      const msg =
+        err.response?.data?.detail ||
+        err.response?.data?.non_field_errors?.[0] ||
+        Object.values(err.response?.data || {})
+          .flat()
+          .join(", ") ||
+        "Failed to add consumption.";
+      setPageError(msg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteConsumption = async (id) => {
+    if (!window.confirm("Delete this material consumption record?")) return;
+    setActionLoading(true);
+    try {
+      await api.delete(`api/material-consumption/${id}/`);
+      fetchConsumptions();
+      api
+        .get("api/material/")
+        .then((res) => setAllMaterials(res.data.results || res.data));
+    } catch {
+      setPageError("Failed to delete consumption record.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Event Handlers
   const handleChange = (e) => {
@@ -186,9 +341,19 @@ const ProductionScheduleListForm = () => {
           end_time: payload.end_time,
           status: payload.status,
         };
-        await api.patch(`api/production-schedule/${scheduleId}/`, updatePayload);
+        // Allow changing production_line and product when schedule is still SCHEDULED
+        if (schedule?.status === "SCHEDULED") {
+          updatePayload.production_line = payload.production_line;
+          updatePayload.product = payload.product;
+        }
+        await api.patch(
+          `api/production-schedule/${scheduleId}/`,
+          updatePayload,
+        );
       }
-      alert(`Production Schedule ${isCreateMode ? "created" : "updated"} successfully!`);
+      alert(
+        `Production Schedule ${isCreateMode ? "created" : "updated"} successfully!`,
+      );
       navigate("/production-schedule");
     } catch (err) {
       console.error("Form submission error:", err);
@@ -248,15 +413,15 @@ const ProductionScheduleListForm = () => {
         isViewMode
           ? "View Production Schedule"
           : isCreateMode
-          ? "Create Production Schedule"
-          : "Edit Production Schedule"
+            ? "Create Production Schedule"
+            : "Edit Production Schedule"
       }
       text_01={
         isViewMode
           ? "View details of the production schedule."
           : isCreateMode
-          ? "Fill in the details to create a new production schedule."
-          : "Modify the details of the production schedule."
+            ? "Fill in the details to create a new production schedule."
+            : "Modify the details of the production schedule."
       }
       text_02={"Production Schedules"}
       onClick={() => navigate("/production-schedule")}
@@ -287,7 +452,11 @@ const ProductionScheduleListForm = () => {
             <InfoItem
               icon={<Activity />}
               label="Quantity"
-              value={schedule?.quantity ? `${parseFloat(schedule.quantity).toFixed(2)} units` : "N/A"}
+              value={
+                schedule?.quantity
+                  ? `${parseFloat(schedule.quantity).toFixed(2)} units`
+                  : "N/A"
+              }
             />
             <InfoItem
               icon={<Clock />}
@@ -313,6 +482,72 @@ const ProductionScheduleListForm = () => {
               </label>
               {schedule?.status && getStatusBadge(schedule.status)}
             </div>
+          </div>
+
+          {/* Material Consumption Section - View Mode */}
+          <div className="mt-6 pt-5 border-t border-stone-700">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
+                <Beaker size={20} /> Material Consumption
+              </h3>
+              {canManage && !showAddConsumption && (
+                <button
+                  onClick={() => setShowAddConsumption(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+                >
+                  <PlusCircle size={18} /> Add Consumption
+                </button>
+              )}
+            </div>
+
+            {showAddConsumption && (
+              <ConsumptionItemForm
+                materials={allMaterials}
+                onSave={handleAddConsumption}
+                onCancel={() => setShowAddConsumption(false)}
+                loading={actionLoading}
+              />
+            )}
+
+            {consumptions.length > 0 ? (
+              <div className="space-y-2">
+                {consumptions.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-stone-800/60 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+                  >
+                    <div>
+                      <p className="font-semibold text-stone-300">
+                        {item.material_name}
+                      </p>
+                      <p className="text-sm text-stone-400">
+                        {parseFloat(item.quantity).toFixed(2)}{" "}
+                        {item.material_unit || "units"} &middot; by{" "}
+                        {item.consumed_by_name || "Unknown"} &middot;{" "}
+                        {new Date(item.consumed_at).toLocaleString()}
+                      </p>
+                      {item.notes && (
+                        <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+                          <FileText size={12} /> {item.notes}
+                        </p>
+                      )}
+                    </div>
+                    {canManage && (
+                      <button
+                        onClick={() => handleDeleteConsumption(item.id)}
+                        className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-stone-400 italic text-center py-4">
+                No material consumption recorded yet.
+              </p>
+            )}
           </div>
         </div>
       ) : (
@@ -370,7 +605,8 @@ const ProductionScheduleListForm = () => {
               required
               disabled={
                 !isCreateMode &&
-                (schedule?.status === "COMPLETED" || schedule?.status === "CANCELLED")
+                (schedule?.status === "COMPLETED" ||
+                  schedule?.status === "CANCELLED")
               }
             />
             <InputItem
@@ -398,8 +634,79 @@ const ProductionScheduleListForm = () => {
             <div className="mt-4 p-3 bg-blue-900/20 border border-blue-700 rounded-lg">
               <p className="text-xs text-blue-300 flex items-center gap-2">
                 <AlertCircle size={14} />
-                Major status changes are typically done via actions on the list page.
+                Major status changes are typically done via actions on the list
+                page.
               </p>
+            </div>
+          )}
+
+          {/* Material Consumption Section - Edit Mode */}
+          {!isCreateMode && (
+            <div className="mt-6 pt-5 border-t border-stone-700">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
+                  <Beaker size={20} /> Material Consumption
+                </h3>
+                {canManage && !showAddConsumption && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddConsumption(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
+                  >
+                    <PlusCircle size={18} /> Add Consumption
+                  </button>
+                )}
+              </div>
+
+              {showAddConsumption && (
+                <ConsumptionItemForm
+                  materials={allMaterials}
+                  onSave={handleAddConsumption}
+                  onCancel={() => setShowAddConsumption(false)}
+                  loading={actionLoading}
+                />
+              )}
+
+              {consumptions.length > 0 ? (
+                <div className="space-y-2">
+                  {consumptions.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 bg-stone-800/60 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+                    >
+                      <div>
+                        <p className="font-semibold text-stone-300">
+                          {item.material_name}
+                        </p>
+                        <p className="text-sm text-stone-400">
+                          {parseFloat(item.quantity).toFixed(2)}{" "}
+                          {item.material_unit || "units"} &middot; by{" "}
+                          {item.consumed_by_name || "Unknown"} &middot;{" "}
+                          {new Date(item.consumed_at).toLocaleString()}
+                        </p>
+                        {item.notes && (
+                          <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+                            <FileText size={12} /> {item.notes}
+                          </p>
+                        )}
+                      </div>
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteConsumption(item.id)}
+                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-stone-400 italic text-center py-4">
+                  No material consumption recorded yet.
+                </p>
+              )}
             </div>
           )}
 

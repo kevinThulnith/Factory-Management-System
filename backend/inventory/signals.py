@@ -1,7 +1,12 @@
-from .serializers import MaterialSerializer, SupplierSerializer, OrderSerializer
-from .permissions import BasePermissions, OrderPermission
+from .serializers import (
+    MaterialSerializer,
+    SupplierSerializer,
+    OrderSerializer,
+    MaterialConsumptionSerializer,
+)
+from .permissions import BasePermissions, OrderPermission, MaterialConsumptionPermission
 from backend.signals import create_model_change_signal
-from .models import Material, Supplier, Order
+from .models import Material, Supplier, Order, MaterialConsumption
 
 # TODO: Create signals for inventory models
 
@@ -27,4 +32,12 @@ order_signal = create_model_change_signal(
     "orders",
     "send_update",
     permission_class=OrderPermission,
+)
+
+material_consumption_signal = create_model_change_signal(
+    MaterialConsumption,
+    MaterialConsumptionSerializer,
+    "material_consumptions",
+    "send_update",
+    permission_class=MaterialConsumptionPermission,
 )

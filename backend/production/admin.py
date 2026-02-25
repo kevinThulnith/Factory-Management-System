@@ -3,7 +3,6 @@ from .models import (
     ProductionLine,
     ProductionSchedule,
     ManufacturingProcess,
-    ProductionMaterialConsumption,
 )
 
 
@@ -35,23 +34,3 @@ class ProductionScheduleAdmin(admin.ModelAdmin):
     list_filter = ["status", "start_time", "production_line"]
     search_fields = ["product__name", "production_line__name"]
     date_hierarchy = "start_time"
-
-
-@admin.register(ProductionMaterialConsumption)
-class ProductionMaterialConsumptionAdmin(admin.ModelAdmin):
-    list_display = [
-        "production_schedule",
-        "material",
-        "quantity",
-        "consumed_at",
-        "consumed_by",
-    ]
-    list_filter = ["consumed_at", "material"]
-    search_fields = [
-        "production_schedule__product__name",
-        "material__name",
-        "consumed_by__name",
-    ]
-    date_hierarchy = "consumed_at"
-    readonly_fields = ["consumed_at", "updated_at"]
-    raw_id_fields = ["production_schedule", "material", "consumed_by"]

@@ -148,12 +148,12 @@ const OrderForm = () => {
   const [editingItem, setEditingItem] = useState(null);
 
   const canManage = useMemo(
-    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR"),
-    [user]
+    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR" || user.role === "PURCHASING"),
+    [user],
   );
   const isEditable = useMemo(
     () => isCreateMode || (order?.status === "DRAFT" && canManage),
-    [isCreateMode, order, canManage]
+    [isCreateMode, order, canManage],
   );
 
   const fetchOrderData = useCallback(() => {
@@ -297,7 +297,7 @@ const OrderForm = () => {
   const orderSummary = useMemo(() => {
     const total = lineItems.reduce(
       (sum, item) => sum + parseFloat(item.total_price || 0),
-      0
+      0,
     );
     return { total: total.toFixed(2), itemCount: lineItems.length };
   }, [lineItems]);
@@ -309,15 +309,15 @@ const OrderForm = () => {
         isViewMode
           ? `Order #${orderId} Details`
           : isCreateMode
-          ? "Create New Order"
-          : `Edit Order #${orderId}`
+            ? "Create New Order"
+            : `Edit Order #${orderId}`
       }
       text_01={
         isViewMode
           ? "View order information and items"
           : isCreateMode
-          ? "Fill in order details to create a new order"
-          : "Update order information and items"
+            ? "Fill in order details to create a new order"
+            : "Update order information and items"
       }
       text_02="Orders"
       onClick={() => navigate("/order")}

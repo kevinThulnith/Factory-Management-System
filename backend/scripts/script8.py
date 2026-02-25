@@ -23,7 +23,7 @@ from production.models import ManufacturingProcess
 
 
 def create_products():
-    """Create products from sample data"""
+    "Create products from sample data"
     print("Creating products...")
     created_count = 0
 
@@ -119,7 +119,7 @@ def display_product_sequences():
 
 
 def get_summary_statistics():
-    """Display summary statistics"""
+    "Display summary statistics"
     print("\n📊 Summary Statistics:")
     print("-" * 30)
 

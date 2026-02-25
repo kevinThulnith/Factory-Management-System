@@ -67,14 +67,14 @@ const menuItems = {
       name: "Departments",
       path: "/department",
       icon: <FaBuilding size={20} />,
-      roles: ["ADMIN", "SUPERVISOR"],
+      roles: ["ADMIN", "SUPERVISOR", "OPERATOR"],
     },
     {
       id: "workshops",
       name: "Workshops",
       path: "/workshop",
       icon: <GiFactory size={20} />,
-      roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
+      roles: ["ADMIN", "SUPERVISOR", "MANAGER", "TECHNICIAN", "OPERATOR"],
     },
   ],
 
@@ -124,7 +124,7 @@ const menuItems = {
       name: "Products",
       path: "/product",
       icon: <FiPackage size={20} />,
-      roles: ["ADMIN", "SUPERVISOR", "MANAGER", "PURCHASING"],
+      roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
     },
     {
       id: "orders",

@@ -90,7 +90,7 @@ const Order = () => {
       ordered: allOrders.filter((o) => o.status === "ORDERED").length,
       received: allOrders.filter((o) => o.status === "RECEIVED").length,
     }),
-    [allOrders]
+    [allOrders],
   );
 
   const getStatusPill = (status) => {
@@ -119,7 +119,10 @@ const Order = () => {
   };
 
   const canManage =
-    user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+    user &&
+    (user.role === "ADMIN" ||
+      user.role === "SUPERVISOR" ||
+      user.role === "PURCHASING");
 
   return (
     <div className="min-h-screen py-6">
@@ -326,7 +329,7 @@ const Order = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-stone-400">
                         {new Date(
-                          order.order_date + "T00:00:00Z"
+                          order.order_date + "T00:00:00Z",
                         ).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">

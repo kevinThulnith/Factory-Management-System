@@ -61,7 +61,7 @@ const MachineForm = () => {
     api
       .get("api/workshop/")
       .then((response) =>
-        setWorkshops(response.data.results || response.data || [])
+        setWorkshops(response.data.results || response.data || []),
       )
       .catch((error) => console.error("Failed to fetch workshops:", error))
       .finally(() => setWorkshopsLoading(false));
@@ -179,12 +179,13 @@ const MachineForm = () => {
 
         if (Object.keys(newFormErrors).length === 0) {
           setPageError(
-            apiErrors.detail || "An error occurred. Please try again."
+            apiErrors.detail || "An error occurred. Please try again.",
           );
         } else setPageError("Please correct the errors below.");
       } else {
         setPageError(
-          error.response?.data?.detail || "An error occurred. Please try again."
+          error.response?.data?.detail ||
+            "An error occurred. Please try again.",
         );
       }
     } finally {
@@ -261,21 +262,21 @@ const MachineForm = () => {
         isViewMode
           ? "Machine Details"
           : isEditMode
-          ? "Edit Machine"
-          : "Create New Machine"
+            ? "Edit Machine"
+            : "Create New Machine"
       }
       text_01={
         isViewMode
           ? "View machine information"
           : isEditMode
-          ? "Update machine information and settings"
-          : "Add a new machine to your workshop"
+            ? "Update machine information and settings"
+            : "Add a new machine to your workshop"
       }
       text_02="Machines"
       onClick={() => navigate("/machine")}
       fnction={() => navigate(`/machine/edit/${machineId}`)}
       gradient="from-yellow-600 to-yellow-800"
-      isViewMode={isViewMode}
+      isViewMode={isViewMode && (canEditAllFields || canEditOperatorAndStatus || canEditMaintenanceAndStatus)}
       pageError={pageError}
       loading={loading}
     >
@@ -459,8 +460,8 @@ const MachineForm = () => {
           </div>
 
           <Buttons
-            onCancel={() => navigate("/workshop")}
-            text_01={isEditMode ? "Save Changes" : "Create Workshop"}
+            onCancel={() => navigate("/machine")}
+            text_01={isEditMode ? "Save Changes" : "Create Machine"}
             disabled={
               loading ||
               (isEditMode &&

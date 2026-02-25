@@ -19,7 +19,7 @@ from random import choice, sample
 
 
 def create_skill_matrix():
-    """Add 3 random skills to each user except admins"""
+    "Add 3 random skills to each user except admins"
 
     # Get all users except admins
     non_admin_users = User.objects.exclude(role=User.Role.ADMIN)

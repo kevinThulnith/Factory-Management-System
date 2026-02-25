@@ -53,7 +53,7 @@ const WorkshopForm = () => {
     api
       .get("api/department/")
       .then((response) =>
-        setDepartments(response.data.results || response.data || [])
+        setDepartments(response.data.results || response.data || []),
       )
       .catch((error) => console.error("Failed to fetch departments:", error))
       .finally(() => setDepartmentsLoading(false));
@@ -68,7 +68,7 @@ const WorkshopForm = () => {
           (u) =>
             u.role === "SUPERVISOR" ||
             u.role === "MANAGER" ||
-            u.role === "ADMIN"
+            u.role === "ADMIN",
         );
         setManagers(managerUsers);
       })
@@ -168,12 +168,13 @@ const WorkshopForm = () => {
 
         if (Object.keys(newFormErrors).length === 0) {
           setPageError(
-            apiErrors.detail || "An error occurred. Please try again."
+            apiErrors.detail || "An error occurred. Please try again.",
           );
         } else setPageError("Please correct the errors below.");
       } else {
         setPageError(
-          error.response?.data?.detail || "An error occurred. Please try again."
+          error.response?.data?.detail ||
+            "An error occurred. Please try again.",
         );
       }
     } finally {
@@ -236,21 +237,24 @@ const WorkshopForm = () => {
         isViewMode
           ? "Workshop Details"
           : isEditMode
-          ? "Edit Workshop"
-          : "Create New Workshop"
+            ? "Edit Workshop"
+            : "Create New Workshop"
       }
       text_01={
         isViewMode
           ? "View workshop information"
           : isEditMode
-          ? "Update workshop information and settings"
-          : "Add a new workshop to your organization"
+            ? "Update workshop information and settings"
+            : "Add a new workshop to your organization"
       }
       text_02="Workshops"
       onClick={() => navigate("/workshop")}
       fnction={() => navigate(`/workshop/edit/${workshopId}`)}
       gradient="from-orange-600 to-orange-800"
-      isViewMode={isViewMode}
+      isViewMode={
+        isViewMode &&
+        (canEditLimitedFields || canEditOperationalStatus || canEditAllFields)
+      }
       pageError={pageError}
       loading={loading}
     >

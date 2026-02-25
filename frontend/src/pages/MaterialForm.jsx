@@ -1,6 +1,7 @@
 import { Warehouse, FileText, Package, Ruler, Box } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -28,6 +29,7 @@ const MaterialForm = () => {
     unit_of_measurement: "",
   });
 
+  const { user } = useAuth();
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [material, setMaterial] = useState(null);
@@ -134,14 +136,15 @@ const MaterialForm = () => {
 
         if (Object.keys(newFormErrors).length === 0) {
           setPageError(
-            apiErrors.detail || "An error occurred. Please try again."
+            apiErrors.detail || "An error occurred. Please try again.",
           );
         } else {
           setPageError("Please correct the errors below.");
         }
       } else {
         setPageError(
-          error.response?.data?.detail || "An error occurred. Please try again."
+          error.response?.data?.detail ||
+            "An error occurred. Please try again.",
         );
       }
     } finally {
@@ -156,21 +159,21 @@ const MaterialForm = () => {
         isViewMode
           ? "Material Details"
           : isEditMode
-          ? "Edit Material"
-          : "Create New Material"
+            ? "Edit Material"
+            : "Create New Material"
       }
       text_01={
         isViewMode
           ? "View material information"
           : isEditMode
-          ? "Update material information"
-          : "Add a new material to your inventory"
+            ? "Update material information"
+            : "Add a new material to your inventory"
       }
       text_02="Materials"
       onClick={() => navigate("/material")}
       fnction={() => navigate(`/material/edit/${materialId}`)}
       gradient="from-sky-600 to-sky-800"
-      isViewMode={isViewMode}
+      isViewMode={isViewMode && user?.role !== "PURCHASING"}
       pageError={pageError}
       loading={loading}
     >

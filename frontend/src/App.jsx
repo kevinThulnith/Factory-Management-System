@@ -4,9 +4,9 @@ import { useAuth } from "./hooks/useAuth";
 import { lazy, Suspense } from "react";
 
 const ManufacturingProcess = lazy(() => import("./pages/ManufacturingProcess"));
-const ProductionScheduleList = lazy(() => import("./pages/ProductionSchedule"));
 const LaborAllocationForm = lazy(() => import("./pages/LaborAllocationForm"));
 const ProductionLineForm = lazy(() => import("./pages/ProductionLineForm"));
+const ProductionSchedule = lazy(() => import("./pages/ProductionSchedule"));
 const LaborAllocations = lazy(() => import("./pages/LaborAllocation"));
 const SkillMatrixForm = lazy(() => import("./pages/SkillMatrixForm"));
 const DepartmentForm = lazy(() => import("./pages/DepartmentForm"));
@@ -40,12 +40,12 @@ const Tasks = lazy(() => import("./pages/Task"));
 const Home = lazy(() => import("./pages/Home"));
 const User = lazy(() => import("./pages/User"));
 
-const ManufacturingProcessForm = lazy(() =>
-  import("./pages/ManufacturingProcessForm")
+const ManufacturingProcessForm = lazy(
+  () => import("./pages/ManufacturingProcessForm"),
 );
 
-const ProductionScheduleListForm = lazy(() =>
-  import("./pages/ProductionScheduleListForm")
+const ProductionScheduleForm = lazy(
+  () => import("./pages/ProductionScheduleForm"),
 );
 
 function App() {
@@ -141,19 +141,19 @@ function App() {
     // Production Schedule
     {
       path: "/production-schedule",
-      element: <ProductionScheduleList />,
+      element: <ProductionSchedule />,
     },
     {
       path: "/production-schedule/new",
-      element: <ProductionScheduleListForm />,
+      element: <ProductionScheduleForm />,
     },
     {
       path: "/production-schedule/edit/:scheduleId",
-      element: <ProductionScheduleListForm />,
+      element: <ProductionScheduleForm />,
     },
     {
       path: "/production-schedule/view/:scheduleId",
-      element: <ProductionScheduleListForm />,
+      element: <ProductionScheduleForm />,
     },
 
     // Projects

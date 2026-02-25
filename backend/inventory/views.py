@@ -1,8 +1,17 @@
-from .permissions import BasePermissions, OrderPermission, OrderMaterialPermission
-from .models import Material, Supplier, Order, OrderMaterial
+from .models import Material, Supplier, Order, OrderMaterial, MaterialConsumption
 from django.shortcuts import get_object_or_404
 from core.views import ModelViewSet
+
+from .permissions import (
+    MaterialConsumptionPermission,
+    OrderMaterialPermission,
+    MaterialPermission,
+    BasePermissions,
+    OrderPermission,
+)
+
 from .serializers import (
+    MaterialConsumptionSerializer,
     OrderMaterialSerializer,
     MaterialSerializer,
     SupplierSerializer,
@@ -20,7 +29,7 @@ class MaterialViewSet(ModelViewSet):
     """
 
     serializer_class = MaterialSerializer
-    permission_classes = [BasePermissions]
+    permission_classes = [MaterialPermission]
     queryset = Material.objects.all()
 
 
@@ -105,15 +114,76 @@ class OrderMaterialViewSet(ModelViewSet):
         order_id = self.kwargs.get("order_pk")
         order = get_object_or_404(Order, id=order_id)
         serializer.save(order=order)
-        
+
     def perform_update(self, serializer):
         order_id = self.kwargs.get("order_pk")
         order = get_object_or_404(Order, id=order_id)
         serializer.save(order=order)
-        
+
     def perform_destroy(self, instance):
         # Prevent deletion if user is SUPERVISOR
         user = self.request.user
         if user.role == "SUPERVISOR":
             raise PermissionError("Supervisors cannot delete order materials.")
         instance.delete()
+
+
+class MaterialConsumptionViewSet(ModelViewSet):
+    """
+    Material Consumption API:
+    - Admins: Full CRUD
+    - Supervisors: Full CRUD for their department's consumption records
+    - Managers: Full CRUD for their workshops / projects
+    - Operators: Read and Create for their assigned tasks / department
+    """
+
+    serializer_class = MaterialConsumptionSerializer
+    permission_classes = [MaterialConsumptionPermission]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = MaterialConsumption.objects.select_related(
+            "material",
+            "task",
+            "task__project",
+            "production_schedule",
+            "production_schedule__product",
+            "production_schedule__production_line",
+            "consumed_by",
+        )
+
+        if user.role == "ADMIN":
+            return qs
+
+        if user.role == "SUPERVISOR":
+            from django.db.models import Q
+
+            return qs.filter(
+                Q(task__project__project_manager__department=user.department)
+                | Q(
+                    production_schedule__production_line__workshop__department__supervisor=user
+                )
+            )
+
+        if user.role == "MANAGER":
+            from django.db.models import Q
+
+            return qs.filter(
+                Q(task__project__project_manager=user)
+                | Q(production_schedule__production_line__workshop__manager=user)
+            )
+
+        if user.role == "OPERATOR":
+            from django.db.models import Q
+
+            return qs.filter(
+                Q(task__assigned_to=user)
+                | Q(
+                    production_schedule__production_line__workshop__department=user.department
+                )
+            )
+
+        return MaterialConsumption.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(consumed_by=self.request.user)

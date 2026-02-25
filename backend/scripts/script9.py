@@ -25,7 +25,7 @@ fake = Faker()
 
 
 def create_production_schedules():
-    """Create production schedules with realistic data"""
+    "Create production schedules with realistic data"
     print("Creating production schedules...")
 
     # Get existing data
@@ -141,7 +141,7 @@ def create_production_schedules():
 
 
 def display_schedule_summary():
-    """Display summary of created schedules"""
+    "Display summary of created schedules"
     print("\n📊 Production Schedule Summary:")
     print("=" * 60)
 
@@ -188,7 +188,7 @@ def display_schedule_summary():
 
 
 def create_sample_production_lines():
-    """Create sample production lines if none exist"""
+    "Create sample production lines if none exist"
     from core.models import Workshop
 
     if ProductionLine.objects.exists():
