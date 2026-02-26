@@ -141,6 +141,11 @@ const ProductionScheduleListForm = () => {
     [user],
   );
 
+  const canAddConsumption = useMemo(
+    () => canManage || (user && user.role === "OPERATOR"),
+    [canManage, user],
+  );
+
   // Data Fetching
   useEffect(() => {
     setLoading(true);
@@ -197,6 +202,8 @@ const ProductionScheduleListForm = () => {
             : "",
           status: res.data.status || "SCHEDULED",
         });
+        // Load consumptions from nested serializer data
+        setConsumptions(res.data.comsumed_materials || []);
       })
       .catch((error) => {
         console.error("Failed to load schedule details:", error);
@@ -210,17 +217,13 @@ const ProductionScheduleListForm = () => {
   }, [fetchScheduleData]);
 
   // Fetch material consumptions for this schedule
+  // Refresh consumptions by re-fetching the schedule (consumptions are nested in the schedule response)
   const fetchConsumptions = useCallback(() => {
     if (!scheduleId) return;
     api
-      .get("api/material-consumption/")
-      .then((res) => {
-        const all = res.data.results || res.data || [];
-        setConsumptions(
-          all.filter((c) => c.production_schedule === parseInt(scheduleId)),
-        );
-      })
-      .catch((err) => console.error("Error fetching consumptions:", err));
+      .get(`api/production-schedule/${scheduleId}/`)
+      .then((res) => setConsumptions(res.data.comsumed_materials || []))
+      .catch((err) => console.error("Error refreshing consumptions:", err));
   }, [scheduleId]);
 
   useEffect(() => {
@@ -490,7 +493,7 @@ const ProductionScheduleListForm = () => {
               <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
                 <Beaker size={20} /> Material Consumption
               </h3>
-              {canManage && !showAddConsumption && (
+              {canAddConsumption && !showAddConsumption && (
                 <button
                   onClick={() => setShowAddConsumption(true)}
                   className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
@@ -510,11 +513,11 @@ const ProductionScheduleListForm = () => {
             )}
 
             {consumptions.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {consumptions.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-stone-800/60 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+                    className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
                   >
                     <div>
                       <p className="font-semibold text-stone-300">
@@ -647,7 +650,7 @@ const ProductionScheduleListForm = () => {
                 <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
                   <Beaker size={20} /> Material Consumption
                 </h3>
-                {canManage && !showAddConsumption && (
+                {canAddConsumption && !showAddConsumption && (
                   <button
                     type="button"
                     onClick={() => setShowAddConsumption(true)}
@@ -668,11 +671,11 @@ const ProductionScheduleListForm = () => {
               )}
 
               {consumptions.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {consumptions.map((item) => (
                     <div
                       key={item.id}
-                      className="p-3 bg-stone-800/60 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+                      className="p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2 bg-card-sub"
                     >
                       <div>
                         <p className="font-semibold text-stone-300">
@@ -717,7 +720,7 @@ const ProductionScheduleListForm = () => {
               disabled={loading}
               className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
             >
-              <XCircle size={18} /> Cancel
+              Cancel
             </button>
             <button
               type="submit"

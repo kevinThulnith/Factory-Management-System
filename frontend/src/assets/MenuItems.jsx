@@ -124,7 +124,7 @@ const menuItems = {
       name: "Products",
       path: "/product",
       icon: <FiPackage size={20} />,
-      roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
+      roles: ["ADMIN", "SUPERVISOR", "MANAGER", "OPERATOR"],
     },
     {
       id: "orders",
@@ -142,7 +142,7 @@ const menuItems = {
       name: "Production Lines",
       path: "/production-line",
       icon: <FaChartLine size={20} />,
-      roles: ["ADMIN", "SUPERVISOR", "MANAGER"],
+      roles: ["ADMIN", "SUPERVISOR", "MANAGER", "OPERATOR", "TECHNICIAN"],
     },
     {
       id: "manufacturingProcesses",

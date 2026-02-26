@@ -45,6 +45,8 @@ class ProductionLineViewSet(ModelViewSet):
             return self.queryset.filter(workshop__department__supervisor=user)
         if user.role == "MANAGER":
             return self.queryset.filter(workshop__manager=user)
+        if user.role == "OPERATOR":
+            return self.queryset.filter(workshop__department=user.department)
         return self.queryset
 
     # !Add/remove machines from production line

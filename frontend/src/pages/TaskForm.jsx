@@ -12,23 +12,22 @@ import {
 } from "../components/components";
 
 import {
-  ListChecks,
-  Save,
-  XCircle,
-  Info,
   CalendarDays,
-  Users,
-  Activity,
-  Target,
-  CheckCircle,
-  Clock,
-  PlayCircle,
   AlertTriangle,
-  Briefcase,
+  CheckCircle,
   PlusCircle,
+  PlayCircle,
+  ListChecks,
+  Briefcase,
+  FileText,
+  Activity,
+  XCircle,
   Trash2,
   Beaker,
-  FileText,
+  Target,
+  Users,
+  Save,
+  Info,
 } from "lucide-react";
 
 // --- Material Consumption Line Item Form ---
@@ -117,28 +116,29 @@ const TasksForm = () => {
 
   const { user } = useAuth();
   const [task, setTask] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
   const [allProjects, setAllProjects] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    project: "",
-    assigned_to: "",
-    start_date: "",
-    end_date: "",
-    status: "PENDING",
-  });
-  const [associatedProject, setAssociatedProject] = useState(null);
   const [allMaterials, setAllMaterials] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
-  const [showAddConsumption, setShowAddConsumption] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [associatedProject, setAssociatedProject] = useState(null);
+  const [showAddConsumption, setShowAddConsumption] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    project: "",
+    end_date: "",
+    start_date: "",
+    description: "",
+    assigned_to: "",
+    status: "PENDING",
+  });
 
   // Permissions
   const canAlwaysManage = useMemo(
-    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR"),
+    () => user && ["ADMIN", "SUPERVISOR"].includes(user.role),
     [user],
   );
 
@@ -151,11 +151,7 @@ const TasksForm = () => {
   );
 
   const canCreate = useMemo(
-    () =>
-      user &&
-      (user.role === "ADMIN" ||
-        user.role === "SUPERVISOR" ||
-        user.role === "MANAGER"),
+    () => user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role),
     [user],
   );
 
@@ -164,6 +160,11 @@ const TasksForm = () => {
       (isCreateMode && canCreate) ||
       (!isCreateMode && (canAlwaysManage || isProjectManager)),
     [isCreateMode, canCreate, canAlwaysManage, isProjectManager],
+  );
+
+  const canAddConsumption = useMemo(
+    () => canSubmitForm || (user && user.role === "OPERATOR"),
+    [canSubmitForm, user],
   );
 
   // Data Fetching
@@ -227,6 +228,8 @@ const TasksForm = () => {
           end_date: res.data.end_date || "",
           status: res.data.status || "PENDING",
         });
+        // Load consumptions from nested serializer data
+        setConsumptions(res.data.consumed_materials || []);
 
         // Fetch project details
         if (res.data.project) {
@@ -253,16 +256,10 @@ const TasksForm = () => {
   const fetchConsumptions = useCallback(() => {
     if (!taskId) return;
     api
-      .get("api/material-consumption/", {
-        params: { task: taskId },
-      })
-      .then((res) => setConsumptions(res.data.results || res.data))
-      .catch((err) => console.error("Error fetching consumptions:", err));
+      .get(`api/task/${taskId}/`)
+      .then((res) => setConsumptions(res.data.consumed_materials || []))
+      .catch((err) => console.error("Error refreshing consumptions:", err));
   }, [taskId]);
-
-  useEffect(() => {
-    fetchConsumptions();
-  }, [fetchConsumptions]);
 
   const handleAddConsumption = async (payload) => {
     setActionLoading(true);
@@ -271,19 +268,21 @@ const TasksForm = () => {
         ...payload,
         task: parseInt(taskId),
       });
-      fetchConsumptions();
       setShowAddConsumption(false);
+      fetchConsumptions();
       // Refresh materials to update stock quantities
       api
         .get("api/material/")
         .then((res) => setAllMaterials(res.data.results || res.data));
     } catch (err) {
-      console.error("Error adding consumption:", err);
-      alert(
+      const msg =
         err.response?.data?.detail ||
-          err.response?.data?.non_field_errors?.[0] ||
-          "Failed to add consumption.",
-      );
+        err.response?.data?.non_field_errors?.[0] ||
+        Object.values(err.response?.data || {})
+          .flat()
+          .join(", ") ||
+        "Failed to add consumption.";
+      setPageError(msg);
     } finally {
       setActionLoading(false);
     }
@@ -294,15 +293,17 @@ const TasksForm = () => {
       !window.confirm("Delete this consumption record? Stock will be restored.")
     )
       return;
+    setActionLoading(true);
     try {
       await api.delete(`api/material-consumption/${consumptionId}/`);
       fetchConsumptions();
       api
         .get("api/material/")
         .then((res) => setAllMaterials(res.data.results || res.data));
-    } catch (err) {
-      console.error("Error deleting consumption:", err);
-      alert("Failed to delete consumption.");
+    } catch {
+      setPageError("Failed to delete consumption record.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -458,9 +459,7 @@ const TasksForm = () => {
     }
 
     // Start date disabled in edit mode
-    if (fieldName === "start_date" && !isCreateMode) {
-      return true;
-    }
+    if (fieldName === "start_date" && !isCreateMode) return true;
 
     return false;
   };
@@ -543,7 +542,7 @@ const TasksForm = () => {
               <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
                 <Beaker size={20} /> Material Consumption
               </h3>
-              {canSubmitForm && !showAddConsumption && (
+              {canAddConsumption && !showAddConsumption && (
                 <button
                   onClick={() => setShowAddConsumption(true)}
                   className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
@@ -563,11 +562,11 @@ const TasksForm = () => {
             )}
 
             {consumptions.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {consumptions.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-stone-800/60 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+                    className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
                   >
                     <div>
                       <p className="font-semibold text-stone-300">
@@ -723,7 +722,7 @@ const TasksForm = () => {
                 <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
                   <Beaker size={20} /> Material Consumption
                 </h3>
-                {canSubmitForm && !showAddConsumption && (
+                {canAddConsumption && !showAddConsumption && (
                   <button
                     type="button"
                     onClick={() => setShowAddConsumption(true)}
@@ -744,11 +743,11 @@ const TasksForm = () => {
               )}
 
               {consumptions.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {consumptions.map((item) => (
                     <div
                       key={item.id}
-                      className="p-3 bg-stone-800/60 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+                      className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
                     >
                       <div>
                         <p className="font-semibold text-stone-300">
@@ -799,7 +798,7 @@ const TasksForm = () => {
               disabled={loading}
               className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
             >
-              <XCircle size={18} /> Cancel
+              Cancel
             </button>
             <button
               type="submit"

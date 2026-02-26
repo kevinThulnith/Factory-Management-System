@@ -1,4 +1,6 @@
+from inventory.serializers import MaterialConsumptionSerializer
 from django.utils.translation import gettext_lazy as _
+from inventory.models import MaterialConsumption
 from .models import Project, Task
 from core.models import User
 
@@ -14,6 +16,7 @@ from rest_framework.serializers import (
 
 class TaskSerializer(ModelSerializer):
     dependencies_count = SerializerMethodField()
+    consumed_materials = SerializerMethodField()
     project_name = CharField(source="project.name", read_only=True)
     assigned_to_name = CharField(source="assigned_to.name", read_only=True)
     project_manager_name = CharField(
@@ -27,6 +30,10 @@ class TaskSerializer(ModelSerializer):
 
     def get_dependencies_count(self, obj):
         return obj.dependencies.count()
+
+    def get_consumed_materials(self, obj):
+        consumptions = MaterialConsumption.objects.filter(task=obj)
+        return MaterialConsumptionSerializer(consumptions, many=True).data
 
 
 class TaskSummarySerializer(ModelSerializer):

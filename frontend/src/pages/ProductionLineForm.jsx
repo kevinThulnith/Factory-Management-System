@@ -247,7 +247,7 @@ const ProductionLineForm = () => {
       onClick={() => navigate("/production-line")}
       fnction={() => navigate("/production-line/edit/" + productionLineId)}
       gradient={"from-amber-600 to-amber-800"}
-      isViewMode={isViewMode}
+      isViewMode={isViewMode && (canEditStatusOnly || canSubmitFullForm)}
       pageError={pageError}
       loading={loading}
     >

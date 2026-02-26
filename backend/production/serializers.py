@@ -1,4 +1,6 @@
 from .models import ProductionLine, ProductionSchedule, ManufacturingProcess
+from inventory.serializers import MaterialConsumptionSerializer
+from inventory.models import MaterialConsumption
 from core.serializers import MachineSerializer
 from rest_framework.serializers import (
     SerializerMethodField,
@@ -107,8 +109,13 @@ class ProductionScheduleSerializer(ModelSerializer):
     product_name = CharField(source="product.name", read_only=True)
     production_line_name = CharField(source="production_line.name", read_only=True)
     workshop_name = CharField(source="production_line.workshop.name", read_only=True)
+    comsumed_materials = SerializerMethodField()
 
     class Meta:
         model = ProductionSchedule
         fields = "__all__"
         read_only_fields = ["created_at", "updated_at"]
+
+    def get_comsumed_materials(self, obj):
+        consumptions = MaterialConsumption.objects.filter(production_schedule=obj)
+        return MaterialConsumptionSerializer(consumptions, many=True).data

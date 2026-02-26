@@ -244,9 +244,9 @@ const MaterialListPage = () => {
 
           {/* Materials Table */}
           {allMaterials.length === 0 && !loading ? (
-            <div className="border rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
+            <div className="bg-card-main rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
               <Box size={64} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-200 mb-2">
                 No Materials Found
               </h3>
               <p className="text-gray-500">

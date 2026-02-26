@@ -33,6 +33,7 @@ class ProductionLinePermission(PermissionBlock):
     - Supervisor: Only Create | Read | Update their department
     - Manager: Update operational_status in their workshop
     - Technician: Update operational_status
+    - Opators: Read-only access in their department
     """
 
     def has_permission(self, request, view):
@@ -42,7 +43,7 @@ class ProductionLinePermission(PermissionBlock):
         user = request.user
 
         if request.method in SAFE_METHODS:
-            return user.role in ["SUPERVISOR", "TECHNICIAN", "MANAGER"]
+            return user.role in ["SUPERVISOR", "TECHNICIAN", "MANAGER", "OPERATOR"]
 
         if user.role == "SUPERVISOR" and request.method in ["POST", "PUT", "PATCH"]:
             return True
@@ -57,6 +58,8 @@ class ProductionLinePermission(PermissionBlock):
             return obj.workshop.department.supervisor == request.user
         if request.user.role == "MANAGER":
             return obj.workshop.manager == request.user
+        if request.user.role == "OPERATOR":
+            return obj.workshop.department == request.user.department
 
         return self.has_permission(request, view)
 
