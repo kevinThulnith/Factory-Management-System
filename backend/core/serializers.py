@@ -1,5 +1,6 @@
 from .models import Department, Workshop, Machine, MachineOperatorAssignment
 from .models import _
+import logging
 
 from rest_framework.serializers import (
     SerializerMethodField,
@@ -8,6 +9,8 @@ from rest_framework.serializers import (
     ModelSerializer,
     IntegerField,
 )
+
+logger = logging.getLogger(__name__)
 
 # TODO: Create core model serializers
 
@@ -151,9 +154,10 @@ class MachineOperatorAssignmentSerializer(ModelSerializer):
             instance.clean()
         except DjangoValidationError as e:
             # Convert Django ValidationError to DRF ValidationError
+            logger.error("MachineOperatorAssignment validation error: %s", e)
             if hasattr(e, "message_dict"):
                 raise ValidationError(e.message_dict)
             else:
-                raise ValidationError({"non_field_errors": [str(e)]})
+                raise ValidationError({"non_field_errors": e.messages})
 
         return attrs
