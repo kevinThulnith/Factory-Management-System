@@ -3,6 +3,7 @@ from allauth.core.exceptions import ImmediateHttpResponse
 from django.http import HttpResponse
 import json
 
+# TODO: Create custom social account adapter to handle social login logic for labor app.
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):

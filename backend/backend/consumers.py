@@ -30,7 +30,7 @@ class ConsumerBlock(AsyncWebsocketConsumer):
             return
 
         if not self.group_name:
-            raise ValueError("group_name must be set in the subclass")
+            raise ValueError("group name must be set in the subclass")
 
         # !Store user for permission checks
         self.user = user

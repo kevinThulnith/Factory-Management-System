@@ -2,6 +2,8 @@ from allauth.socialaccount.providers.google.provider import (
     GoogleProvider as BaseGoogleProvider,
 )
 
+# TODO: Create custom Google provider to implement the missing get_scope_from_request method required by dj-rest-auth.
+
 
 class GoogleProvider(BaseGoogleProvider):
 

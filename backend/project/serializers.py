@@ -79,10 +79,9 @@ class ProjectSerializer(ModelSerializer):
     def get_recent_tasks(self, obj):
         # !Get the 3 most recent tasks for the list view
 
-        if (
-            self.context.get("request")
-            and self.context["request"].resolver_match.url_name == "project-detail"
-        ):
+        request = self.context.get("request")
+        resolver_match = getattr(request, "resolver_match", None)
+        if request and resolver_match and resolver_match.url_name == "project-detail":
             # For detail view, show more tasks
             recent_tasks = obj.tasks.all().order_by("-updated_at")[:5]
         else:

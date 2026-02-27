@@ -1,7 +1,7 @@
 from .consumers import DepartmentConsumer, WorkShopConsumer, MachineConsumer
 from django.urls import re_path
 
-# ! Routings for core app
+# !Routings for core app
 
 websocket_urlpatterns = [
     re_path(r"ws/departments/$", DepartmentConsumer.as_asgi()),

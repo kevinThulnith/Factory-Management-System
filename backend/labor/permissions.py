@@ -39,7 +39,11 @@ class LaborAllocationPermission(PermissionBlock):
             return obj.employee == user
 
         if user.role == "SUPERVISOR":
-            return obj.employee.project_manager.department == user.department
+            return (
+                obj.project is not None
+                and obj.project.project_manager is not None
+                and obj.project.project_manager.department == user.department
+            )
 
         return False
 

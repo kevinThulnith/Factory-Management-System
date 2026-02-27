@@ -69,40 +69,6 @@ class MachineSerializer(ModelSerializer):
         model = Machine
         fields = "__all__"
         read_only_fields = ["operator_assigned_at", "operator_auto_remove_at"]
-        extra_kwargs = {
-            "name": {"required": False},
-            "workshop": {"required": False},
-            "model_number": {"required": False},
-            "purchase_date": {"required": False},
-        }
-
-    def create(self, validated_data):
-        name = validated_data.pop("name", None)
-        workshop = validated_data.pop("workshop", None)
-        model_number = validated_data.pop("model_number", None)
-        purchase_date = validated_data.pop("purchase_date", None)
-
-        if all(
-            value is not None for value in [name, workshop, model_number, purchase_date]
-        ):
-            # !All values are present
-            machine = Machine.objects.create(
-                name=name,
-                workshop=workshop,
-                model_number=model_number,
-                purchase_date=purchase_date,
-                **validated_data,
-            )
-            return machine
-        else:
-            raise ValidationError(
-                {
-                    "name": [_("This field is required.")],
-                    "workshop": [_("This field is required.")],
-                    "model_number": [_("This field is required.")],
-                    "purchase_date": [_("This field is required.")],
-                }
-            )
 
     def get_operator_assignments(self, obj):
         return MachineOperatorAssignment.objects.filter(machine=obj).count()

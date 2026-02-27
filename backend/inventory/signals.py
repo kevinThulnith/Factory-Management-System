@@ -1,12 +1,13 @@
+from .permissions import BasePermissions, OrderPermission, MaterialConsumptionPermission
+from .models import Material, Supplier, Order, MaterialConsumption
+from backend.signals import create_model_change_signal
+
 from .serializers import (
+    MaterialConsumptionSerializer,
     MaterialSerializer,
     SupplierSerializer,
     OrderSerializer,
-    MaterialConsumptionSerializer,
 )
-from .permissions import BasePermissions, OrderPermission, MaterialConsumptionPermission
-from backend.signals import create_model_change_signal
-from .models import Material, Supplier, Order, MaterialConsumption
 
 # TODO: Create signals for inventory models
 

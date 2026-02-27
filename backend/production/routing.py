@@ -5,7 +5,7 @@ from .consumers import (
     ProductionLineConsumer,
 )
 
-# ! Define WebSocket URL patterns for production app
+# !Define WebSocket URL patterns for production app
 
 websocket_urlpatterns = [
     re_path(r"ws/production-lines/$", ProductionLineConsumer.as_asgi()),

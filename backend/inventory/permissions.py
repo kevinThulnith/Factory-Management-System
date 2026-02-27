@@ -14,9 +14,6 @@ class BasePermissions(PermissionBlock):
         if super().has_permission(request, view):
             return True
 
-        if request.user.role == "ADMIN":
-            return True
-
         if request.method in SAFE_METHODS:
             return request.user.role in ["PURCHASING", "SUPERVISOR"]
 

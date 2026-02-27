@@ -203,6 +203,8 @@ class Machine(Model):
     operator_assigned_at = DateTimeField(null=True, blank=True)
     operator_auto_remove_at = DateTimeField(null=True, blank=True)
 
+    required_fields = ["name", "workshop", "model_number", "purchase_date"]
+
     class Meta:
         ordering = ["workshop", "name"]
         indexes = [
@@ -233,9 +235,9 @@ class Machine(Model):
         # !Update machine fields atomically (including status)
         Machine.objects.filter(pk=self.pk).update(
             operator=operator,
+            status=self.Status.OPERATIONAL,
             operator_assigned_at=timezone.now(),
             operator_auto_remove_at=timezone.now() + timedelta(hours=8),
-            status=self.Status.OPERATIONAL,
         )
 
         # !Refresh instance to reflect database changes
@@ -272,9 +274,9 @@ class Machine(Model):
         # !Clear machine fields atomically (including status)
         Machine.objects.filter(pk=self.pk).update(
             operator=None,
+            status=self.Status.IDLE,
             operator_assigned_at=None,
             operator_auto_remove_at=None,
-            status=self.Status.IDLE,
         )
 
         # !Refresh instance
