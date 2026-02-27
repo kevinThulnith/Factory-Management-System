@@ -67,7 +67,7 @@ const menuItems = {
       name: "Departments",
       path: "/department",
       icon: <FaBuilding size={20} />,
-      roles: ["ADMIN", "SUPERVISOR", "OPERATOR"],
+      roles: ["ADMIN", "SUPERVISOR", "MANAGER", "OPERATOR"],
     },
     {
       id: "workshops",

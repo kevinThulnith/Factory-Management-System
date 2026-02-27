@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import api from "../api";
 
 import {
-  Filter as FilterIcon,
   UserRoundPlus,
   ShieldCheck,
   UsersRound,
@@ -14,6 +13,7 @@ import {
   RotateCcw,
   Activity,
   Package,
+  Filter,
   Trash2,
   Search,
   Edit3,
@@ -226,7 +226,7 @@ function User() {
           {/* Advanced Filters with Modern Design */}
           <div className="bg-card-main rounded-xl p-6 mb-8 shadow-lg">
             <div className="flex items-center mb-4 text-slate-300">
-              <FilterIcon size={15} className="mx-2" />
+              <Filter size={15} className="mx-2" />
               <h3>Search & Filters</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -283,7 +283,7 @@ function User() {
                 className="flex-1 px-4 py-3 rounded-lg font-medium transition-all bg-yellow-600 hover:scale-105 inline-flex items-center justify-center"
                 style={{ height: "40px", lineHeight: "16px" }}
               >
-                <FilterIcon size={16} className="mr-2" />
+                <Filter size={16} className="mr-2" />
                 Apply Filters
               </button>
             </div>

@@ -63,12 +63,9 @@ const WorkshopForm = () => {
       .get("api/user/")
       .then((response) => {
         const allUsers = response.data.results || response.data || [];
-        // Filter for managers or relevant roles
-        const managerUsers = allUsers.filter(
-          (u) =>
-            u.role === "SUPERVISOR" ||
-            u.role === "MANAGER" ||
-            u.role === "ADMIN",
+        // ?Filter for managers or relevant roles
+        const managerUsers = allUsers.filter((u) =>
+          ["SUPERVISOR", "MANAGER", "ADMIN"].includes(u.role),
         );
         setManagers(managerUsers);
       })

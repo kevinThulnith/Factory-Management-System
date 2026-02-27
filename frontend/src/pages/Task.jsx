@@ -29,10 +29,9 @@ import {
 
 const Tasks = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [allTasks, setAllTasks] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -49,11 +48,6 @@ const Tasks = () => {
       .get("api/project/")
       .then((res) => setAllProjects(res.data.results || res.data))
       .catch((err) => console.error("Error fetching projects:", err));
-
-    api
-      .get("api/user/")
-      .then((res) => setAllUsers(res.data.results || res.data))
-      .catch((err) => console.error("Error fetching users:", err));
   }, []);
 
   useWebSocket("tasks", setAllTasks, fetchTasks);
@@ -77,30 +71,29 @@ const Tasks = () => {
   const handleStatusUpdate = async (taskId, newStatus) => {
     if (
       !window.confirm(
-        `Are you sure you want to update this task to "${newStatus}"?`
+        `Are you sure you want to update this task to "${newStatus}"?`,
       )
     )
       return;
 
     setLoading(true);
-    try {
-      await api.patch(`api/task/${taskId}/`, {
-        status: newStatus,
-      });
-      await fetchTasks();
-      alert("Task status updated successfully!");
-    } catch (error) {
-      console.error("Error updating task status:", error);
-      alert(
-        `Failed to update task status: ${
-          error.response?.data?.detail ||
-          error.response?.data?.status?.join(" ") ||
-          "Server error"
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
+    api
+      .patch(`api/task/${taskId}/`, { status: newStatus })
+      .then(() => {
+        fetchTasks();
+        alert("Task status updated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error updating task status:", error);
+        alert(
+          `Failed to update task status: ${
+            error.response?.data?.detail ||
+            error.response?.data?.status?.join(" ") ||
+            "Server error"
+          }`,
+        );
+      })
+      .finally(() => setLoading(false));
   };
 
   const filteredTasks = useMemo(() => {
@@ -149,14 +142,12 @@ const Tasks = () => {
         return dueDate < new Date() && t.status !== "COMPLETED";
       }).length,
     }),
-    [allTasks]
+    [allTasks],
   );
 
   const canCreate =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
+
   const canEdit = (task) =>
     user &&
     (user.role === "ADMIN" ||
@@ -448,7 +439,7 @@ const Tasks = () => {
                           <span className="text-stone-300 font-medium">
                             {task.start_date
                               ? new Date(
-                                  task.start_date + "T00:00:00Z"
+                                  task.start_date + "T00:00:00Z",
                                 ).toLocaleDateString()
                               : "N/A"}
                           </span>
@@ -462,7 +453,7 @@ const Tasks = () => {
                             <span className="mr-2">Due:</span>
                             <span className="text-stone-300 font-medium">
                               {new Date(
-                                task.end_date + "T00:00:00Z"
+                                task.end_date + "T00:00:00Z",
                               ).toLocaleDateString()}
                             </span>
                           </div>

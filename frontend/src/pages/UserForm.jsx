@@ -5,17 +5,18 @@ import { useAuth } from "../hooks/useAuth";
 import api from "../api";
 
 import {
-  Users as UsersIcon,
-  CogIcon as Tool,
   AlertTriangle,
   ChevronLeft,
   ShieldAlert,
   ShieldCheck,
+  UsersRound,
   Activity,
+  CogIcon,
   Package,
   EyeOff,
   Crown,
   Eye,
+  Building2,
 } from "lucide-react";
 
 const ErrorMessage = ({ message }) => (
@@ -69,6 +70,8 @@ function UserForm() {
   const [initialPageLoading, setInitialPageLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   const [formErrors, setFormErrors] = useState({});
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [departmentDropdownOpen, setDepartmentDropdownOpen] = useState(false);
   const { user } = useAuth();
 
   const isAdmin = useMemo(() => user?.role === "ADMIN", [user]);
@@ -92,7 +95,7 @@ function UserForm() {
         label: "Supervisor",
       },
       OPERATOR: {
-        icon: <Tool size={16} />,
+        icon: <CogIcon size={16} />,
         color: "orange-600",
         label: "Operator",
       },
@@ -107,7 +110,7 @@ function UserForm() {
         label: "Purchasing",
       },
     }),
-    []
+    [],
   );
 
   const fetchUserData = useCallback(() => {
@@ -208,7 +211,7 @@ function UserForm() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="p-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 mr-6 shadow-lg transform hover:scale-105 transition-all duration-300">
-                  <UsersIcon size={40} />
+                  <UsersRound size={40} />
                 </div>
                 <div>
                   <h1 className="text-2xl font-medium mb-2 tracking-tight">
@@ -259,7 +262,7 @@ function UserForm() {
                   <div className="space-y-6 ">
                     <div className="flex items-center border-b border-star-dust-500 pb-3 mb-6">
                       <div className="p-2 bg-purple-700 rounded-lg mr-3">
-                        <UsersIcon size={20} className="text-white" />
+                        <UsersRound size={20} className="text-white" />
                       </div>
                       <h3 className="text-xl font-medium">
                         Personal Information
@@ -489,24 +492,70 @@ function UserForm() {
                         >
                           Role
                         </label>
-                        <select
-                          id="role"
-                          name="role"
-                          value={formData.role}
-                          onChange={handleChange}
-                          disabled={!isAdmin}
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
-                            formErrors.role
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300 hover:border-gray-400"
-                          } ${!isAdmin ? "opacity-60 cursor-not-allowed" : ""}`}
-                        >
-                          {userRoles.map((role) => (
-                            <option key={role} value={role}>
-                              {roleConfig[role].label}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            disabled={!isAdmin}
+                            onClick={() => setRoleDropdownOpen((o) => !o)}
+                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] flex items-center gap-2 text-left ${
+                              formErrors.role ? "ring-1 ring-red-400" : ""
+                            } ${!isAdmin ? "opacity-60 cursor-not-allowed" : "hover:bg-[#444]"}`}
+                          >
+                            <span
+                              className={`text-${roleConfig[formData.role].color}`}
+                            >
+                              {roleConfig[formData.role].icon}
+                            </span>
+                            <span className="flex-1 text-sm">
+                              {roleConfig[formData.role].label}
+                            </span>
+                            <ChevronLeft
+                              size={16}
+                              className={`transition-transform ${roleDropdownOpen ? "rotate-90" : "-rotate-90"}`}
+                            />
+                          </button>
+                          {roleDropdownOpen && isAdmin && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-0"
+                                onClick={() => setRoleDropdownOpen(false)}
+                              />
+                              <div className="absolute z-10 mt-1 w-full rounded-xl bg-[#2e2e2e] shadow-lg overflow-hidden">
+                                {userRoles.map((role) => (
+                                  <button
+                                    key={role}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        role,
+                                      }));
+                                      setRoleDropdownOpen(false);
+                                      if (formErrors.role)
+                                        setFormErrors((prev) => ({
+                                          ...prev,
+                                          role: null,
+                                        }));
+                                      setPageError("");
+                                    }}
+                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#3a3a3a] transition-colors ${
+                                      formData.role === role
+                                        ? "bg-[#3a3a3a]"
+                                        : ""
+                                    }`}
+                                  >
+                                    <span
+                                      className={`text-${roleConfig[role].color}`}
+                                    >
+                                      {roleConfig[role].icon}
+                                    </span>
+                                    {roleConfig[role].label}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
                         {!isAdmin && (
                           <p className="text-xs text-amber-500 mt-1">
                             Only administrators can change user roles.
@@ -521,24 +570,96 @@ function UserForm() {
                         >
                           Department
                         </label>
-                        <select
-                          id="department"
-                          name="department"
-                          value={formData.department}
-                          onChange={handleChange}
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
-                            formErrors.department
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300 hover:border-gray-400"
-                          }`}
-                        >
-                          <option value="">Select Department</option>
-                          {departments.map((dept) => (
-                            <option key={dept.id} value={dept.id}>
-                              {dept.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setDepartmentDropdownOpen((o) => !o)}
+                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] flex items-center gap-2 text-left hover:bg-[#444] ${
+                              formErrors.department ? "ring-1 ring-red-400" : ""
+                            }`}
+                          >
+                            <span className="text-sky-400">
+                              <Building2 size={16} />
+                            </span>
+                            <span className="flex-1 text-sm">
+                              {departments.find(
+                                (d) =>
+                                  d.id === formData.department ||
+                                  d.id === Number(formData.department),
+                              )?.name || "Select Department"}
+                            </span>
+                            <ChevronLeft
+                              size={16}
+                              className={`transition-transform ${
+                                departmentDropdownOpen
+                                  ? "rotate-90"
+                                  : "-rotate-90"
+                              }`}
+                            />
+                          </button>
+                          {departmentDropdownOpen && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-0"
+                                onClick={() => setDepartmentDropdownOpen(false)}
+                              />
+                              <div className="absolute z-10 mt-1 w-full rounded-xl bg-[#2e2e2e] shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      department: "",
+                                    }));
+                                    setDepartmentDropdownOpen(false);
+                                    if (formErrors.department)
+                                      setFormErrors((prev) => ({
+                                        ...prev,
+                                        department: null,
+                                      }));
+                                    setPageError("");
+                                  }}
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#3a3a3a] transition-colors text-stone-400 ${
+                                    !formData.department ? "bg-[#3a3a3a]" : ""
+                                  }`}
+                                >
+                                  <Building2 size={16} />
+                                  Select Department
+                                </button>
+                                {departments.map((dept) => (
+                                  <button
+                                    key={dept.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        department: dept.id,
+                                      }));
+                                      setDepartmentDropdownOpen(false);
+                                      if (formErrors.department)
+                                        setFormErrors((prev) => ({
+                                          ...prev,
+                                          department: null,
+                                        }));
+                                      setPageError("");
+                                    }}
+                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#3a3a3a] transition-colors ${
+                                      formData.department === dept.id ||
+                                      Number(formData.department) === dept.id
+                                        ? "bg-[#3a3a3a]"
+                                        : ""
+                                    }`}
+                                  >
+                                    <span className="text-sky-400">
+                                      <Building2 size={16} />
+                                    </span>
+                                    {dept.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
                         {formErrors.department && (
                           <p className="text-sm text-red-600 font-medium">
                             {formErrors.department}

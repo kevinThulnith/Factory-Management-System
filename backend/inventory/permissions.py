@@ -27,14 +27,17 @@ class MaterialPermission(BasePermissions):
     """
     Material permissions:
     - Admins: Full CRUD access
-    - Purchasing | Supervisors | Oparator : Read-only access
+    - Purchasing | Supervisors | Oparator | Manager : Read-only access
     """
 
     def has_permission(self, request, view):
         if super().has_permission(request, view):
             return True
 
-        if request.user.role == "OPERATOR" and request.method in SAFE_METHODS:
+        if (
+            request.user.role in ("OPERATOR", "MANAGER")
+            and request.method in SAFE_METHODS
+        ):
             return True
 
         return False

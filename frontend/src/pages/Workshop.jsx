@@ -145,14 +145,10 @@ function Workshop() {
   }, [allWorkshops]);
 
   // !Check permissions
-  const canCreate = user && (user.role === "ADMIN" || user.role === "MANAGER");
-  const canDelete =
-    user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+  const canCreate = user && user.role === "ADMIN";
+  const canDelete = canCreate;
   const canEdit =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "MANAGER" ||
-      user.role === "SUPERVISOR");
+    user && ["ADMIN", "MANAGER", "SUPERVISOR"].includes(user.role);
 
   return (
     <>
