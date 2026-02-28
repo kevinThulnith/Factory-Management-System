@@ -9,9 +9,7 @@ function useWebSocket(url, setData, fetchData) {
     const token = localStorage.getItem("access");
 
     // TODO: Create WebSocket URL
-    const socketUrl = `${
-      import.meta.env.VITE_WS_URL
-    }/ws/${url}/?token=${token}`;
+    const socketUrl = `/ws/${url}/?token=${token}`;
     const socket = new WebSocket(socketUrl);
 
     // TODO: Handle WebSocket events
@@ -32,7 +30,7 @@ function useWebSocket(url, setData, fetchData) {
             case "updated":
               // !Find and update the item in the master list
               return prevData.map((p) =>
-                p.id === message.data.id ? message.data : p
+                p.id === message.data.id ? message.data : p,
               );
             case "deleted":
               // !Filter out the deleted item from the master list

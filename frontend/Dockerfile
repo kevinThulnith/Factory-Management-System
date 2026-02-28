@@ -7,6 +7,8 @@ RUN npm ci --prefer-offline --no-audit --no-fund --silent
 
 COPY . .
 
+ARG VITE_CLIENT_ID
+ENV VITE_CLIENT_ID=$VITE_CLIENT_ID
 ENV NODE_ENV=production
 
 RUN npm run build

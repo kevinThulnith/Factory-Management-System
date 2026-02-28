@@ -3,7 +3,7 @@ import axios from "axios";
 
 // !Create axios instance with base configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: "/",
   xsrfCookieName: "csrftoken",
   xsrfHeaderName: "X-CSRFToken",
 });
@@ -32,7 +32,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export default api;
