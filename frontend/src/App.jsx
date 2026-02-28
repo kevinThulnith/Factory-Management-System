@@ -18,7 +18,7 @@ const SupplierForm = lazy(() => import("./pages/SupplierForm"));
 const ProjectsForm = lazy(() => import("./pages/ProjectForm"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const MachineForm = lazy(() => import("./pages/MachineForm"));
-const SkillMatrix = lazy(() => import("./pages/Skillmatrix"));
+const SkillMatrix = lazy(() => import("./pages/SkillMatrix"));
 const ProductForm = lazy(() => import("./pages/ProductForm"));
 const Department = lazy(() => import("./pages/Department"));
 const OrderForm = lazy(() => import("./pages/OrderForm"));
