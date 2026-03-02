@@ -48,6 +48,9 @@ services:
       - "80:80"
     networks:
       - fms-network
+    depends_on:
+      - fms-frontend
+      - fms-backend
 
   fms-backend:
     build:

@@ -1,0 +1,103 @@
+<mxfile host="65bd71144e">
+    <diagram id="qKf0V9jDFGqt_iPVDSU1" name="Page-1">
+        <mxGraphModel dx="2362" dy="1650" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="12" y="17" width="1654" height="1169" as="geometry"/>
+                </mxCell>
+                <mxCell id="title" value="🐳 Docker-Compose Setup" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontColor=#00BFFF;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1300" y="40" width="300" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="client" value="&lt;b&gt;🌐 Client Browser&lt;/b&gt;" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#ffffff;fontColor=#ffffff;fontSize=15;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="50" width="200" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="network" value="fms-network (Bridge Network)" style="rounded=12;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;strokeDashArray=8 4;fontColor=#888888;fontSize=13;verticalAlign=bottom;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="82" y="134" width="1480" height="920" as="geometry"/>
+                </mxCell>
+                <mxCell id="proxy" value="&lt;b&gt;🔵 fms-proxy&lt;/b&gt;&lt;br&gt;Nginx 1.25-alpine-slim&lt;br&gt;Port : 80" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#ffffff;fontColor=#ffffff;fontSize=12;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="230" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="frontend" value="&lt;b&gt;🟣 fms-frontend&lt;/b&gt;&lt;br&gt;React | Vite | Tailwind&lt;br&gt;Port : 5173" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#ffffff;fontColor=#ffffff;fontSize=12;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="370" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="backend" value="&lt;b&gt;🟢 fms-backend&lt;/b&gt;&lt;br&gt;Django + Channels&lt;br&gt;Port : 8000" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#ffffff;fontColor=#ffffff;fontSize=12;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="370" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="restapi" value="&lt;b&gt;🚀 REST API&lt;/b&gt;&lt;br&gt;DRF: /api/&lt;br&gt;JSON Endpoints" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#aaaaaa;fontColor=#ffffff;fontSize=11;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="550" y="580" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="ws" value="&lt;b&gt;📡 WebSockets&lt;/b&gt;&lt;br&gt;Django Channels: /ws/&lt;br&gt;Real-time Communication" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#aaaaaa;fontColor=#ffffff;fontSize=11;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="580" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="oauth" value="&lt;b&gt;🔑 Google OAuth2&lt;/b&gt;&lt;br&gt;/accounts/google/&lt;br&gt;login/callback/" style="rounded=12;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#aaaaaa;fontColor=#ffffff;fontSize=11;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="1100" y="580" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="database" value="&lt;b&gt;🐘 fms-database&lt;/b&gt;&lt;br&gt;PostgreSQL 14-alpine&lt;br&gt;Port : 5432" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#ffffff;fontColor=#ffffff;fontSize=12;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="750" width="170" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="redis" value="&lt;b&gt;⚡ fms-redis&lt;/b&gt;&lt;br&gt;Redis 7-alpine&lt;br&gt;Port : 6379" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#1a1a1a;strokeColor=#ffffff;fontColor=#ffffff;fontSize=12;arcSize=20;" parent="1" vertex="1">
+                    <mxGeometry x="1150" y="750" width="170" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="dbvol" value="📁 fms-database-data" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#2a2200;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="960" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="envfile" value="📄 .env.prod" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#8888ff;fontColor=#8888ff;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="960" width="150" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="redisvol" value="📁 fms-redis-data" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#2a2200;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="960" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="mediavol" value="📁 media-files" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#2a2200;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1270" y="960" width="150" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" value="HTTP : 80" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ffffff;fontColor=#ffffff;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="client" target="proxy" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" value="proxy_pass :5173" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#aaaaaa;fontColor=#aaaaaa;fontSize=10;" parent="1" source="proxy" target="frontend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" value="proxy_pass :8000" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#aaaaaa;fontColor=#aaaaaa;fontSize=10;" parent="1" source="proxy" target="backend" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" value="provide" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#aaaaaa;fontColor=#aaaaaa;fontSize=10;dashed=1;" parent="1" source="backend" target="restapi" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" value="provide" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#aaaaaa;fontColor=#aaaaaa;fontSize=10;dashed=1;" parent="1" source="backend" target="ws" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" value="provide" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#aaaaaa;fontColor=#aaaaaa;fontSize=10;dashed=1;" parent="1" source="backend" target="oauth" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" value="depends_on" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ffffff;fontColor=#ffffff;fontSize=10;dashed=1;" parent="1" source="backend" target="database" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" value="depends_on" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ffffff;fontColor=#ffffff;fontSize=10;dashed=1;" parent="1" source="backend" target="redis" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" value="Persistent Data" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=10;dashed=1;" parent="1" source="database" target="dbvol" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" value="Persistent Data" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=10;dashed=1;" parent="1" source="redis" target="redisvol" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" value="env_file" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8888ff;fontColor=#8888ff;fontSize=10;dashed=1;" parent="1" source="backend" target="envfile" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" value="env_file" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8888ff;fontColor=#8888ff;fontSize=10;dashed=1;" parent="1" source="database" target="envfile" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" value="build args" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8888ff;fontColor=#8888ff;fontSize=10;dashed=1;" parent="1" source="frontend" target="envfile" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" value="media-files" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=10;dashed=1;" parent="1" source="backend" target="mediavol" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" value="/media/" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ccaa00;fontColor=#ccaa00;fontSize=10;dashed=1;" parent="1" source="proxy" target="mediavol" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
