@@ -117,7 +117,7 @@ const menuItems = {
       name: "Materials",
       path: "/material",
       icon: <FaBox size={20} />,
-      roles: ["ADMIN", "PURCHASING", "SUPERVISOR", "MANAGER"],
+      roles: ["ADMIN", "PURCHASING", "SUPERVISOR", "MANAGER", "OPERATOR"],
     },
     {
       id: "products",
