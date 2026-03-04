@@ -48,9 +48,7 @@ def create_products():
 
 
 def add_manufacturing_processes_with_sequence():
-    """
-    Create ProductProcess instances with sequence numbers
-    """
+    "Create ProductProcess instances with sequence numbers"
     print("\nAssigning manufacturing processes to products...")
 
     processes = list(ManufacturingProcess.objects.all())
@@ -89,9 +87,7 @@ def add_manufacturing_processes_with_sequence():
 
 
 def display_product_sequences():
-    """
-    Display all products and their process sequences
-    """
+    "Display all products and their process sequences"
     print("\n📋 Product Manufacturing Sequences:")
     print("=" * 70)
 
