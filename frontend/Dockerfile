@@ -13,14 +13,10 @@ ENV NODE_ENV=production
 
 RUN npm run build
 
-RUN npm prune --omit=dev
+# --- Final stage: tiny image that seeds the named volume ---
+FROM alpine:3.19
 
-FROM nginx:1.25-alpine-slim
+COPY --from=build /app/dist /app/dist
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-COPY --from=build /app/dist /usr/share/nginx/html
-
-EXPOSE 5173
-
-CMD ["nginx", "-g", "daemon off;"]
+# Copy built files into the shared volume mount point at runtime
+CMD ["sh", "-c", "cp -r /app/dist/. /frontend-dist/ && echo 'Frontend build files copied to volume'"]
