@@ -44,7 +44,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - frontend-dist:/usr/share/nginx/html:ro
-      - fms-slim-mmedia-files:/app/media
+      - fms-slim-media-files:/app/media
     ports:
       - "80:80"
     networks:
@@ -61,7 +61,7 @@ services:
       dockerfile: Dockerfile
     container_name: fms-slim-backend
     volumes:
-      - fms-slim-mmedia-files:/app/media
+      - fms-slim-media-files:/app/media
     ports:
       - "8000:8000"
     env_file:
@@ -79,6 +79,6 @@ networks:
 
 volumes:
   fms-slim-slim-database-data:
-  fms-slim-mmedia-files:
+  fms-slim-media-files:
   fms-slim-redis-data:
   frontend-dist:
