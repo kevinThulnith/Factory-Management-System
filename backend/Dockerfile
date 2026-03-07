@@ -31,7 +31,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable
 
 # Strip test suites from installed packages — never needed at runtime
-RUN find /app/.venv/lib -type d \( -name "tests" -o -name "test" \) | xargs rm -rf
+# Excludes django/test because simplejwt imports django.test.signals at runtime
+RUN find /app/.venv/lib -type d \( -name "tests" -o -name "test" \) \
+    ! -path "*/django/test" \
+    | xargs rm -rf
 
 # Stage 2: Production
 FROM python:3.14-alpine
