@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
-import dj_database_url
 import os
 
 load_dotenv()
@@ -158,8 +157,6 @@ DATABASES = {
     }
 }
 
-# ! When using online databases
-# DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
