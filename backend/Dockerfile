@@ -7,7 +7,6 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy
 
 # Install ALL build + runtime deps here
@@ -30,6 +29,9 @@ COPY . /app
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable
+
+# Strip test suites from installed packages — never needed at runtime
+RUN find /app/.venv/lib -type d \( -name "tests" -o -name "test" \) | xargs rm -rf
 
 # Stage 2: Production
 FROM python:3.14-alpine
