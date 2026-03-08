@@ -6,22 +6,22 @@ function useWebSocket(url, setData, fetchData) {
   useEffect(() => {
     fetchData();
 
-    const token = localStorage.getItem("access");
+    const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/${url}/`);
 
-    // TODO: Create WebSocket URL
-    const socketUrl = `${
-      import.meta.env.VITE_WS_URL
-    }/ws/${url}/?token=${token}`;
-    const socket = new WebSocket(socketUrl);
-
-    // TODO: Handle WebSocket events
-    socket.onopen = () => setWsStatus("Connected");
+    // Send token as first message — never expose it in the URL
+    socket.onopen = () => {
+      const token = localStorage.getItem("access");
+      socket.send(JSON.stringify({ type: "authenticate", token }));
+    };
 
     // TODO: Handle incoming messages
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
-      if (message.type === "connection_established") return;
+      if (message.type === "connection_established") {
+        setWsStatus("Connected");
+        return;
+      }
 
       if (message.action) {
         setData((prevData) => {
@@ -32,7 +32,7 @@ function useWebSocket(url, setData, fetchData) {
             case "updated":
               // !Find and update the item in the master list
               return prevData.map((p) =>
-                p.id === message.data.id ? message.data : p
+                p.id === message.data.id ? message.data : p,
               );
             case "deleted":
               // !Filter out the deleted item from the master list
