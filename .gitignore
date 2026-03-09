@@ -20,3 +20,4 @@ backend/media/invoices/
 *.log
 schema/*.jpg
 testsprite_tests/
+backend/static/
