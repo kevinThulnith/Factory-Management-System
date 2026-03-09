@@ -23,20 +23,46 @@ class ConsumerBlock(AsyncWebsocketConsumer):
     permission_class = None
 
     async def connect(self):
-        user = self.scope["user"]
-
-        if not user.is_authenticated:
-            await self.close()
-            return
-
         if not self.group_name:
             raise ValueError("group name must be set in the subclass")
 
-        # !Store user for permission checks
-        self.user = user
-
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        # Accept first so we can receive the auth message
         await self.accept()
+
+    async def disconnect(self, close_code):
+        if self.group_name:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        # If already authenticated, ignore further client messages
+        if hasattr(self, "user"):
+            return
+
+        # First message must be the auth handshake
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            await self.close(code=4001)
+            return
+
+        if data.get("type") != "authenticate":
+            await self.close(code=4001)
+            return
+
+        token = data.get("token")
+        if not token:
+            await self.close(code=4001)
+            return
+
+        from backend.middleware import get_user
+
+        user = await get_user(token)
+        if not user.is_authenticated:
+            await self.close(code=4001)
+            return
+
+        self.user = user
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.send(
             text_data=json.dumps(
                 {
@@ -45,13 +71,6 @@ class ConsumerBlock(AsyncWebsocketConsumer):
                 }
             )
         )
-
-    async def disconnect(self, close_code):
-        if self.group_name:
-            await self.channel_layer.group_discard(self.group_name, self.channel_name)
-
-    async def receive(self, text_data):
-        pass
 
     @database_sync_to_async
     def check_object_permission(self, obj):

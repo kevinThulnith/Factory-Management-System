@@ -2,7 +2,6 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 from channels.db import database_sync_to_async
 from django.http import HttpResponse
-from urllib.parse import parse_qs
 from rich.console import Console
 from rich.text import Text
 import asyncio
@@ -118,21 +117,13 @@ def get_user(token_key):
 
 
 class JWTAuthMiddleware:
-    "Custom middleware for JWT authentication with WebSockets."
+    "Custom middleware for JWT authentication with WebSockets via first-message handshake."
 
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        query_string = scope.get("query_string", b"").decode("utf-8")
-        query_params = parse_qs(query_string)
-        token = query_params.get("token", [None])[0]
-
-        if token:
-            scope["user"] = await get_user(token)
-        else:
-            from django.contrib.auth.models import AnonymousUser
-
-            scope["user"] = AnonymousUser()
+        if scope["type"] != "websocket":
+            return await self.app(scope, receive, send)
 
         return await self.app(scope, receive, send)

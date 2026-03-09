@@ -6,20 +6,22 @@ function useWebSocket(url, setData, fetchData) {
   useEffect(() => {
     fetchData();
 
-    const token = localStorage.getItem("access");
+    const socket = new WebSocket(`/ws/${url}/`);
 
-    // TODO: Create WebSocket URL
-    const socketUrl = `/ws/${url}/?token=${token}`;
-    const socket = new WebSocket(socketUrl);
-
-    // TODO: Handle WebSocket events
-    socket.onopen = () => setWsStatus("Connected");
+    // ?Send token as first message — never expose it in the URL
+    socket.onopen = () => {
+      const token = localStorage.getItem("access");
+      socket.send(JSON.stringify({ type: "authenticate", token }));
+    };
 
     // TODO: Handle incoming messages
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
-      if (message.type === "connection_established") return;
+      if (message.type === "connection_established") {
+        setWsStatus("Connected");
+        return;
+      }
 
       if (message.action) {
         setData((prevData) => {
