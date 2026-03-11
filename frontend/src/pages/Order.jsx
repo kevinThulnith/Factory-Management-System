@@ -119,10 +119,7 @@ const Order = () => {
   };
 
   const canManage =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "PURCHASING");
+    user && ["ADMIN", "SUPERVISOR", "PURCHASING"].includes(user.role);
 
   return (
     <div className="min-h-screen py-6">

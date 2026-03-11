@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -137,35 +137,19 @@ const TasksForm = () => {
   });
 
   // Permissions
-  const canAlwaysManage = useMemo(
-    () => user && ["ADMIN", "SUPERVISOR"].includes(user.role),
-    [user],
-  );
+  const canAlwaysManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
 
-  const isProjectManager = useMemo(
-    () =>
-      user &&
-      associatedProject &&
-      associatedProject.project_manager === user.id,
-    [user, associatedProject],
-  );
+  const isProjectManager =
+    user && associatedProject && associatedProject.project_manager === user.id;
 
-  const canCreate = useMemo(
-    () => user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role),
-    [user],
-  );
+  const canCreate =
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
-  const canSubmitForm = useMemo(
-    () =>
-      (isCreateMode && canCreate) ||
-      (!isCreateMode && (canAlwaysManage || isProjectManager)),
-    [isCreateMode, canCreate, canAlwaysManage, isProjectManager],
-  );
+  const canSubmitForm =
+    (isCreateMode && canCreate) ||
+    (!isCreateMode && (canAlwaysManage || isProjectManager));
 
-  const canAddConsumption = useMemo(
-    () => canSubmitForm || (user && user.role === "OPERATOR"),
-    [canSubmitForm, user],
-  );
+  const canAddConsumption = canSubmitForm || user?.role === "OPERATOR";
 
   // Data Fetching
   useEffect(() => {

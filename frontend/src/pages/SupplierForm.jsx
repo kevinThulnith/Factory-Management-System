@@ -105,7 +105,7 @@ const SupplierForm = () => {
     }
   };
 
-  const canManage = user && user.role === "ADMIN";
+  const canManage = user?.role === "ADMIN";
 
   return (
     <Form
@@ -114,8 +114,8 @@ const SupplierForm = () => {
         isViewMode
           ? "Supplier Details"
           : isEditMode
-          ? "Edit Supplier"
-          : "Add New Supplier"
+            ? "Edit Supplier"
+            : "Add New Supplier"
       }
       text_01={
         isViewMode ? "View supplier information" : "Manage supplier details"

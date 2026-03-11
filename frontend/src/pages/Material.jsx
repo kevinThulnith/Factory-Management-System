@@ -46,7 +46,7 @@ const MaterialListPage = () => {
     "material",
     setLoading,
     "material",
-    fetchMaterials
+    fetchMaterials,
   );
 
   const handleFilterChange = (e) => {
@@ -108,7 +108,7 @@ const MaterialListPage = () => {
   const stats = useMemo(() => {
     const totalMaterials = allMaterials.length;
     const lowStockMaterials = allMaterials.filter(
-      (m) => parseFloat(m.quantity) <= parseFloat(m.reorder_level)
+      (m) => parseFloat(m.quantity) <= parseFloat(m.reorder_level),
     ).length;
     const inStockMaterials = totalMaterials - lowStockMaterials;
 
@@ -116,13 +116,9 @@ const MaterialListPage = () => {
   }, [allMaterials]);
 
   // Check permissions
-  const canCreate = user && user.role === "ADMIN";
+  const canCreate = user?.role === "ADMIN";
   const canEdit =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
-  const canDelete = user && user.role === "ADMIN";
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   return (
     <div>
@@ -337,13 +333,13 @@ const MaterialListPage = () => {
                                       isLowStock
                                         ? "bg-red-500"
                                         : stockPercentage > 150
-                                        ? "bg-green-500"
-                                        : "bg-yellow-500"
+                                          ? "bg-green-500"
+                                          : "bg-yellow-500"
                                     }`}
                                     style={{
                                       width: `${Math.min(
                                         stockPercentage,
-                                        100
+                                        100,
                                       )}%`,
                                     }}
                                   ></div>
@@ -382,7 +378,7 @@ const MaterialListPage = () => {
                                   <Edit3 size={18} />
                                 </Link>
                               )}
-                              {canDelete && (
+                              {canCreate && (
                                 <button
                                   onClick={() => handleDelete(material.id)}
                                   className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"

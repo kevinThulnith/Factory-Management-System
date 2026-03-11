@@ -12,10 +12,10 @@ import {
   PlusCircle,
   UserCircle,
   ListChecks,
+  UsersRound,
   RefreshCw,
   Briefcase,
   RotateCcw,
-  UsersRound,
   Factory,
   Trash2,
   Search,
@@ -41,7 +41,7 @@ const LaborAllocations = () => {
   const fetchAllocations = useFetchData(
     "allocation",
     setLoading,
-    setAllAllocations
+    setAllAllocations,
   );
 
   useWebSocket("labor-allocation", setAllAllocations, fetchAllocations);
@@ -56,7 +56,7 @@ const LaborAllocations = () => {
     "allocation",
     setLoading,
     "labor allocation",
-    fetchAllocations
+    fetchAllocations,
   );
 
   const handleFilterChange = (e) => {
@@ -109,36 +109,26 @@ const LaborAllocations = () => {
       total: allAllocations.length,
       totalHours: allAllocations.reduce(
         (sum, alloc) => sum + parseFloat(alloc.hours_allocated || 0),
-        0
+        0,
       ),
       taskAllocations: allAllocations.filter(
-        (a) => a.allocation_type === "task"
+        (a) => a.allocation_type === "task",
       ).length,
       projectAllocations: allAllocations.filter(
-        (a) => a.allocation_type === "project"
+        (a) => a.allocation_type === "project",
       ).length,
       productionLineAllocations: allAllocations.filter(
-        (a) => a.allocation_type === "production_line"
+        (a) => a.allocation_type === "production_line",
       ).length,
     }),
-    [allAllocations]
+    [allAllocations],
   );
 
   const canCreate =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
+
   const canEdit = () =>
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
-  const canDelete = () =>
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   const getAllocationType = (alloc) => {
     if (alloc.task) return "task";
@@ -389,7 +379,7 @@ const LaborAllocations = () => {
                             <span className="mr-2">Date:</span>
                             <span className="text-stone-300 font-medium">
                               {new Date(
-                                alloc.date + "T00:00:00Z"
+                                alloc.date + "T00:00:00Z",
                               ).toLocaleDateString()}
                             </span>
                           </div>
@@ -426,23 +416,22 @@ const LaborAllocations = () => {
                         </Link>
 
                         {canEdit(alloc) && (
-                          <Link
-                            to={`/labor-allocation/edit/${alloc.id}`}
-                            className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
-                            title="Edit Allocation"
-                          >
-                            <Edit3 size={20} />
-                          </Link>
-                        )}
-
-                        {canDelete(alloc) && (
-                          <button
-                            onClick={() => handleDelete(alloc.id)}
-                            className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
-                            title="Delete Allocation"
-                          >
-                            <Trash2 size={20} />
-                          </button>
+                          <>
+                            <Link
+                              to={`/labor-allocation/edit/${alloc.id}`}
+                              className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
+                              title="Edit Allocation"
+                            >
+                              <Edit3 size={20} />
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(alloc.id)}
+                              className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
+                              title="Delete Allocation"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>

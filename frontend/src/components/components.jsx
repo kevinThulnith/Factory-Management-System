@@ -60,7 +60,7 @@ export const SelectItem = ({
       {label}
     </label>
     {loading ? (
-      <div className="bg-[#3a3a3a] border border-stone-600 rounded-lg p-2 text-stone-400">
+      <div className="bg-card-sub border border-stone-600 rounded-lg p-2 text-stone-400">
         Loading...
       </div>
     ) : (

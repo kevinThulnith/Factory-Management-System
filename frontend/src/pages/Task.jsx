@@ -145,9 +145,9 @@ const Tasks = () => {
     [allTasks],
   );
 
+  // Permission checks
   const canCreate =
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
-
   const canEdit = (task) =>
     user &&
     (user.role === "ADMIN" ||
@@ -159,12 +159,6 @@ const Tasks = () => {
     (user.role === "ADMIN" ||
       user.role === "SUPERVISOR" ||
       (user.role === "MANAGER" && task.project_manager_id === user.id));
-  const canUpdateStatus = (task) =>
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      (user.role === "MANAGER" && task.project_manager_id === user.id) ||
-      task.assigned_to === user.id);
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -481,7 +475,7 @@ const Tasks = () => {
                         </Link>
                       )}
 
-                      {canUpdateStatus(task) && task.status === "PENDING" && (
+                      {canEdit(task) && task.status === "PENDING" && (
                         <button
                           onClick={() =>
                             handleStatusUpdate(task.id, "IN_PROGRESS")
@@ -493,31 +487,30 @@ const Tasks = () => {
                         </button>
                       )}
 
-                      {canUpdateStatus(task) &&
-                        task.status === "IN_PROGRESS" && (
-                          <>
-                            <button
-                              onClick={() =>
-                                handleStatusUpdate(task.id, "COMPLETED")
-                              }
-                              className="text-green-200 hover:text-green-800 transition duration-200 p-2 hover:bg-green-100 rounded-full shadow-sm"
-                              title="Mark Completed"
-                            >
-                              <CheckCircle size={20} />
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleStatusUpdate(task.id, "BLOCKED")
-                              }
-                              className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
-                              title="Mark Blocked"
-                            >
-                              <AlertTriangle size={20} />
-                            </button>
-                          </>
-                        )}
+                      {canEdit(task) && task.status === "IN_PROGRESS" && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleStatusUpdate(task.id, "COMPLETED")
+                            }
+                            className="text-green-200 hover:text-green-800 transition duration-200 p-2 hover:bg-green-100 rounded-full shadow-sm"
+                            title="Mark Completed"
+                          >
+                            <CheckCircle size={20} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleStatusUpdate(task.id, "BLOCKED")
+                            }
+                            className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
+                            title="Mark Blocked"
+                          >
+                            <AlertTriangle size={20} />
+                          </button>
+                        </>
+                      )}
 
-                      {canUpdateStatus(task) && task.status === "BLOCKED" && (
+                      {canEdit(task) && task.status === "BLOCKED" && (
                         <button
                           onClick={() =>
                             handleStatusUpdate(task.id, "IN_PROGRESS")
@@ -529,7 +522,7 @@ const Tasks = () => {
                         </button>
                       )}
 
-                      {canUpdateStatus(task) &&
+                      {canEdit(task) &&
                         (task.status === "PENDING" ||
                           task.status === "IN_PROGRESS" ||
                           task.status === "BLOCKED") && (

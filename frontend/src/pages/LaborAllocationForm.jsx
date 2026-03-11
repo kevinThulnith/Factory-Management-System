@@ -46,24 +46,19 @@ const LaborAllocationForm = () => {
   const [allocation, setAllocation] = useState(null);
   const [allEmployees, setAllEmployees] = useState([]);
   const [allProductionLines, setAllProductionLines] = useState([]);
+
   const [formData, setFormData] = useState({
-    employee: "",
-    allocation_type: "project",
-    project: "",
     task: "",
+    project: "",
+    employee: "",
     production_line: "",
     hours_allocated: "1.00",
+    allocation_type: "project",
     date: new Date().toISOString().split("T")[0],
   });
 
-  const canManage = useMemo(
-    () =>
-      user &&
-      (user.role === "ADMIN" ||
-        user.role === "SUPERVISOR" ||
-        user.role === "MANAGER"),
-    [user]
-  );
+  const canManage =
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   // Fetch dropdown data
   const fetchDropdownData = useCallback(async () => {
@@ -120,8 +115,8 @@ const LaborAllocationForm = () => {
         const allocationType = allocData.task
           ? "task"
           : allocData.production_line
-          ? "production_line"
-          : "project";
+            ? "production_line"
+            : "project";
 
         setFormData({
           employee: allocData.employee || "",
@@ -130,7 +125,7 @@ const LaborAllocationForm = () => {
           task: allocData.task || "",
           production_line: allocData.production_line || "",
           hours_allocated: parseFloat(allocData.hours_allocated || 1).toFixed(
-            2
+            2,
           ),
           date: allocData.date || new Date().toISOString().split("T")[0],
         });
@@ -163,7 +158,6 @@ const LaborAllocationForm = () => {
     if (formData.allocation_type === "task" && formData.project) {
       fetchTasksForProject(formData.project);
     } else setAllTasks([]);
-    
   }, [formData.project, formData.allocation_type, fetchTasksForProject]);
 
   const handleChange = (e) => {
@@ -287,7 +281,7 @@ const LaborAllocationForm = () => {
         error.response?.data?.detail ||
           error.response?.data?.employee?.[0] ||
           error.response?.data?.hours_allocated?.[0] ||
-          "Failed to save allocation. Please check your input."
+          "Failed to save allocation. Please check your input.",
       );
     } finally {
       setLoading(false);
@@ -308,7 +302,7 @@ const LaborAllocationForm = () => {
             ? `${emp.first_name} ${emp.last_name} (${emp.username}) - ${emp.role}`
             : `${emp.username} - ${emp.role}`,
       })),
-    [allEmployees]
+    [allEmployees],
   );
 
   // Generate project options
@@ -318,7 +312,7 @@ const LaborAllocationForm = () => {
         value: proj.id,
         label: proj.name,
       })),
-    [allProjects]
+    [allProjects],
   );
 
   // Generate task options
@@ -328,7 +322,7 @@ const LaborAllocationForm = () => {
         value: task.id,
         label: task.name,
       })),
-    [allTasks]
+    [allTasks],
   );
 
   // Generate production line options
@@ -338,7 +332,7 @@ const LaborAllocationForm = () => {
         value: line.id,
         label: line.name,
       })),
-    [allProductionLines]
+    [allProductionLines],
   );
 
   const allocationTypeOptions = [
@@ -377,15 +371,15 @@ const LaborAllocationForm = () => {
         isViewMode
           ? "Labor Allocation Details"
           : allocationId
-          ? "Edit Labor Allocation"
-          : "Create New Labor Allocation"
+            ? "Edit Labor Allocation"
+            : "Create New Labor Allocation"
       }
       text_01={
         isViewMode
           ? "View allocation details"
           : allocationId
-          ? "Update allocation information"
-          : "Assign employee to project, task, or production line"
+            ? "Update allocation information"
+            : "Assign employee to project, task, or production line"
       }
       text_02="Allocations"
       onClick={handleCancel}
@@ -437,8 +431,8 @@ const LaborAllocationForm = () => {
               allocation?.task
                 ? "Task"
                 : allocation?.production_line
-                ? "Production Line"
-                : "Project"
+                  ? "Production Line"
+                  : "Project"
             }
           />
 
@@ -449,9 +443,9 @@ const LaborAllocationForm = () => {
                 allocation?.task
                   ? "task"
                   : allocation?.production_line
-                  ? "production_line"
-                  : "project"
-              )
+                    ? "production_line"
+                    : "project",
+              ),
             )}
             label="Target"
             value={getTargetName()}

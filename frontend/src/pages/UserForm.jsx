@@ -340,7 +340,7 @@ function UserForm() {
                           value={formData.dob}
                           onChange={handleChange}
                           required
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
+                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.dob
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
@@ -368,7 +368,7 @@ function UserForm() {
                           value={formData.email}
                           onChange={handleChange}
                           required
-                          className={`w-full px-4 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
+                          className={`w-full px-4 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.first_name
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
@@ -396,7 +396,7 @@ function UserForm() {
                           onChange={handleChange}
                           required
                           disabled={userId}
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
+                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.username
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
@@ -429,7 +429,7 @@ function UserForm() {
                           value={formData.nic}
                           onChange={handleChange}
                           required
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
+                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.nic
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
@@ -457,7 +457,7 @@ function UserForm() {
                           value={formData.mobile_no}
                           onChange={handleChange}
                           required
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
+                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.mobile_no
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"
@@ -497,7 +497,7 @@ function UserForm() {
                             type="button"
                             disabled={!isAdmin}
                             onClick={() => setRoleDropdownOpen((o) => !o)}
-                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] flex items-center gap-2 text-left ${
+                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent flex items-center gap-2 text-left ${
                               formErrors.role ? "ring-1 ring-red-400" : ""
                             } ${!isAdmin ? "opacity-60 cursor-not-allowed" : "hover:bg-[#444]"}`}
                           >
@@ -538,9 +538,9 @@ function UserForm() {
                                         }));
                                       setPageError("");
                                     }}
-                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#3a3a3a] transition-colors ${
+                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-card-accent transition-colors ${
                                       formData.role === role
-                                        ? "bg-[#3a3a3a]"
+                                        ? "bg-card-accent"
                                         : ""
                                     }`}
                                   >
@@ -574,7 +574,7 @@ function UserForm() {
                           <button
                             type="button"
                             onClick={() => setDepartmentDropdownOpen((o) => !o)}
-                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] flex items-center gap-2 text-left hover:bg-[#444] ${
+                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent flex items-center gap-2 text-left hover:bg-[#444] ${
                               formErrors.department ? "ring-1 ring-red-400" : ""
                             }`}
                           >
@@ -619,8 +619,8 @@ function UserForm() {
                                       }));
                                     setPageError("");
                                   }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#3a3a3a] transition-colors text-stone-400 ${
-                                    !formData.department ? "bg-[#3a3a3a]" : ""
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-card-accent transition-colors text-stone-400 ${
+                                    !formData.department ? "bg-card-accent" : ""
                                   }`}
                                 >
                                   <Building2 size={16} />
@@ -643,10 +643,10 @@ function UserForm() {
                                         }));
                                       setPageError("");
                                     }}
-                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#3a3a3a] transition-colors ${
+                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-card-accent transition-colors ${
                                       formData.department === dept.id ||
                                       Number(formData.department) === dept.id
-                                        ? "bg-[#3a3a3a]"
+                                        ? "bg-card-accent"
                                         : ""
                                     }`}
                                   >
@@ -714,7 +714,7 @@ function UserForm() {
                           id="password"
                           value={formData.password}
                           onChange={handleChange}
-                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-[#3a3a3a] ${
+                          className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.password
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300 hover:border-gray-400"

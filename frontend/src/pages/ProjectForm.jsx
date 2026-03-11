@@ -12,18 +12,18 @@ import {
 } from "../components/components";
 
 import {
-  FolderKanban,
-  Save,
-  XCircle,
-  Info,
-  CalendarDays,
-  Users,
-  Activity,
-  Target,
-  CheckCircle,
-  Clock,
-  PlayCircle,
   AlertTriangle,
+  CalendarDays,
+  FolderKanban,
+  CheckCircle,
+  PlayCircle,
+  Activity,
+  XCircle,
+  Target,
+  Users,
+  Clock,
+  Save,
+  Info,
 } from "lucide-react";
 
 const ProjectsForm = () => {
@@ -50,30 +50,16 @@ const ProjectsForm = () => {
   const [originalProjectManager, setOriginalProjectManager] = useState(null);
 
   // Permissions
-  const canAlwaysManage = useMemo(
-    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR"),
-    [user]
-  );
-
-  const isOriginalPM = useMemo(
-    () => user && originalProjectManager === user?.id,
-    [user, originalProjectManager]
-  );
-
-  const canCreate = useMemo(
-    () =>
-      user &&
-      (user.role === "ADMIN" ||
-        user.role === "SUPERVISOR" ||
-        user.role === "MANAGER"),
-    [user]
-  );
+  const canAlwaysManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
+  const isOriginalPM = user && originalProjectManager === user?.id;
+  const canCreate =
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   const canSubmitForm = useMemo(
     () =>
       (isCreateMode && canCreate) ||
       (!isCreateMode && (canAlwaysManage || isOriginalPM)),
-    [isCreateMode, canCreate, canAlwaysManage, isOriginalPM]
+    [isCreateMode, canCreate, canAlwaysManage, isOriginalPM],
   );
 
   // Data Fetching
@@ -122,7 +108,7 @@ const ProjectsForm = () => {
           !canAlwaysManage
         ) {
           setPageError(
-            "You can only edit projects you manage. This form is read-only."
+            "You can only edit projects you manage. This form is read-only.",
           );
         }
       })
@@ -196,7 +182,7 @@ const ProjectsForm = () => {
       setPageError(
         err.response?.data?.detail ||
           err.response?.data?.name?.[0] ||
-          "Failed to save project."
+          "Failed to save project.",
       );
     } finally {
       setLoading(false);
@@ -262,15 +248,15 @@ const ProjectsForm = () => {
         isViewMode
           ? "View Project"
           : isCreateMode
-          ? "Add New Project"
-          : "Edit Project"
+            ? "Add New Project"
+            : "Edit Project"
       }
       text_01={
         isViewMode
           ? "View details of the project."
           : isCreateMode
-          ? "Fill in the details to add a new project."
-          : "Modify the details of the project."
+            ? "Fill in the details to add a new project."
+            : "Modify the details of the project."
       }
       text_02={"Projects"}
       onClick={() => navigate("/project")}
@@ -306,7 +292,7 @@ const ProjectsForm = () => {
               value={
                 project?.start_date
                   ? new Date(
-                      project.start_date + "T00:00:00Z"
+                      project.start_date + "T00:00:00Z",
                     ).toLocaleDateString()
                   : "N/A"
               }
@@ -317,7 +303,7 @@ const ProjectsForm = () => {
               value={
                 project?.end_date
                   ? new Date(
-                      project.end_date + "T00:00:00Z"
+                      project.end_date + "T00:00:00Z",
                     ).toLocaleDateString()
                   : "Not set"
               }
@@ -352,8 +338,8 @@ const ProjectsForm = () => {
                         task.status === "COMPLETED"
                           ? "bg-green-200 text-green-800"
                           : task.status === "IN_PROGRESS"
-                          ? "bg-blue-200 text-blue-800"
-                          : "bg-gray-200 text-gray-800"
+                            ? "bg-blue-200 text-blue-800"
+                            : "bg-gray-200 text-gray-800"
                       }`}
                     >
                       {task.status}

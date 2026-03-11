@@ -5,11 +5,15 @@ import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import api from "../api";
 
 import {
   FolderKanban,
+  CalendarDays,
   CheckCircle,
+  ListChecks,
   PlusCircle,
+  PlayCircle,
   RefreshCw,
   RotateCcw,
   Activity,
@@ -22,13 +26,7 @@ import {
   Clock,
   Eye,
   Users,
-  CalendarDays,
-  PlayCircle,
-  AlertTriangle,
-  TrendingUp,
-  ListChecks,
 } from "lucide-react";
-import api from "../api";
 
 const Projects = () => {
   const { user } = useAuth();
@@ -55,7 +53,7 @@ const Projects = () => {
     "project",
     setLoading,
     "project",
-    fetchProjects
+    fetchProjects,
   );
 
   const handleFilterChange = (e) => {
@@ -69,7 +67,7 @@ const Projects = () => {
   const handleStatusUpdate = async (projectId, newStatus) => {
     if (
       !window.confirm(
-        `Are you sure you want to update this project to "${newStatus}"?`
+        `Are you sure you want to update this project to "${newStatus}"?`,
       )
     )
       return;
@@ -88,7 +86,7 @@ const Projects = () => {
           error.response?.data?.detail ||
           error.response?.data?.project_status?.join(" ") ||
           "Server error"
-        }`
+        }`,
       );
     } finally {
       setLoading(false);
@@ -133,25 +131,13 @@ const Projects = () => {
       cancelled: allProjects.filter((p) => p.project_status === "CANCELLED")
         .length,
     }),
-    [allProjects]
+    [allProjects],
   );
 
   const canCreate =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
-  const canEdit =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
-  const canDelete = user && user.role === "ADMIN";
-  const canUpdateStatus =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
+
+  const canDelete = user?.role === "ADMIN";
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -358,7 +344,7 @@ const Projects = () => {
                           <span className="mr-2">Start:</span>
                           <span className="text-stone-300 font-medium">
                             {new Date(
-                              project.start_date + "T00:00:00Z"
+                              project.start_date + "T00:00:00Z",
                             ).toLocaleDateString()}
                           </span>
                         </div>
@@ -371,7 +357,7 @@ const Projects = () => {
                             <span className="mr-2">End:</span>
                             <span className="text-stone-300 font-medium">
                               {new Date(
-                                project.end_date + "T00:00:00Z"
+                                project.end_date + "T00:00:00Z",
                               ).toLocaleDateString()}
                             </span>
                           </div>
@@ -398,8 +384,8 @@ const Projects = () => {
                                       task.status === "COMPLETED"
                                         ? "text-green-400"
                                         : task.status === "IN_PROGRESS"
-                                        ? "text-blue-400"
-                                        : "text-gray-400"
+                                          ? "text-blue-400"
+                                          : "text-gray-400"
                                     }`}
                                   >
                                     {task.status}
@@ -421,7 +407,7 @@ const Projects = () => {
                         <Eye size={20} />
                       </Link>
 
-                      {canEdit &&
+                      {canCreate &&
                         (user.role === "ADMIN" ||
                           project.project_manager === user.id) && (
                           <Link
@@ -433,20 +419,19 @@ const Projects = () => {
                           </Link>
                         )}
 
-                      {canUpdateStatus &&
-                        project.project_status === "PLANNING" && (
-                          <button
-                            onClick={() =>
-                              handleStatusUpdate(project.id, "IN_PROGRESS")
-                            }
-                            className="text-blue-200 hover:text-blue-800 transition duration-200 p-2 hover:bg-blue-100 rounded-full shadow-sm"
-                            title="Start Project"
-                          >
-                            <PlayCircle size={20} />
-                          </button>
-                        )}
+                      {canCreate && project.project_status === "PLANNING" && (
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(project.id, "IN_PROGRESS")
+                          }
+                          className="text-blue-200 hover:text-blue-800 transition duration-200 p-2 hover:bg-blue-100 rounded-full shadow-sm"
+                          title="Start Project"
+                        >
+                          <PlayCircle size={20} />
+                        </button>
+                      )}
 
-                      {canUpdateStatus &&
+                      {canCreate &&
                         project.project_status === "IN_PROGRESS" && (
                           <>
                             <button
@@ -470,20 +455,19 @@ const Projects = () => {
                           </>
                         )}
 
-                      {canUpdateStatus &&
-                        project.project_status === "ON_HOLD" && (
-                          <button
-                            onClick={() =>
-                              handleStatusUpdate(project.id, "IN_PROGRESS")
-                            }
-                            className="text-blue-200 hover:text-blue-800 transition duration-200 p-2 hover:bg-blue-100 rounded-full shadow-sm"
-                            title="Resume Project"
-                          >
-                            <PlayCircle size={20} />
-                          </button>
-                        )}
+                      {canCreate && project.project_status === "ON_HOLD" && (
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(project.id, "IN_PROGRESS")
+                          }
+                          className="text-blue-200 hover:text-blue-800 transition duration-200 p-2 hover:bg-blue-100 rounded-full shadow-sm"
+                          title="Resume Project"
+                        >
+                          <PlayCircle size={20} />
+                        </button>
+                      )}
 
-                      {canUpdateStatus &&
+                      {canCreate &&
                         (project.project_status === "PLANNING" ||
                           project.project_status === "IN_PROGRESS" ||
                           project.project_status === "ON_HOLD") && (
