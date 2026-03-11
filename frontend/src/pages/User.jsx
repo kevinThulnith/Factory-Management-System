@@ -5,17 +5,21 @@ import { Link } from "react-router-dom";
 import api from "../api";
 
 import {
-  UserRoundPlus,
+  RefreshButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   ShieldCheck,
   UsersRound,
-  RefreshCw,
   UserCheck,
   RotateCcw,
   Activity,
   Package,
   Filter,
   Trash2,
-  Search,
   Edit3,
   UserX,
   Crown,
@@ -41,7 +45,7 @@ function User() {
       .get("api/user/")
       .then((res) => setAllUsers(res.data))
       .catch((error) =>
-        alert("Failed to fetch users. Please try again.", error)
+        alert("Failed to fetch users. Please try again.", error),
       )
       .finally(() => setLoading(false));
   }, []);
@@ -62,12 +66,12 @@ function User() {
         .delete(`api/user/${userId}/`)
         .then(() => {
           setAllUsers((prevUsers) =>
-            prevUsers.filter((user) => user.id !== userId)
+            prevUsers.filter((user) => user.id !== userId),
           );
           alert(`User "${userName}" has been deleted.`);
         })
         .catch((error) =>
-          alert("Failed to delete user. Please try again.", error)
+          alert("Failed to delete user. Please try again.", error),
         );
     }
   };
@@ -201,24 +205,11 @@ function User() {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-3 lg:mt-0">
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="px-3 py-2  rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-                >
-                  <RefreshCw
-                    size={18}
-                    className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                  />
-                  {refreshing ? "Refreshing..." : "Refresh"}
-                </button>
-                <Link
-                  to="/register"
-                  className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                >
-                  <UserRoundPlus size={20} className="mr-2" />
-                  Add New User
-                </Link>
+                <RefreshButton
+                  handleRefresh={handleRefresh}
+                  refreshing={refreshing}
+                />
+                <AddButton url="/register" text="Add New User" />
               </div>
             </div>
           </div>
@@ -230,46 +221,37 @@ function User() {
               <h3>Search & Filters</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="relative">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type="text"
-                  name="searchTerm"
-                  placeholder="Search users..."
-                  value={filters.searchTerm}
-                  onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub appearance-none"
-                  style={{ height: "40px" }}
-                />
-              </div>
-              <select
+              <SearchInput
+                name="searchTerm"
+                text="Search users..."
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                style={{ height: "40px" }}
+              />
+              <SearchSelect
                 name="role"
                 value={filters.role}
                 onChange={handleFilterChange}
-                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
                 style={{ height: "40px" }}
-              >
-                <option value="all">All Roles</option>
-                {userRoles.map((r) => (
-                  <option key={r} value={r}>
-                    {r.charAt(0) + r.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </select>
-              <select
+                list={[
+                  { value: "all", label: "All Roles" },
+                  ...userRoles.map((r) => ({
+                    value: r,
+                    label: r.charAt(0) + r.slice(1).toLowerCase(),
+                  })),
+                ]}
+              />
+              <SearchSelect
                 name="isActive"
                 value={filters.isActive}
                 onChange={handleFilterChange}
-                className={`w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none `}
                 style={{ height: "40px" }}
-              >
-                <option value="all">All Status</option>
-                <option value="true">Active Users</option>
-                <option value="false">Inactive Users</option>
-              </select>
+                list={[
+                  { value: "all", label: "All Status" },
+                  { value: "true", label: "Active Users" },
+                  { value: "false", label: "Inactive Users" },
+                ]}
+              />
               <button
                 onClick={resetFiltersHandler}
                 className=" flex-1 px-4 py-3 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105"

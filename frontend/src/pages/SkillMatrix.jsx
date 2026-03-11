@@ -8,16 +8,20 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  PlusCircle,
+  RefreshButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   TrendingUp,
   UserRound,
   Briefcase,
-  RefreshCw,
   RotateCcw,
   BarChart2,
   SortDesc,
   SortAsc,
-  Search,
   Trash2,
   Filter,
   Target,
@@ -217,25 +221,12 @@ const SkillMatrix = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 mt-3 lg:mt-0">
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-              >
-                <RefreshCw
-                  size={18}
-                  className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
-                {refreshing ? "Refreshing..." : "Refresh"}
-              </button>
+              <RefreshButton
+                handleRefresh={handleRefresh}
+                refreshing={refreshing}
+              />
               {canManage && (
-                <Link
-                  to="/skill-matrix/add"
-                  className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                >
-                  <PlusCircle size={20} className="mr-2" />
-                  Add Skill Entry
-                </Link>
+                <AddButton url="/skill-matrix/add" text="Add Skill Entry" />
               )}
             </div>
           </div>
@@ -247,63 +238,52 @@ const SkillMatrix = () => {
             <Filter size={15} className="mr-2" /> Search & Filters
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                name="searchTerm"
-                placeholder="Search by skill or employee..."
-                value={filters.searchTerm}
-                onChange={handleFilterChange}
-                style={{ height: "40px" }}
-                className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
-              />
-            </div>
-            <select
+            <SearchInput
+              name="searchTerm"
+              text="Search by skill or employee..."
+              value={filters.searchTerm}
+              onChange={handleFilterChange}
+              style={{ height: "40px" }}
+            />
+            <SearchSelect
               name="employee"
               value={filters.employee}
               onChange={handleFilterChange}
               style={{ height: "40px" }}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
-            >
-              <option value="">All Employees</option>
-              {uniqueEmployees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.name}
-                </option>
-              ))}
-            </select>
-            <select
+              list={[
+                { value: "", label: "All Employees" },
+                ...uniqueEmployees.map((emp) => ({
+                  value: emp.id,
+                  label: emp.name,
+                })),
+              ]}
+            />
+            <SearchSelect
               name="category"
               value={filters.category}
               onChange={handleFilterChange}
               style={{ height: "40px" }}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
-            >
-              <option value="">All Categories</option>
-              {SKILL_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
-            <select
+              list={[
+                { value: "", label: "All Categories" },
+                ...SKILL_CATEGORIES.map((cat) => ({
+                  value: cat,
+                  label: cat.replace(/_/g, " "),
+                })),
+              ]}
+            />
+            <SearchSelect
               name="level"
               value={filters.level}
               onChange={handleFilterChange}
               style={{ height: "40px" }}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
-            >
-              <option value="">All Levels</option>
-              {SKILL_LEVELS.map((lvl) => (
-                <option key={lvl} value={lvl}>
-                  {lvl.charAt(0) + lvl.slice(1).toLowerCase()}
-                </option>
-              ))}
-            </select>
+              list={[
+                { value: "", label: "All Levels" },
+                ...SKILL_LEVELS.map((lvl) => ({
+                  value: lvl,
+                  label: lvl.charAt(0) + lvl.slice(1).toLowerCase(),
+                })),
+              ]}
+            />
             <button
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
