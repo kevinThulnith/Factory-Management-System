@@ -42,7 +42,7 @@ const DepartmentForm = () => {
     api
       .get("api/user/")
       .then((response) =>
-        setUsers(response.data.results || response.data || [])
+        setUsers(response.data.results || response.data || []),
       )
       .catch((error) => console.error("Failed to fetch users:", error))
       .finally(() => setUsersLoading(false));
@@ -115,12 +115,13 @@ const DepartmentForm = () => {
 
         if (Object.keys(newFormErrors).length === 0) {
           setPageError(
-            apiErrors.detail || "An error occurred. Please try again."
+            apiErrors.detail || "An error occurred. Please try again.",
           );
         } else setPageError("Please correct the errors below.");
       } else {
         setPageError(
-          error.response?.data?.detail || "An error occurred. Please try again."
+          error.response?.data?.detail ||
+            "An error occurred. Please try again.",
         );
       }
     } finally {
@@ -145,21 +146,21 @@ const DepartmentForm = () => {
         isViewMode
           ? "Department Details"
           : isEditMode
-          ? "Edit Department"
-          : "Create New Department"
+            ? "Edit Department"
+            : "Create New Department"
       }
       text_01={
         isViewMode
           ? "View department information"
           : isEditMode
-          ? "Update department information and settings"
-          : "Add a new department to your organization"
+            ? "Update department information and settings"
+            : "Add a new department to your organization"
       }
       text_02="Departments"
       onClick={() => navigate("/department")}
       fnction={() => navigate(`/department/edit/${departmentId}`)}
       gradient="from-red-600 to-red-800"
-      isViewMode={user && user.role === "ADMIN"}
+      isViewMode={user?.role === "ADMIN"}
       pageError={pageError}
       loading={loading}
     >

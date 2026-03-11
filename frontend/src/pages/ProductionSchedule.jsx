@@ -5,6 +5,7 @@ import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import api from "../api";
 
 import {
   CalendarClock,
@@ -25,7 +26,6 @@ import {
   Clock,
   Eye,
 } from "lucide-react";
-import api from "../api";
 
 const ProductionSchedule = () => {
   const { user } = useAuth();
@@ -37,7 +37,7 @@ const ProductionSchedule = () => {
   const fetchSchedules = useFetchData(
     "production-schedule",
     setLoading,
-    setAllSchedules
+    setAllSchedules,
   );
 
   useWebSocket("production-schedules", setAllSchedules, fetchSchedules);
@@ -52,7 +52,7 @@ const ProductionSchedule = () => {
     "production-schedule",
     setLoading,
     "production schedule",
-    fetchSchedules
+    fetchSchedules,
   );
 
   const handleFilterChange = (e) => {
@@ -67,7 +67,7 @@ const ProductionSchedule = () => {
   const handleStatusUpdate = async (scheduleId, newStatus) => {
     if (
       !window.confirm(
-        `Are you sure you want to update this schedule to "${newStatus}"?`
+        `Are you sure you want to update this schedule to "${newStatus}"?`,
       )
     )
       return;
@@ -86,7 +86,7 @@ const ProductionSchedule = () => {
           error.response?.data?.detail ||
           error.response?.data?.status?.join(" ") ||
           "Server error"
-        }`
+        }`,
       );
     } finally {
       setLoading(false);
@@ -121,29 +121,14 @@ const ProductionSchedule = () => {
       completed: allSchedules.filter((s) => s.status === "COMPLETED").length,
       cancelled: allSchedules.filter((s) => s.status === "CANCELLED").length,
     }),
-    [allSchedules]
+    [allSchedules],
   );
 
-  // Permissions based on ProductionSchedulePermission backend
-  // Admins: Full CRUD access
-  // Supervisor | Manager: Create | Read | Update their own schedules
-  // Operator: Read-only access in their own department
+  // Permissions check
   const canCreate =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
-  const canEdit =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
-  const canDelete = user && user.role === "ADMIN";
-  const canUpdateStatus =
-    user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "MANAGER");
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
+
+  const canDelete = user?.role === "ADMIN";
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -364,7 +349,7 @@ const ProductionSchedule = () => {
                         <Eye size={20} />
                       </Link>
 
-                      {canEdit && (
+                      {canCreate && (
                         <Link
                           to={`/production-schedule/edit/${schedule.id}`}
                           className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
@@ -374,7 +359,7 @@ const ProductionSchedule = () => {
                         </Link>
                       )}
 
-                      {canUpdateStatus && schedule.status === "SCHEDULED" && (
+                      {canCreate && schedule.status === "SCHEDULED" && (
                         <button
                           onClick={() =>
                             handleStatusUpdate(schedule.id, "IN_PROGRESS")
@@ -386,7 +371,7 @@ const ProductionSchedule = () => {
                         </button>
                       )}
 
-                      {canUpdateStatus && schedule.status === "IN_PROGRESS" && (
+                      {canCreate && schedule.status === "IN_PROGRESS" && (
                         <>
                           <button
                             onClick={() =>
@@ -409,7 +394,7 @@ const ProductionSchedule = () => {
                         </>
                       )}
 
-                      {canUpdateStatus &&
+                      {canCreate &&
                         (schedule.status === "SCHEDULED" ||
                           schedule.status === "IN_PROGRESS") && (
                           <button

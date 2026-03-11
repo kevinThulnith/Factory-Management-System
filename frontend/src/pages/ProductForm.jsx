@@ -204,7 +204,7 @@ const ProductForm = () => {
     }
   };
 
-  const canManage = user && user.role === "ADMIN";
+  const canManage = user?.role === "ADMIN";
 
   const getStatusBadge = (status) => {
     const statusConfig = {

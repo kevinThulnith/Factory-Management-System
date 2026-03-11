@@ -147,14 +147,10 @@ const OrderForm = () => {
   const [showAddItemForm, setShowAddItemForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  const canManage = useMemo(
-    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR" || user.role === "PURCHASING"),
-    [user],
-  );
-  const isEditable = useMemo(
-    () => isCreateMode || (order?.status === "DRAFT" && canManage),
-    [isCreateMode, order, canManage],
-  );
+  const canManage =
+    user && ["ADMIN", "SUPERVISOR", "PURCHASING"].includes(user.role);
+
+  const isEditable = isCreateMode || (order?.status === "DRAFT" && canManage);
 
   const fetchOrderData = useCallback(() => {
     if (!orderId) {

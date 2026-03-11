@@ -35,7 +35,7 @@ function ManufacturingProcessList() {
   const fetchProcesses = useFetchData(
     "manufacturing-process",
     setLoading,
-    setAllProcesses
+    setAllProcesses,
   );
 
   useWebSocket("manufacturing-processes", setAllProcesses, fetchProcesses);
@@ -50,7 +50,7 @@ function ManufacturingProcessList() {
     "manufacturing-process",
     setLoading,
     "manufacturing process",
-    fetchProcesses
+    fetchProcesses,
   );
 
   const handleFilterChange = (e) =>
@@ -68,7 +68,7 @@ function ManufacturingProcessList() {
           (p) =>
             `"${p.name}","${p.description || ""}","${p.standard_time}","${
               Object.keys(p.quality_parameters || {}).length
-            }"`
+            }"`,
         )
         .join("\n");
 
@@ -77,7 +77,7 @@ function ManufacturingProcessList() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `processes_export_${new Date().toISOString().slice(0, 10)}.csv`
+      `processes_export_${new Date().toISOString().slice(0, 10)}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -109,7 +109,7 @@ function ManufacturingProcessList() {
     return {
       total: allProcesses.length,
       withParams: allProcesses.filter(
-        (p) => Object.keys(p.quality_parameters || {}).length > 0
+        (p) => Object.keys(p.quality_parameters || {}).length > 0,
       ).length,
       avgDuration: "N/A",
     };
@@ -295,23 +295,23 @@ function ManufacturingProcessList() {
                       >
                         <Eye size={20} />
                       </Link>
-                      {user && user.role === "ADMIN" && (
-                        <Link
-                          to={`/manufacturing-process/edit/${proc.id}`}
-                          className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
-                          title="Edit Process"
-                        >
-                          <Edit3 size={20} />
-                        </Link>
-                      )}
-                      {user && user.role === "ADMIN" && (
-                        <button
-                          onClick={() => handleDeleteProcess(proc.id)}
-                          className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
-                          title="Delete Process"
-                        >
-                          <Trash2 size={20} />
-                        </button>
+                      {user?.role === "ADMIN" && (
+                        <>
+                          <Link
+                            to={`/manufacturing-process/edit/${proc.id}`}
+                            className="text-indigo-200 hover:text-indigo-800 transition duration-200 p-2 hover:bg-indigo-100 rounded-full shadow-sm"
+                            title="Edit Process"
+                          >
+                            <Edit3 size={20} />
+                          </Link>
+                          <button
+                            onClick={() => handleDeleteProcess(proc.id)}
+                            className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
+                            title="Delete Process"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

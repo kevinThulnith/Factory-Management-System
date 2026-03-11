@@ -1,31 +1,24 @@
+import { InfoItem, InputItem, SelectItem } from "../components/components";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
 import {
-  InfoItem,
-  InputItem,
-  SelectItem,
-  TextareaItem,
-} from "../components/components";
-
-import {
   CalendarClock,
-  Save,
-  XCircle,
+  AlertCircle,
+  CheckCircle,
+  PlusCircle,
+  Activity,
+  FileText,
   Package,
   Factory,
-  Activity,
-  Clock,
-  CheckCircle,
-  PauseCircle,
-  AlertCircle,
-  PlusCircle,
+  XCircle,
   Trash2,
   Beaker,
-  FileText,
+  Clock,
+  Save,
 } from "lucide-react";
 
 // --- Material Consumption Line Item Form ---
@@ -113,13 +106,13 @@ const ProductionScheduleListForm = () => {
   const isCreateMode = location.pathname.includes("/new");
 
   const { user } = useAuth();
-  const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
-  const [allProductionLines, setAllProductionLines] = useState([]);
+  const [schedule, setSchedule] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
   const [allMaterials, setAllMaterials] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
+  const [allProductionLines, setAllProductionLines] = useState([]);
   const [showAddConsumption, setShowAddConsumption] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -132,19 +125,10 @@ const ProductionScheduleListForm = () => {
   });
 
   // Permissions
-  const canManage = useMemo(
-    () =>
-      user &&
-      (user.role === "ADMIN" ||
-        user.role === "SUPERVISOR" ||
-        user.role === "MANAGER"),
-    [user],
-  );
+  const canManage =
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
-  const canAddConsumption = useMemo(
-    () => canManage || (user && user.role === "OPERATOR"),
-    [canManage, user],
-  );
+  const canAddConsumption = canManage || (user && user.role === "OPERATOR");
 
   // Data Fetching
   useEffect(() => {

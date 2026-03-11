@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -49,14 +49,9 @@ const ProductionLineForm = () => {
   });
 
   // Permissions
-  const canSubmitFullForm = useMemo(
-    () => user && (user.role === "ADMIN" || user.role === "SUPERVISOR"),
-    [user]
-  );
-  const canEditStatusOnly = useMemo(
-    () => user && user.role === "MANAGER" && !canSubmitFullForm,
-    [user, canSubmitFullForm]
-  );
+  const canSubmitFullForm = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
+  const canEditStatusOnly =
+    user && user.role === "MANAGER" && !canSubmitFullForm;
 
   // Data Fetching
   useEffect(() => {
@@ -92,7 +87,7 @@ const ProductionLineForm = () => {
           workshop: res.data.workshop || "",
           operational_status: res.data.operational_status || "ACTIVE",
           production_capacity: parseFloat(
-            res.data.production_capacity || 0
+            res.data.production_capacity || 0,
           ).toFixed(2),
           machines: machineIds,
         });
@@ -151,7 +146,7 @@ const ProductionLineForm = () => {
       navigate("/production-line");
     } catch (err) {
       setPageError(
-        err.response?.data?.detail || "Failed to save production line."
+        err.response?.data?.detail || "Failed to save production line.",
       );
     } finally {
       setLoading(false);
@@ -233,15 +228,15 @@ const ProductionLineForm = () => {
         isViewMode
           ? "View Production Line"
           : isCreateMode
-          ? "Add Production Line"
-          : "Edit Production Line"
+            ? "Add Production Line"
+            : "Edit Production Line"
       }
       text_01={
         isViewMode
           ? "View details of the production line."
           : isCreateMode
-          ? "Fill in the details to add a new production line."
-          : "Modify the details of the production line."
+            ? "Fill in the details to add a new production line."
+            : "Modify the details of the production line."
       }
       text_02={"Production Lines"}
       onClick={() => navigate("/production-line")}

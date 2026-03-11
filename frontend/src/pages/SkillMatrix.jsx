@@ -67,7 +67,7 @@ const SkillMatrix = () => {
     "skill-matrix",
     setLoading,
     "skill entry",
-    fetchData
+    fetchData,
   );
 
   const handleFilterChange = (e) => {
@@ -142,12 +142,11 @@ const SkillMatrix = () => {
       experts: allSkills.filter((s) => s.level === "EXPERT").length,
       uniqueSkills: new Set(allSkills.map((s) => s.name.toLowerCase())).size,
     }),
-    [allSkills]
+    [allSkills],
   );
 
   // Permissions
-  const canManage =
-    user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+  const canManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
 
   const getLevelPill = (level) => {
     const config = {
