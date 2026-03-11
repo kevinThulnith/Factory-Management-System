@@ -7,17 +7,22 @@ import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 
 import {
+  ExportCsvButton,
+  RefreshButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   ChevronRight,
   PlusCircle,
   Building2,
   UserCheck,
-  RefreshCw,
-  Download,
   Calendar,
   Trash2,
   MapPin,
   Filter,
-  Search,
   Edit3,
   UserX,
   User,
@@ -39,7 +44,7 @@ function Department() {
   const fetchDepartments = useFetchData(
     "department",
     setLoading,
-    setAllDepartments
+    setAllDepartments,
   );
 
   useWebSocket("departments", setAllDepartments, fetchDepartments);
@@ -54,7 +59,7 @@ function Department() {
     "department",
     setLoading,
     "department",
-    fetchDepartments
+    fetchDepartments,
   );
 
   const handleSearchChange = useCallback((event) => {
@@ -86,17 +91,17 @@ function Department() {
           (department.supervisor_name &&
             department.supervisor_name
               .toLowerCase()
-              .includes(searchTerm.toLowerCase()))
+              .includes(searchTerm.toLowerCase())),
       );
     }
 
     if (filterBy === "with-supervisor") {
       filtered = filtered.filter(
-        (dept) => dept.supervisor_name && dept.supervisor_name.trim() !== ""
+        (dept) => dept.supervisor_name && dept.supervisor_name.trim() !== "",
       );
     } else if (filterBy === "without-supervisor") {
       filtered = filtered.filter(
-        (dept) => !dept.supervisor_name || dept.supervisor_name.trim() === ""
+        (dept) => !dept.supervisor_name || dept.supervisor_name.trim() === "",
       );
     }
     return filtered;
@@ -127,14 +132,14 @@ function Department() {
   }, [filteredDepartments, sortField, sortDirection]);
 
   const totalPages = Math.ceil(
-    filteredAndSortedDepartments.length / itemsPerPage
+    filteredAndSortedDepartments.length / itemsPerPage,
   );
 
   const paginatedDepartments = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAndSortedDepartments.slice(
       startIndex,
-      startIndex + itemsPerPage
+      startIndex + itemsPerPage,
     );
   }, [filteredAndSortedDepartments, currentPage, itemsPerPage]);
 
@@ -143,11 +148,11 @@ function Department() {
   const stats = useMemo(() => {
     const totalDepartments = departmentsWithSupervisors.length;
     const withSupervisors = departmentsWithSupervisors.filter(
-      (dept) => dept.supervisor_name && dept.supervisor_name.trim() !== ""
+      (dept) => dept.supervisor_name && dept.supervisor_name.trim() !== "",
     ).length;
     const withoutSupervisors = totalDepartments - withSupervisors;
     const withLocations = departmentsWithSupervisors.filter(
-      (dept) => dept.location && dept.location.trim() !== ""
+      (dept) => dept.location && dept.location.trim() !== "",
     ).length;
 
     return {
@@ -168,8 +173,8 @@ function Department() {
             `"${dept.name}","${dept.description || "N/A"}","${
               dept.location || "N/A"
             }","${dept.supervisor_name || "Unassigned"}","${new Date(
-              dept.updated_at
-            ).toLocaleDateString()}"`
+              dept.updated_at,
+            ).toLocaleDateString()}"`,
         )
         .join("\n");
 
@@ -178,7 +183,7 @@ function Department() {
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `departments_${new Date().toISOString().split("T")[0]}.csv`
+      `departments_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -221,33 +226,17 @@ function Department() {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-4 lg:mt-0">
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-                >
-                  <RefreshCw
-                    size={18}
-                    className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                  />
-                  {refreshing ? "Refreshing..." : "Refresh"}
-                </button>
-                <button
-                  onClick={handleExport}
-                  disabled={filteredAndSortedDepartments.length === 0}
-                  className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl disabled:opacity-50 hover:scale-105 bg-blue-700 text-stone-200"
-                >
-                  <Download size={18} className="mr-2" />
-                  Export CSV
-                </button>
-                {user && user.role === "ADMIN" && (
-                  <Link
-                    to="/department/add"
-                    className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600 text-stone-200"
-                  >
-                    <PlusCircle size={20} className="mr-2" />
-                    Add Department
-                  </Link>
+                <RefreshButton
+                  handleRefresh={handleRefresh}
+                  refreshing={refreshing}
+                />
+                <ExportCsvButton
+                  handleExport={handleExport}
+                  term={searchTerm}
+                />
+
+                {user?.role === "ADMIN" && (
+                  <AddButton url="/department/add" text="Add Department" />
                 )}
               </div>
             </div>
@@ -260,63 +249,51 @@ function Department() {
               <h3>Search & Filters</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Search departments..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className={`w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub`}
-                  style={{ height: "40px" }}
-                />
-              </div>
-              <select
+              <SearchInput
+                value={searchTerm}
+                onChange={handleSearchChange}
+                text="Search departments..."
+              />
+              <SearchSelect
                 value={filterBy}
                 onChange={(e) => setFilterBy(e.target.value)}
-                className={`w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none `}
-                style={{ height: "40px" }}
-              >
-                <option value="all">All Departments</option>
-                <option value="with-supervisor">With Supervisors</option>
-                <option value="without-supervisor">Need Supervisors</option>
-              </select>
-              <select
+                list={[
+                  { value: "all", label: "All Departments" },
+                  { value: "with-supervisor", label: "With Supervisors" },
+                  { value: "without-supervisor", label: "Need Supervisors" },
+                ]}
+              />
+              <SearchSelect
                 value={`${sortField}-${sortDirection}`}
                 onChange={(e) => {
                   const [field, direction] = e.target.value.split("-");
                   setSortField(field);
                   setSortDirection(direction);
                 }}
-                className={`appearance-none w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub lg:my-0 my-2`}
-                style={{ height: "40px" }}
-              >
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="location-asc">Location (A-Z)</option>
-                <option value="location-desc">Location (Z-A)</option>
-                <option value="supervisor_name-asc">Supervisor (A-Z)</option>
-                <option value="supervisor_name-desc">Supervisor (Z-A)</option>
-                <option value="updated_at-desc">Recently Updated</option>
-                <option value="updated_at-asc">Oldest Updated</option>
-              </select>
-              <select
+                list={[
+                  { value: "name-asc", label: "Name (A-Z)" },
+                  { value: "name-desc", label: "Name (Z-A)" },
+                  { value: "location-asc", label: "Location (A-Z)" },
+                  { value: "location-desc", label: "Location (Z-A)" },
+                  { value: "supervisor_name-asc", label: "Supervisor (A-Z)" },
+                  { value: "supervisor_name-desc", label: "Supervisor (Z-A)" },
+                  { value: "updated_at-desc", label: "Recently Updated" },
+                  { value: "updated_at-asc", label: "Oldest Updated" },
+                ]}
+              />
+              <SearchSelect
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className={`appearance-none w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub lg:my-0 my-2`}
-                style={{ height: "40px" }}
-              >
-                <option value={10}>Show 10</option>
-                <option value={25}>Show 25</option>
-                <option value={50}>Show 50</option>
-                <option value={100}>Show 100</option>
-              </select>
+                list={[
+                  { value: 10, label: "Show 10" },
+                  { value: 25, label: "Show 25" },
+                  { value: 50, label: "Show 50" },
+                  { value: 100, label: "Show 100" },
+                ]}
+              />
             </div>
           </div>
 
@@ -485,7 +462,7 @@ function Department() {
                         <button
                           onClick={() =>
                             handlePageChange(
-                              Math.min(totalPages, currentPage + 1)
+                              Math.min(totalPages, currentPage + 1),
                             )
                           }
                           disabled={currentPage === totalPages}
@@ -505,7 +482,7 @@ function Department() {
                             <span className="font-medium">
                               {Math.min(
                                 currentPage * itemsPerPage,
-                                filteredAndSortedDepartments.length
+                                filteredAndSortedDepartments.length,
                               )}
                             </span>{" "}
                             of{" "}
@@ -531,7 +508,7 @@ function Department() {
                             </button>
                             {Array.from(
                               { length: totalPages },
-                              (_, i) => i + 1
+                              (_, i) => i + 1,
                             ).map((page) => {
                               if (
                                 page === 1 ||
@@ -570,7 +547,7 @@ function Department() {
                             <button
                               onClick={() =>
                                 handlePageChange(
-                                  Math.min(totalPages, currentPage + 1)
+                                  Math.min(totalPages, currentPage + 1),
                                 )
                               }
                               disabled={currentPage === totalPages}

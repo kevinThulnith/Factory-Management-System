@@ -7,17 +7,21 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
+  RefreshButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   PackageCheck,
   ShoppingCart,
-  PlusCircle,
-  RefreshCw,
   RotateCcw,
   SortDesc,
   FileText,
   Building,
   SortAsc,
   Filter,
-  Search,
   Trash2,
   Edit3,
   Clock,
@@ -157,26 +161,11 @@ const Order = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 mt-3 lg:mt-0">
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-              >
-                <RefreshCw
-                  size={18}
-                  className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
-                {refreshing ? "Refreshing..." : "Refresh"}
-              </button>
-              {canManage && (
-                <Link
-                  to="/order/add"
-                  className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                >
-                  <PlusCircle size={20} className="mr-2" />
-                  New Order
-                </Link>
-              )}
+              <RefreshButton
+                handleRefresh={handleRefresh}
+                refreshing={refreshing}
+              />
+              {canManage && <AddButton url="/order/add" text="New Order" />}
             </div>
           </div>
         </div>
@@ -187,32 +176,26 @@ const Order = () => {
             <Filter size={15} className="mr-2" /> Search & Filter Orders
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="relative lg:col-span-2">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
+            <div className="lg:col-span-2">
+              <SearchInput
                 name="searchTerm"
-                placeholder="Search by Order ID or Supplier..."
+                text="Search by Order ID or Supplier..."
                 value={filters.searchTerm}
                 onChange={handleFilterChange}
-                className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
               />
             </div>
-            <select
+            <SearchSelect
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
-            >
-              <option value="all">All Statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="ORDERED">Ordered</option>
-              <option value="RECEIVED">Received</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
+              list={[
+                { value: "all", label: "All Statuses" },
+                { value: "DRAFT", label: "Draft" },
+                { value: "ORDERED", label: "Ordered" },
+                { value: "RECEIVED", label: "Received" },
+                { value: "CANCELLED", label: "Cancelled" },
+              ]}
+            />
             <button
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"

@@ -7,14 +7,19 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
+  ExportCsvButton,
+  RefreshButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   AlertTriangle,
-  PlusCircle,
   TrendingUp,
-  RefreshCw,
   RotateCcw,
   Package,
   Trash2,
-  Search,
   Filter,
   Edit3,
   Box,
@@ -162,25 +167,12 @@ const MaterialListPage = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-3 lg:mt-0">
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-                >
-                  <RefreshCw
-                    size={18}
-                    className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                  />
-                  {refreshing ? "Refreshing..." : "Refresh"}
-                </button>
+                <RefreshButton
+                  handleRefresh={handleRefresh}
+                  refreshing={refreshing}
+                />
                 {canCreate && (
-                  <Link
-                    to="/material/add"
-                    className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                  >
-                    <PlusCircle size={20} className="mr-2" />
-                    Add New Material
-                  </Link>
+                  <AddButton url="/material/add" text="Add New Material" />
                 )}
               </div>
             </div>
@@ -193,32 +185,24 @@ const MaterialListPage = () => {
               <h3>Search & Filters</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type="text"
-                  name="searchTerm"
-                  placeholder="Search materials..."
-                  value={filters.searchTerm}
-                  onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
-                  style={{ height: "40px" }}
-                />
-              </div>
-              <select
+              <SearchInput
+                name="searchTerm"
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                text="Search materials..."
+                style={{ height: "40px" }}
+              />
+              <SearchSelect
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
                 style={{ height: "40px" }}
-              >
-                <option value="all">All Status</option>
-                <option value="in-stock">In Stock</option>
-                <option value="low-stock">Low Stock</option>
-              </select>
+                list={[
+                  { value: "all", label: "All Status" },
+                  { value: "in-stock", label: "In Stock" },
+                  { value: "low-stock", label: "Low Stock" },
+                ]}
+              />
               <button
                 onClick={resetFiltersHandler}
                 className="flex-1 px-4 py-3 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105"
