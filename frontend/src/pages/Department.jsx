@@ -469,7 +469,7 @@ function Department() {
 
               {/* Modern Pagination */}
               {totalPages > 1 && (
-                <div className="bg-[#2a2a2a] border border-stone-700 rounded-xl shadow-lg backdrop-blur-sm">
+                <div className="bg-card-main border border-stone-700 rounded-xl shadow-lg backdrop-blur-sm">
                   <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 flex justify-between sm:hidden">
@@ -478,7 +478,7 @@ function Department() {
                             handlePageChange(Math.max(1, currentPage - 1))
                           }
                           disabled={currentPage === 1}
-                          className="relative inline-flex items-center px-4 py-2 bg-[#3a3a3a] text-sm font-medium rounded-md disabled:opacity-50 transition-colors"
+                          className="relative inline-flex items-center px-4 py-2 bg-card-accent text-sm font-medium rounded-md disabled:opacity-50 transition-colors"
                         >
                           Previous
                         </button>
@@ -489,7 +489,7 @@ function Department() {
                             )
                           }
                           disabled={currentPage === totalPages}
-                          className="ml-3 relative inline-flex items-center px-4 py-2 bg-[#3a3a3a] text-sm font-medium rounded-md disabled:opacity-50 transition-colors"
+                          className="ml-3 relative inline-flex items-center px-4 py-2 bg-card-accent text-sm font-medium rounded-md disabled:opacity-50 transition-colors"
                         >
                           Next
                         </button>
@@ -525,7 +525,7 @@ function Department() {
                                 handlePageChange(Math.max(1, currentPage - 1))
                               }
                               disabled={currentPage === 1}
-                              className="relative inline-flex items-center px-2 py-2 rounded-l-md bg-[#3a3a3a] text-sm font-medium disabled:opacity-50 transition-colors"
+                              className="relative inline-flex items-center px-2 py-2 rounded-l-md bg-card-accent text-sm font-medium disabled:opacity-50 transition-colors"
                             >
                               <ChevronLeft size={16} />
                             </button>
@@ -546,7 +546,7 @@ function Department() {
                                     className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors ${
                                       page === currentPage
                                         ? "bg-purple-600 z-10 text-white"
-                                        : "bg-[#3a3a3a]"
+                                        : "bg-card-accent"
                                     }`}
                                   >
                                     {page}
@@ -559,7 +559,7 @@ function Department() {
                                 return (
                                   <span
                                     key={page}
-                                    className="relative inline-flex items-center px-4 py-2 border border-stone-700 bg-[#3a3a3a] text-sm font-medium text-gray-400"
+                                    className="relative inline-flex items-center px-4 py-2 border border-stone-700 bg-card-accent text-sm font-medium text-gray-400"
                                   >
                                     ...
                                   </span>
@@ -574,7 +574,7 @@ function Department() {
                                 )
                               }
                               disabled={currentPage === totalPages}
-                              className="relative inline-flex items-center px-2 py-2 rounded-r-md bg-[#3a3a3a] text-sm font-medium disabled:opacity-50 transition-colors"
+                              className="relative inline-flex items-center px-2 py-2 rounded-r-md bg-card-accent text-sm font-medium disabled:opacity-50 transition-colors"
                             >
                               <ChevronRight size={16} />
                             </button>

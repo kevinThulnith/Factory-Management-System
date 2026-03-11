@@ -44,7 +44,7 @@ const Product = () => {
     "product",
     setLoading,
     "product",
-    fetchProducts
+    fetchProducts,
   );
 
   const handleFilterChange = (e) => {
@@ -78,7 +78,7 @@ const Product = () => {
       discontinued: allProducts.filter((p) => p.status === "DISCONTINUED")
         .length,
     }),
-    [allProducts]
+    [allProducts],
   );
 
   const getStatusPill = (status) => {
@@ -253,7 +253,7 @@ const Product = () => {
                     >
                       <Eye size={20} />
                     </Link>
-                    {user && user.role === "ADMIN" && (
+                    {user?.role === "ADMIN" && (
                       <>
                         <Link
                           to={`/product/edit/${product.id}`}

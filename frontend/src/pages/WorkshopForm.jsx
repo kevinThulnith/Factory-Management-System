@@ -223,9 +223,9 @@ const WorkshopForm = () => {
   };
 
   // !Determine field edit-ability
-  const canEditAllFields = user && user.role === "ADMIN";
-  const canEditLimitedFields = user && user.role === "SUPERVISOR";
-  const canEditOperationalStatus = user && user.role === "MANAGER";
+  const canEditAllFields = user?.role === "ADMIN";
+  const canEditLimitedFields = user?.role === "SUPERVISOR";
+  const canEditOperationalStatus = user?.role === "MANAGER";
 
   return (
     <Form

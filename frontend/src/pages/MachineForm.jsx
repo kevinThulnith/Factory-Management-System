@@ -250,10 +250,10 @@ const MachineForm = () => {
   };
 
   // Determine field editability based on backend permissions
-  const canEditAllFields = user && user.role === "ADMIN";
+  const canEditAllFields = user?.role === "ADMIN";
   const canEditOperatorAndStatus =
-    user && (user.role === "SUPERVISOR" || user.role === "MANAGER");
-  const canEditMaintenanceAndStatus = user && user.role === "TECHNICIAN";
+    user && ["SUPERVISOR", "MANAGER"].includes(user.role);
+  const canEditMaintenanceAndStatus = user?.role === "TECHNICIAN";
 
   return (
     <Form
@@ -276,7 +276,12 @@ const MachineForm = () => {
       onClick={() => navigate("/machine")}
       fnction={() => navigate(`/machine/edit/${machineId}`)}
       gradient="from-yellow-600 to-yellow-800"
-      isViewMode={isViewMode && (canEditAllFields || canEditOperatorAndStatus || canEditMaintenanceAndStatus)}
+      isViewMode={
+        isViewMode &&
+        (canEditAllFields ||
+          canEditOperatorAndStatus ||
+          canEditMaintenanceAndStatus)
+      }
       pageError={pageError}
       loading={loading}
     >

@@ -48,7 +48,7 @@ const Supplier = () => {
     "supplier",
     setLoading,
     "supplier",
-    fetchSuppliers
+    fetchSuppliers,
   );
 
   const handleFilterChange = (e) => {
@@ -68,7 +68,7 @@ const Supplier = () => {
           (s) =>
             `"${s.name}","${s.contact_person || ""}","${s.email || ""}","${
               s.phone || ""
-            }","${s.address || ""}","${s.website || ""}"`
+            }","${s.address || ""}","${s.website || ""}"`,
         )
         .join("\n");
     const link = document.createElement("a");
@@ -86,7 +86,7 @@ const Supplier = () => {
             .toLowerCase()
             .includes(filters.searchTerm.toLowerCase())) ||
         (s.email &&
-          s.email.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+          s.email.toLowerCase().includes(filters.searchTerm.toLowerCase())),
     );
 
     const [field, direction] = filters.sortBy.split("-");
@@ -100,7 +100,7 @@ const Supplier = () => {
   }, [allSuppliers, filters]);
 
   const stats = useMemo(() => ({ total: allSuppliers.length }), [allSuppliers]);
-  const canManage = user && user.role === "ADMIN";
+  const canManage = user?.role === "ADMIN";
 
   return (
     <div className="min-h-screen py-6">

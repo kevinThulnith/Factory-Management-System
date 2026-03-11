@@ -12,7 +12,7 @@ const InputItem = ({ label, name, caption, ...props }) => (
     <input
       id={name}
       name={name}
-      className="bg-[#3a3a3a] border-none outline-none text-star-dust-300 rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
+      className="bg-card-accent border-none outline-none text-star-dust-300 rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
       {...props}
     />
     {caption && (
@@ -203,7 +203,7 @@ function Register() {
                 <select
                   name="role"
                   value={formData.role}
-                  className="bg-[#3a3a3a] border-none outline-none text-primary-text rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
+                  className="bg-card-accent border-none outline-none text-primary-text rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
                   onChange={handleChange}
                   required
                 >
@@ -221,7 +221,7 @@ function Register() {
                 <select
                   name="department"
                   value={formData.department}
-                  className="bg-[#3a3a3a] border-none outline-none text-primary-text rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
+                  className="bg-card-accent border-none outline-none text-primary-text rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
                   onChange={handleChange}
                   disabled={loadingDepartments}
                 >

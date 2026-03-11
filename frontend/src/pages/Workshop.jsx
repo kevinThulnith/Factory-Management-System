@@ -145,8 +145,7 @@ function Workshop() {
   }, [allWorkshops]);
 
   // !Check permissions
-  const canCreate = user && user.role === "ADMIN";
-  const canDelete = canCreate;
+  const canCreate = user?.role === "ADMIN";
   const canEdit =
     user && ["ADMIN", "MANAGER", "SUPERVISOR"].includes(user.role);
 
@@ -402,7 +401,7 @@ function Workshop() {
                                 <Edit3 size={18} />
                               </Link>
                             )}
-                            {canDelete && (
+                            {canCreate && (
                               <button
                                 onClick={() =>
                                   handleDeleteWorkshop(workshop.id)

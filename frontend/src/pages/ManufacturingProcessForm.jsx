@@ -17,7 +17,6 @@ import {
   FileText,
   Factory,
   Clock,
-  Info,
 } from "lucide-react";
 
 const ManufacturingProcessForm = () => {
@@ -58,7 +57,7 @@ const ManufacturingProcessForm = () => {
             quality_parameters: JSON.stringify(
               data.quality_parameters || {},
               null,
-              2
+              2,
             ),
           });
         })
@@ -138,7 +137,7 @@ const ManufacturingProcessForm = () => {
       alert(
         `Manufacturing Process ${
           isEditMode ? "updated" : "created"
-        } successfully.`
+        } successfully.`,
       );
       navigate("/manufacturing-process");
     } catch (error) {
@@ -158,14 +157,14 @@ const ManufacturingProcessForm = () => {
 
         if (Object.keys(newFormErrors).length === 0) {
           setPageError(
-            apiErrors.detail || "An error occurred. Please try again."
+            apiErrors.detail || "An error occurred. Please try again.",
           );
         } else {
           setPageError("Please correct the errors below.");
         }
       } else {
         setPageError(
-          error.response?.data?.detail || "An unexpected error occurred."
+          error.response?.data?.detail || "An unexpected error occurred.",
         );
       }
     } finally {
@@ -188,7 +187,7 @@ const ManufacturingProcessForm = () => {
   };
 
   // Check if user has write permission (ADMIN role)
-  const canWrite = user && user.role === "ADMIN";
+  const canWrite = user?.role === "ADMIN";
 
   return (
     <Form
@@ -197,15 +196,15 @@ const ManufacturingProcessForm = () => {
         isViewMode
           ? "Process Details"
           : isEditMode
-          ? "Edit Process"
-          : "Define Process"
+            ? "Edit Process"
+            : "Define Process"
       }
       text_01={
         isViewMode
           ? "View manufacturing process specifications"
           : isEditMode
-          ? "Update process standards and parameters"
-          : "Create a new manufacturing standard"
+            ? "Update process standards and parameters"
+            : "Create a new manufacturing standard"
       }
       text_02="Manufacturing Processes"
       onClick={() => navigate("/manufacturing-process")}

@@ -34,7 +34,7 @@ const ProductionLine = () => {
   const fetchProductionLines = useFetchData(
     "production-line",
     setLoading,
-    setAllLines
+    setAllLines,
   );
 
   useWebSocket("production-lines", setAllLines, fetchProductionLines);
@@ -49,7 +49,7 @@ const ProductionLine = () => {
     "production-line",
     setLoading,
     "production line",
-    fetchProductionLines
+    fetchProductionLines,
   );
 
   const handleFilterChange = (e) => {
@@ -81,13 +81,13 @@ const ProductionLine = () => {
       active: allLines.filter((line) => line.operational_status === "ACTIVE")
         .length,
       inactive: allLines.filter(
-        (line) => line.operational_status === "INACTIVE"
+        (line) => line.operational_status === "INACTIVE",
       ).length,
       maintenance: allLines.filter(
-        (line) => line.operational_status === "MAINTENANCE"
+        (line) => line.operational_status === "MAINTENANCE",
       ).length,
     }),
-    [allLines]
+    [allLines],
   );
 
   const getStatusPill = (status) => {
@@ -121,8 +121,7 @@ const ProductionLine = () => {
     );
   };
 
-  const canManage =
-    user && (user.role === "ADMIN" || user.role === "SUPERVISOR");
+  const canManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
 
   return (
     <div className="min-h-screen py-6">

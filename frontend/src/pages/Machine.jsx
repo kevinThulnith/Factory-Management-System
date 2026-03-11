@@ -52,7 +52,7 @@ function Machine() {
     "machine",
     setLoading,
     "machine",
-    fetchMachines
+    fetchMachines,
   );
 
   const handleFilterChange = (e) => {
@@ -151,14 +151,10 @@ function Machine() {
   }, [allMachines]);
 
   // Check permissions
-  const canCreate = user && user.role === "ADMIN";
+  const canCreate = user?.role === "ADMIN";
   const canEdit =
     user &&
-    (user.role === "ADMIN" ||
-      user.role === "SUPERVISOR" ||
-      user.role === "TECHNICIAN" ||
-      user.role === "MANAGER");
-  const canDelete = user && user.role === "ADMIN";
+    ["ADMIN", "SUPERVISOR", "TECHNICIAN", "MANAGER"].includes(user.role);
 
   return (
     <>
@@ -430,7 +426,7 @@ function Machine() {
                                 <Edit3 size={18} />
                               </Link>
                             )}
-                            {canDelete && (
+                            {canCreate && (
                               <button
                                 onClick={() => handleDeleteMachine(machine.id)}
                                 className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
