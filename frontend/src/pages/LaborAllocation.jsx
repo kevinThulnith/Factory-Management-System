@@ -7,18 +7,21 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
+  RefreshButton,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   AlertTriangle,
   CalendarDays,
-  PlusCircle,
   UserCircle,
   ListChecks,
   UsersRound,
-  RefreshCw,
   Briefcase,
   RotateCcw,
   Factory,
   Trash2,
-  Search,
   Filter,
   Users,
   Edit3,
@@ -196,25 +199,15 @@ const LaborAllocations = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-3 lg:mt-0">
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-                >
-                  <RefreshCw
-                    size={18}
-                    className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                  />
-                  {refreshing ? "Refreshing..." : "Refresh"}
-                </button>
+                <RefreshButton
+                  handleRefresh={handleRefresh}
+                  refreshing={refreshing}
+                />
                 {canCreate && (
-                  <Link
-                    to="/labor-allocation/add"
-                    className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                  >
-                    <PlusCircle size={20} className="mr-2" />
-                    New Allocation
-                  </Link>
+                  <AddButton
+                    url="/labor-allocation/add"
+                    text="New Allocation"
+                  />
                 )}
               </div>
             </div>
@@ -278,18 +271,12 @@ const LaborAllocations = () => {
               <Filter size={15} className="mr-2" /> Search & Filters
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="relative lg:col-span-2">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  type="text"
+              <div className="lg:col-span-2">
+                <SearchInput
                   name="searchTerm"
-                  placeholder="Search employee, project, task..."
                   value={filters.searchTerm}
                   onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
+                  text="Search employee, project, task..."
                 />
               </div>
               <input

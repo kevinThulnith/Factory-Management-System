@@ -7,16 +7,20 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
+  RefreshButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   AlertTriangle,
-  PlusCircle,
-  RefreshCw,
   RotateCcw,
   Building2,
   Activity,
   Settings,
   Factory,
   XCircle,
-  Search,
   Filter,
   Trash2,
   Users,
@@ -189,25 +193,12 @@ function Workshop() {
                 </div>
               </div>
               <div className="flex items-center gap-3 mt-3 lg:mt-0">
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-                >
-                  <RefreshCw
-                    size={18}
-                    className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                  />
-                  {refreshing ? "Refreshing..." : "Refresh"}
-                </button>
+                <RefreshButton
+                  handleRefresh={handleRefresh}
+                  refreshing={refreshing}
+                />
                 {canCreate && (
-                  <Link
-                    to="/workshop/add"
-                    className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                  >
-                    <PlusCircle size={20} className="mr-2" />
-                    Add New Workshop
-                  </Link>
+                  <AddButton url="/workshop/add" text="Add New Workshop" />
                 )}
               </div>
             </div>
@@ -220,49 +211,33 @@ function Workshop() {
               <h3>Search & Filters</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="relative">
-                <Search
-                  size={18}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type="text"
-                  name="searchTerm"
-                  placeholder="Search workshops..."
-                  value={filters.searchTerm}
-                  onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
-                  style={{ height: "40px" }}
-                />
-              </div>
-              <select
-                name="status"
+              <SearchInput
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                text="Search workshops..."
+                name="searchTerm"
+              />
+              <SearchSelect
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
-                style={{ height: "40px" }}
-              >
-                <option value="all">All Status</option>
-                {workshopStatuses.map((s) => (
-                  <option key={s} value={s}>
-                    {s.charAt(0) + s.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="department"
+                list={[
+                  { value: "all", label: "All Status" },
+                  ...workshopStatuses.map((s) => ({ value: s, label: s })),
+                ]}
+                name="status"
+              />
+              <SearchSelect
                 value={filters.department}
                 onChange={handleFilterChange}
-                className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none"
-                style={{ height: "40px" }}
-              >
-                <option value="all">All Departments</option>
-                {uniqueDepartments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
+                list={[
+                  { value: "all", label: "All Departments" },
+                  ...uniqueDepartments.map((dept) => ({
+                    value: dept,
+                    label: dept,
+                  })),
+                ]}
+                name="department"
+              />
               <button
                 onClick={resetFiltersHandler}
                 className="flex-1 px-4 py-3 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105"

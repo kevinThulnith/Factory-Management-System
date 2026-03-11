@@ -7,13 +7,17 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  PlusCircle,
+  RefreshButton,
+  ExportCsvButton,
+  SearchSelect,
+  SearchInput,
+  AddButton,
+} from "../components/viewComponents";
+
+import {
   UserCircle,
-  RefreshCw,
   RotateCcw,
   UserRound,
-  Download,
-  Search,
   MapPin,
   Filter,
   Trash2,
@@ -128,33 +132,16 @@ const Supplier = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 mt-3 lg:mt-0">
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
-              >
-                <RefreshCw
-                  size={18}
-                  className={`mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
-                {refreshing ? "Refreshing..." : "Refresh"}
-              </button>
-              <button
-                onClick={handleExport}
-                disabled={filteredAndSortedSuppliers.length === 0}
-                className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl disabled:opacity-50 hover:scale-105 bg-blue-700 text-stone-200"
-              >
-                <Download size={18} className="mr-2" />
-                Export CSV
-              </button>
+              <RefreshButton
+                handleRefresh={handleRefresh}
+                refreshing={refreshing}
+              />
+              <ExportCsvButton
+                handleExport={handleExport}
+                term={filteredAndSortedSuppliers.length === 0}
+              />
               {canManage && (
-                <Link
-                  to="/supplier/add"
-                  className="px-3 py-2 text-stone-200 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-green-600"
-                >
-                  <PlusCircle size={20} className="mr-2" />
-                  Add Supplier
-                </Link>
+                <AddButton url="/supplier/add" text="Add Supplier" />
               )}
             </div>
           </div>
@@ -166,31 +153,28 @@ const Supplier = () => {
             <Filter size={15} className="mr-2" /> Search & Sort
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="relative lg:col-span-2">
-              <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
+            <div className="lg:col-span-2">
+              <SearchInput
                 name="searchTerm"
-                placeholder="Search suppliers..."
+                text="Search suppliers..."
                 value={filters.searchTerm}
                 onChange={handleFilterChange}
-                className="w-full pl-10 pr-4 py-2 border-none outline-none rounded-lg bg-card-sub"
               />
             </div>
-            <select
+            <SearchSelect
               name="sortBy"
               value={filters.sortBy}
               onChange={handleFilterChange}
-              className="w-full px-4 text-slate-400 border-none outline-none rounded-lg bg-card-sub appearance-none py-2"
-            >
-              <option value="name-asc">Sort by Name (A-Z)</option>
-              <option value="name-desc">Sort by Name (Z-A)</option>
-              <option value="contact_person-asc">Sort by Contact (A-Z)</option>
-              <option value="contact_person-desc">Sort by Contact (Z-A)</option>
-            </select>
+              list={[
+                { value: "name-asc", label: "Sort by Name (A-Z)" },
+                { value: "name-desc", label: "Sort by Name (Z-A)" },
+                { value: "contact_person-asc", label: "Sort by Contact (A-Z)" },
+                {
+                  value: "contact_person-desc",
+                  label: "Sort by Contact (Z-A)",
+                },
+              ]}
+            />
             <button
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
