@@ -54,6 +54,7 @@ services:
         condition: service_completed_successfully
       fms-slim-backend:
         condition: service_started
+    restart: unless-stopped
 
   fms-slim-backend:
     build:
