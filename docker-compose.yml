@@ -51,6 +51,7 @@ services:
     depends_on:
       - fms-frontend
       - fms-backend
+    restart: unless-stopped
 
   fms-backend:
     build:
