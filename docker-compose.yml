@@ -5,12 +5,14 @@ services:
     volumes:
       - fms-slim-slim-database-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     env_file:
       - .env
     networks:
       - fms-slim-network
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
 
   fms-slim-redis:
     image: redis:7-alpine
@@ -18,10 +20,12 @@ services:
     volumes:
       - fms-slim-redis-data:/data
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     networks:
       - fms-slim-network
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
 
   fms-slim-frontend:
     build:
@@ -37,6 +41,8 @@ services:
     networks:
       - fms-slim-network
     restart: "no" # one-shot builder — exits after copying files to volume
+    security_opt:
+      - no-new-privileges:true
 
   fms-slim-proxy:
     image: nginx:1.25-alpine-slim
@@ -55,6 +61,14 @@ services:
       fms-slim-backend:
         condition: service_started
     restart: unless-stopped
+    # Security hardening
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
 
   fms-slim-backend:
     build:
@@ -64,7 +78,7 @@ services:
     volumes:
       - fms-slim-media-files:/app/media
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     env_file:
       - .env
     depends_on:
@@ -73,6 +87,8 @@ services:
     networks:
       - fms-slim-network
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
 
 networks:
   fms-slim-network:
