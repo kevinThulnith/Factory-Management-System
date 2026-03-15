@@ -246,7 +246,8 @@ REDIS_PORT=6379
    Create `frontend/.env` with:
 
    ```env
-   VITE_API_URL=http://localhost:8000
+   VITE_WS_URL="ws://localhost:8000"
+   VITE_API_URL="http://localhost:8000"
    VITE_CLIENT_ID=your-google-client-id  # ← from Google Cloud Console
    ```
 
