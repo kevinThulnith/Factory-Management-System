@@ -156,7 +156,7 @@ function Home() {
           icon: <Activity size={28} />,
           color: "red",
           link: "/machine",
-        }
+        },
       );
     }
 
@@ -182,7 +182,7 @@ function Home() {
           icon: <ListChecks size={28} />,
           color: "yellow",
           link: "/task",
-        }
+        },
       );
     }
 
@@ -203,7 +203,7 @@ function Home() {
           icon: <Calendar size={24} />,
           color: "yellow",
           link: "/orders",
-        }
+        },
       );
     }
 
@@ -215,25 +215,26 @@ function Home() {
     const myTasks = dashboardData.tasks.filter(
       (task) =>
         task.assigned_to === userInfo.id ||
-        (userInfo.role === "MANAGER" && task.project_manager_id === userInfo.id)
+        (userInfo.role === "MANAGER" &&
+          task.project_manager_id === userInfo.id),
     );
 
     const myMachine = dashboardData.machines.find(
-      (machine) => machine.operator === userInfo.id
+      (machine) => machine.operator === userInfo.id,
     );
 
     const myDepartment = dashboardData.departments.find(
-      (dept) => dept.manager === userInfo.id
+      (dept) => dept.manager === userInfo.id,
     );
 
     const myWorkshop = dashboardData.workshops.find(
-      (workshop) => workshop.supervisor === userInfo.id
+      (workshop) => workshop.supervisor === userInfo.id,
     );
 
     const myProjects = dashboardData.projects.filter(
       (project) =>
         project.manager === userInfo.id ||
-        project.project_manager_id === userInfo.id
+        project.project_manager_id === userInfo.id,
     );
 
     return {
@@ -404,7 +405,7 @@ function Home() {
                 <span className="text-2xl font-bold text-orange-600">
                   {
                     dashboardData.machines.filter(
-                      (m) => m.status === "IDLE" || m.status === "OPERATIONAL"
+                      (m) => m.status === "IDLE" || m.status === "OPERATIONAL",
                     ).length
                   }
                 </span>
@@ -459,7 +460,7 @@ function Home() {
       {/* Recent Activity & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Recent Tasks */}
-        <div className="bg-[#2a2a2a] rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-card-main rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <div className="p-2 bg-star-dust-700 rounded-lg mr-3">
@@ -493,10 +494,10 @@ function Home() {
                       task.status === "COMPLETED"
                         ? "bg-green-900 text-green-100"
                         : task.status === "IN_PROGRESS"
-                        ? "bg-blue-900 text-blue-100"
-                        : task.status === "PENDING"
-                        ? "bg-yellow-900 text-yellow-100"
-                        : "bg-red-900 text-red-100"
+                          ? "bg-blue-900 text-blue-100"
+                          : task.status === "PENDING"
+                            ? "bg-yellow-900 text-yellow-100"
+                            : "bg-red-900 text-red-100"
                     }`}
                   >
                     {task.status?.replace("_", " ")}
@@ -524,7 +525,7 @@ function Home() {
         </div>
 
         {/* Alerts & Notifications */}
-        <div className="bg-[#2a2a2a] rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-card-main rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <div className="p-2 bg-star-dust-700 rounded-lg mr-3">

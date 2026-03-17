@@ -12,6 +12,7 @@ import {
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -295,15 +296,11 @@ const SkillMatrix = () => {
 
         {/* Table */}
         {filteredAndSortedSkills.length === 0 && !loading ? (
-          <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-            <Briefcase size={64} className="mx-auto text-gray-500 mb-4" />
-            <h3 className="text-xl font-semibold text-stone-300 mb-2">
-              No Skill Entries Found
-            </h3>
-            <p className="text-stone-400">
-              Try adjusting your filters or add a new skill entry.
-            </p>
-          </div>
+          <NoItems
+            icon={<Briefcase />}
+            title="No Skill Entries Found"
+            description="Try adjusting your filters or add a new skill entry."
+          />
         ) : (
           <div className="shadow-lg rounded-2xl bg-card-main overflow-hidden">
             <div className="px-6 py-4 border-b border-stone-500">

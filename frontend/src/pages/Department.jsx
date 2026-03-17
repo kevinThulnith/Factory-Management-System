@@ -4,7 +4,7 @@ import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   ExportCsvButton,
@@ -12,6 +12,7 @@ import {
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -40,6 +41,7 @@ function Department() {
   const [filterBy, setFilterBy] = useState("all");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const fetchDepartments = useFetchData(
     "department",
@@ -299,29 +301,18 @@ function Department() {
 
           {/* Cards Display */}
           {filteredAndSortedDepartments.length === 0 && !loading.page ? (
-            <div className="bg-[#2a2a2a] border border-stone-700 rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
-              <Building2 size={64} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-stone-200 mb-2">
-                No Departments Found
-              </h3>
-              <p className="text-gray-400 mb-6">
-                {searchTerm || filterBy !== "all"
+            <NoItems
+              icon={<Building2 />}
+              title="No Departments Found"
+              description={
+                searchTerm || filterBy !== "all"
                   ? "Try adjusting your search criteria or filters."
-                  : "Get started by adding your first department."}
-              </p>
-              {user &&
-                user.role === "ADMIN" &&
-                !searchTerm &&
-                filterBy === "all" && (
-                  <Link
-                    to="/departments/add"
-                    className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                  >
-                    <PlusCircle size={18} className="mr-2" />
-                    Add First Department
-                  </Link>
-                )}
-            </div>
+                  : "Get started by adding your first department."
+              }
+              onClick={() => navigate("/department/add")}
+              button="Add First Department"
+              state={user?.role === "ADMIN"}
+            />
           ) : (
             <>
               {/* Count display before the grid */}
