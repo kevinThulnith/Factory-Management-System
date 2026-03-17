@@ -1,5 +1,6 @@
 import { Search, RefreshCw, PlusCircle, Download } from "lucide-react";
 import { Link } from "react-router-dom";
+import { cloneElement } from "react";
 
 export const RefreshButton = ({ handleRefresh, refreshing }) => (
   <button
@@ -63,4 +64,29 @@ export const SearchSelect = ({ value, onChange, list, ...props }) => (
       </option>
     ))}
   </select>
+);
+
+export const NoItems = ({
+  icon,
+  title,
+  state,
+  button,
+  onClick,
+  description,
+}) => (
+  <div className="bg-card-main rounded-xl p-12 text-center shadow-lg">
+    <span className="mx-auto text-gray-400 mb-4 flex items-center justify-center">
+      {icon && cloneElement(icon, { size: 64 })}
+    </span>
+    <h3 className="text-xl font-semibold text-stone-300 mb-2">{title}</h3>
+    <p className="text-gray-500">{description}</p>
+    {onClick && (state === null || state) && (
+      <button
+        onClick={onClick}
+        className="mt-4 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+      >
+        {button}
+      </button>
+    )}
+  </div>
 );

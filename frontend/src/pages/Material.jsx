@@ -7,11 +7,11 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  ExportCsvButton,
   RefreshButton,
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -223,23 +223,16 @@ const MaterialListPage = () => {
           </div>
 
           {/* Materials Table */}
-          {allMaterials.length === 0 && !loading ? (
-            <div className="bg-card-main rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
-              <Box size={64} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-200 mb-2">
-                No Materials Found
-              </h3>
-              <p className="text-gray-500">
-                No materials match your current filters or there are no
-                materials in the system.
-              </p>
-              <button
-                onClick={resetFiltersHandler}
-                className="mt-4 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Clear Filters
-              </button>
-            </div>
+          {filteredMaterials.length === 0 && !loading ? (
+            <NoItems
+              icon={<Box />}
+              title="No Materials Found"
+              description="No materials match your current filters or there are no
+                 materials in the system."
+              onClick={resetFiltersHandler}
+              button="Clear Filters"
+              state={true}
+            />
           ) : (
             <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">
               <div className="px-4 py-4 border-b border-stone-500">

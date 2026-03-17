@@ -10,6 +10,7 @@ import {
   RefreshButton,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -271,14 +272,12 @@ const LaborAllocations = () => {
               <Filter size={15} className="mr-2" /> Search & Filters
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2">
-                <SearchInput
-                  name="searchTerm"
-                  value={filters.searchTerm}
-                  onChange={handleFilterChange}
-                  text="Search employee, project, task..."
-                />
-              </div>
+              <SearchInput
+                name="searchTerm"
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                text="Search employee, project, task..."
+              />
               <input
                 type="text"
                 name="employeeId"
@@ -305,17 +304,12 @@ const LaborAllocations = () => {
           </div>
 
           {/* Content Area */}
-          {allAllocations.length === 0 && !loading ? (
-            <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-              <Users size={64} className="mx-auto text-gray-500 mb-4" />
-              <h3 className="text-xl font-semibold text-stone-300 mb-2">
-                No Allocations Found
-              </h3>
-              <p className="text-stone-400">
-                Try adjusting your filters or create your first labor
-                allocation.
-              </p>
-            </div>
+          {filteredAllocations.length === 0 && !loading ? (
+            <NoItems
+              icon={<UsersRound/>}
+              title="No Labor Allocations Found"
+              description="Try adjusting your filters or create your first allocation."
+            />
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {filteredAllocations.map((alloc) => {
