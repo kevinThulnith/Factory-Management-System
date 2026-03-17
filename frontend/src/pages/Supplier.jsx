@@ -7,11 +7,12 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  RefreshButton,
   ExportCsvButton,
+  RefreshButton,
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -186,15 +187,11 @@ const Supplier = () => {
 
         {/* Content Area */}
         {filteredAndSortedSuppliers.length === 0 && !loading ? (
-          <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-            <Truck size={64} className="mx-auto text-gray-500 mb-4" />
-            <h3 className="text-xl font-semibold text-stone-300 mb-2">
-              No Suppliers Found
-            </h3>
-            <p className="text-stone-400">
-              Try adjusting your filters or add your first supplier.
-            </p>
-          </div>
+          <NoItems
+            icon={<Truck />}
+            title="No Suppliers Found"
+            description="Try adjusting your filters or add your first supplier."
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredAndSortedSuppliers.map((supplier) => (

@@ -11,6 +11,7 @@ import {
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -268,23 +269,15 @@ function Machine() {
           </div>
 
           {/* Machines Table */}
-          {allMachines.length === 0 && !loading ? (
-            <div className="border rounded-xl p-12 text-center shadow-lg backdrop-blur-sm">
-              <Cog size={64} className="mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Machines Found
-              </h3>
-              <p className="text-gray-500">
-                No machines match your current filters or there are no machines
-                in the system.
-              </p>
-              <button
-                onClick={resetFiltersHandler}
-                className="mt-4 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Clear Filters
-              </button>
-            </div>
+          {filteredMachines.length === 0 && !loading ? (
+            <NoItems
+              icon={<Cog />}
+              title="No Machines Found"
+              description="No machines match your current filters or there are no machines in the system."
+              onClick={resetFiltersHandler}
+              button="Clear Filters"
+              state={true}
+            />
           ) : (
             <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">
               <div className="px-4 py-4 border-b border-stone-500">

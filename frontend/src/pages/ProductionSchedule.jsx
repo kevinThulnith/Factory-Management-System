@@ -12,6 +12,7 @@ import {
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -252,17 +253,12 @@ const ProductionSchedule = () => {
           </div>
 
           {/* Content Area */}
-          {allSchedules.length === 0 && !loading ? (
-            <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-              <CalendarClock size={64} className="mx-auto text-gray-500 mb-4" />
-              <h3 className="text-xl font-semibold text-stone-300 mb-2">
-                No Production Schedules Found
-              </h3>
-              <p className="text-stone-400">
-                Try adjusting your filters or create your first production
-                schedule.
-              </p>
-            </div>
+          {filteredSchedules.length === 0 && !loading ? (
+            <NoItems
+              icon={<CalendarClock />}
+              title="No Production Schedules Found"
+              description="Try adjusting your filters or create your first production schedule."
+            />
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {filteredSchedules.map((schedule) => (

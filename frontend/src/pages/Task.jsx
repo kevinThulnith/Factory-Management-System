@@ -12,6 +12,7 @@ import {
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -338,16 +339,12 @@ const Tasks = () => {
           </div>
 
           {/* Content Area */}
-          {allTasks.length === 0 && !loading ? (
-            <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-              <ListChecks size={64} className="mx-auto text-gray-500 mb-4" />
-              <h3 className="text-xl font-semibold text-stone-300 mb-2">
-                No Tasks Found
-              </h3>
-              <p className="text-stone-400">
-                Try adjusting your filters or create your first task.
-              </p>
-            </div>
+          {filteredTasks.length === 0 && !loading ? (
+            <NoItems
+              icon={<ListChecks />}
+              title="No Tasks Found"
+              description="Try adjusting your filters or create your first task."
+            />
           ) : (
             <div className="grid grid-cols-1 gap-6">
               {filteredTasks.map((task) => (

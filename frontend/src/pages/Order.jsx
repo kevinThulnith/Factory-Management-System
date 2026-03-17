@@ -11,6 +11,7 @@ import {
   SearchSelect,
   SearchInput,
   AddButton,
+  NoItems,
 } from "../components/viewComponents";
 
 import {
@@ -207,17 +208,13 @@ const Order = () => {
 
         {/* Table */}
         {filteredAndSortedOrders.length === 0 && !loading ? (
-          <div className="bg-[#2a2a2a] rounded-xl p-12 text-center shadow-lg border border-stone-700">
-            <ShoppingCart size={64} className="mx-auto text-gray-500 mb-4" />
-            <h3 className="text-xl font-semibold text-stone-300 mb-2">
-              No Orders Found
-            </h3>
-            <p className="text-stone-400">
-              Try adjusting your filters or create your first purchase order.
-            </p>
-          </div>
+          <NoItems
+            icon={<ShoppingCart />}
+            title="No Orders Found"
+            description="Try adjusting your filters or create your first purchase order."
+          />
         ) : (
-          <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">
+          <div className="shadow-xl rounded-2xl bg-card-main overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-stone-500">
                 <thead className="bg-[#2f2f2f]">
