@@ -275,7 +275,7 @@ REDIS_PORT=6379
 
 Create `.env` and `.env.prod` files in project root directory. Add both frontend and backend `.env` file data in both of them.
 
-```sh
+```env
 # frontend .env data
 
 # backend .env data
@@ -284,7 +284,7 @@ GOOGLE_CALLBACK_URL = "http://localhost" # must set correctly
 
 For `.env.prod` add this
 
-```sh
+```env
 # Database Settings
 DATABASE_ENGINE=postgresql_psycopg2
 DATABASE_NAME=FmsDatabase
@@ -306,7 +306,7 @@ REDIS_PORT=6379
 
 For `.env` add this
 
-```sh
+```env
 # Postgres Settings
 POSTGRES_DB=FmsSlimDatabase
 POSTGRES_USER=FmsSlimDbUser
@@ -390,7 +390,7 @@ Client ──── ws://localhost:8000/ws/<resource>/ ────▶ Django Ch
 
 ### 🌐 Connection URL
 
-```
+```sh
 ws://localhost:8000/ws/<resource>/
 ```
 
