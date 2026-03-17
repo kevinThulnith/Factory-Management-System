@@ -130,7 +130,7 @@ cd Factory-Management-System
 
    The backend requires a `.env` file before running. These files are **not committed** — create them manually.
 
-#### Google OAuth Credentials 🪄
+#### 🪄 Google OAuth Credentials
 
 Required for both Google sign-in and the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `VITE_CLIENT_ID` variables.
 
@@ -156,7 +156,7 @@ Required for both Google sign-in and the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SEC
 
 > Only email addresses that already exist as users in the system can sign in via Google. New Google accounts are rejected by the custom adapter.
 
-#### Django Secret Key
+#### 🔑 Django Secret Key
 
 Generate a secure key with:
 
@@ -273,18 +273,87 @@ REDIS_PORT=6379
 
 ## 🐳 Docker Setup
 
-To run the entire application (backend + frontend + database + Redis) using Docker:
+Create `.env` and `.env.prod` files in project root directory. Add both frontend and backend `.env` file data in both of them.
 
-```bash
-docker-compose up -d
+```sh
+# frontend .env data
+
+# backend .env data
+GOOGLE_CALLBACK_URL = "http://localhost" # must set correctly
 ```
 
-This will start:
+For `.env.prod` add this
 
-- 🔧 **Backend API** — `http://localhost:8000`
-- 🎨 **Frontend** — `http://localhost`
-- 🗄️ **PostgreSQL** — configured in `docker-compose.yml` on branches exept `main`.
-- ⚡ **Redis** — WebSocket and caching support
+```sh
+# Database Settings
+DATABASE_ENGINE=postgresql_psycopg2
+DATABASE_NAME=FmsDatabase
+DATABASE_USERNAME=FmsDbUser
+DATABASE_PASSWORD=FmsDB4080
+DATABASE_HOST=fms-database
+DATABASE_PORT=5432
+DATABASE_URL=postgresql://FmsDbUser:FmsDB4080@fms-database:5432/FmsDatabase
+
+# Postgres Settings
+POSTGRES_DB=FmsDatabase
+POSTGRES_USER=FmsDbUser
+POSTGRES_PASSWORD=FmsDB4080
+
+# Redis Settings
+REDIS_HOST=fms-redis
+REDIS_PORT=6379
+```
+
+For `.env` add this
+
+```sh
+POSTGRES_DB=FmsSlimDatabase
+POSTGRES_USER=FmsSlimDbUser
+POSTGRES_PASSWORD=FmsSlimDB4080
+
+# Redis Settings
+REDIS_HOST=fms-slim-redis
+REDIS_PORT=6379
+
+# Database Settings
+DATABASE_ENGINE=postgresql_psycopg2
+DATABASE_NAME=FmsSlimDatabase
+DATABASE_USERNAME=FmsSlimDbUser
+DATABASE_PASSWORD=FmsSlimDB4080
+DATABASE_HOST=fms-slim-database
+DATABASE_PORT=5432
+DATABASE_URL=postgresql://FmsSlimDbUser:FmsSlimDB4080@fms-slim-database:5432/FmsSlimDatabase
+```
+
+> 🖥️ Make sure **Docker Desktop** is running before executing the commands below.
+
+### 🐙 docker-compose branch
+
+Switch branch
+
+```sh
+git switch docker-compose
+```
+
+Create | Run docker setup
+
+```sh
+docker-compose -p fms --env-file .env.prod up --build -d
+```
+
+### 🪶 docker-slim branch
+
+Switch branch
+
+```sh
+git switch docker-slim
+```
+
+Create | Run docker setup
+
+```sh
+docker-compose -p fmsslim --env-file .env up --build -d
+```
 
 ---
 
@@ -297,6 +366,65 @@ Once the backend is running, explore the API at:
 | **Swagger UI**  | `http://localhost:8000/api/schema/swagger-ui/` |
 | **ReDoc**       | `http://localhost:8000/api/schema/redoc/`      |
 | **Admin Panel** | `http://localhost:8000/admin/`                 |
+
+---
+
+## 🔌 WebSockets
+
+The system uses **Django Channels** over **ASGI (Daphne)** to provide real-time bidirectional communication between the server and all connected clients.
+
+### ⚡ How It Works
+
+```
+Client ──── ws://localhost:8000/ws/<resource>/ ────▶ Django Channels (Redis Layer)
+  ▲                                                          │
+  └──────────── broadcast to authorized clients ◀────────────┘
+```
+
+1. 🤝 Client connects and sends a **JWT token** in the WebSocket handshake
+2. 🔐 Server **validates the token** — unauthenticated connections are rejected
+3. 📡 On any **CRUD operation** (create / update / delete), the backend broadcasts the change
+4. 🎯 Each user only receives updates for **resources they are authorized to see**
+5. ⚛️ The React frontend automatically **updates state** without a page refresh
+
+### 🌐 Connection URL
+
+```
+ws://localhost:8000/ws/<resource>/
+```
+
+Configure the base WebSocket URL in `frontend/.env`:
+
+```env
+VITE_WS_URL="ws://localhost:8000"
+```
+
+### 🔐 Authentication
+
+WebSocket connections are secured with JWT. The token is passed during the handshake:
+
+```js
+const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/<resource>/`);
+```
+
+> ⚠️ The server **rejects** any connection attempt that does not carry a valid, non-expired JWT token.
+
+### 📋 What Gets Broadcast
+
+| Event        | Trigger                                      | Payload        |
+| ------------ | -------------------------------------------- | -------------- |
+| `created`    | New record added to the database             | New object     |
+| `updated`    | Existing record modified                     | Updated object |
+| `deleted`    | Record removed from the database             | Object ID      |
+| `stats`      | Any change that affects dashboard KPIs       | Stats object   |
+
+### 🛠️ Backend Stack
+
+| Component          | Role                                         |
+| ------------------ | -------------------------------------------- |
+| **Django Channels** | WebSocket consumer routing & group layer    |
+| **Daphne (ASGI)**  | Async server — handles WS + HTTP together    |
+| **Redis**          | Channel layer backend for message passing    |
 
 ---
 
@@ -331,7 +459,7 @@ Once the backend is running, explore the API at:
 
 ## 📚 Project Structure
 
-```
+```sh
 Factory-Management-System/
 ├── 🐍 backend/              # Django REST API & WebSockets
 │   ├── manage.py
@@ -343,7 +471,8 @@ Factory-Management-System/
 │   ├── package.json
 │   ├── .env               # ← Create this (not in repo)
 │   └── ...
-├── 🐳 docker-compose.yml   # Docker orchestration on branches exept `main`
+├── 🐳 docker-compose.yml   # Docker | Nginx orchestration on branches except `main`
+├── 🛡️ nginx.conf
 └── 📄 README.md
 ```
 
