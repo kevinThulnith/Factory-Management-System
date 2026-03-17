@@ -307,6 +307,7 @@ REDIS_PORT=6379
 For `.env` add this
 
 ```sh
+# Postgres Settings
 POSTGRES_DB=FmsSlimDatabase
 POSTGRES_USER=FmsSlimDbUser
 POSTGRES_PASSWORD=FmsSlimDB4080
