@@ -227,11 +227,9 @@ const MaterialListPage = () => {
             <NoItems
               icon={<Box />}
               title="No Materials Found"
-              description="No materials match your current filters or there are no
-                 materials in the system."
+              description="No materials match your current filters or there are no materials in the system."
               onClick={resetFiltersHandler}
               button="Clear Filters"
-              state={true}
             />
           ) : (
             <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">

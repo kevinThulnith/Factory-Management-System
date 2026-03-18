@@ -280,7 +280,6 @@ function User() {
               description="No users match your current filters or there are no users in the system."
               onClick={resetFiltersHandler}
               button="Clear Filters"
-              state={true}
             />
           ) : (
             <div className="shadow-lg rounded-2xl bg-card-main overflow-hidden">

@@ -266,7 +266,6 @@ function Workshop() {
               description="No workshops match your current filters or there are no workshops in the system."
               onClick={resetFiltersHandler}
               button="Clear Filters"
-              state={null}
             />
           ) : (
             <div className="shadow-xl rounded-2xl bg-card-main overflow-hidden">
