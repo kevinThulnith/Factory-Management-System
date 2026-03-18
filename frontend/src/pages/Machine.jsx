@@ -276,7 +276,6 @@ function Machine() {
               description="No machines match your current filters or there are no machines in the system."
               onClick={resetFiltersHandler}
               button="Clear Filters"
-              state={true}
             />
           ) : (
             <div className="shadow-xl rounded-2xl bg-[#2a2a2a] overflow-hidden">
