@@ -69,10 +69,10 @@ export const SearchSelect = ({ value, onChange, list, ...props }) => (
 export const NoItems = ({
   icon,
   title,
-  state,
   button,
   onClick,
   description,
+  state = true,
 }) => (
   <div className="bg-card-main rounded-xl p-12 text-center shadow-lg">
     <span className="mx-auto text-gray-400 mb-4 flex items-center justify-center">
@@ -80,10 +80,10 @@ export const NoItems = ({
     </span>
     <h3 className="text-xl font-semibold text-stone-300 mb-2">{title}</h3>
     <p className="text-gray-500">{description}</p>
-    {onClick && (state === null || state) && (
+    {onClick && state && (
       <button
         onClick={onClick}
-        className="mt-4 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+        className="mt-4 px-6 py-2 bg-gray-400 text-gray-100 font-medium rounded-lg hover:bg-gray-200 transition-colors"
       >
         {button}
       </button>

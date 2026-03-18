@@ -221,7 +221,7 @@ function ManufacturingProcessList() {
           {/* Content Area */}
           {filteredProcesses.length === 0 && !loading ? (
             <NoItems
-              icon={ListChecks}
+              icon={<ListChecks />}
               title="No Processes Found"
               description="Try adjusting your filters or add your first manufacturing process."
             />
