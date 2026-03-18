@@ -3,7 +3,7 @@ services:
     image: postgres:14-alpine
     container_name: fms-slim-database
     volumes:
-      - fms-slim-slim-database-data:/var/lib/postgresql/data
+      - fms-slim-database-data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
     env_file:
@@ -95,7 +95,7 @@ networks:
     driver: bridge
 
 volumes:
-  fms-slim-slim-database-data:
+  fms-slim-database-data:
   fms-slim-media-files:
   fms-slim-redis-data:
   frontend-dist:
