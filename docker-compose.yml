@@ -4,6 +4,7 @@ services:
     container_name: fms-slim-database
     volumes:
       - fms-slim-database-data:/var/lib/postgresql/data
+      - fms-slim-logs:/var/log/postgresql
     ports:
       - "127.0.0.1:5432:5432"
     env_file:
@@ -13,12 +14,18 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
 
   fms-slim-redis:
     image: redis:7-alpine
     container_name: fms-slim-redis
     volumes:
       - fms-slim-redis-data:/data
+      - fms-slim-logs:/var/log/redis
     ports:
       - "127.0.0.1:6379:6379"
     networks:
@@ -26,6 +33,11 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
 
   fms-slim-frontend:
     build:
@@ -43,6 +55,11 @@ services:
     restart: "no" # one-shot builder — exits after copying files to volume
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
   fms-slim-proxy:
     image: nginx:1.25-alpine-slim
@@ -51,6 +68,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - frontend-dist:/usr/share/nginx/html:ro
       - fms-slim-media-files:/app/media
+      - fms-slim-logs:/var/log/nginx
     ports:
       - "80:80"
     networks:
@@ -69,6 +87,11 @@ services:
       - /var/run
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
 
   fms-slim-backend:
     build:
@@ -77,6 +100,7 @@ services:
     container_name: fms-slim-backend
     volumes:
       - fms-slim-media-files:/app/media
+      - fms-slim-backend-logs:/app/logs
     ports:
       - "127.0.0.1:8000:8000"
     env_file:
@@ -89,6 +113,11 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
 
 networks:
   fms-slim-network:
@@ -98,4 +127,6 @@ volumes:
   fms-slim-database-data:
   fms-slim-media-files:
   fms-slim-redis-data:
+  fms-slim-logs:
+  fms-slim-backend-logs:
   frontend-dist:

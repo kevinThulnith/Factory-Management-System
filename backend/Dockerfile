@@ -49,8 +49,9 @@ RUN apk add --no-cache \
 
 # Create non-root user
 RUN adduser -D -s /bin/sh appuser && \
-    mkdir -p /app/media /app/staticfiles && \
-    chown -R appuser:appuser /app
+    mkdir -p /app/media /app/staticfiles /app/logs && \
+    chown -R appuser:appuser /app && \
+    chmod -R 777 /app/logs
 
 WORKDIR /app
 
@@ -71,6 +72,6 @@ USER appuser
 
 EXPOSE 8000
 
-VOLUME ["/app/media"]
+VOLUME ["/app/media", "/app/logs"]
 
 CMD ["/app/entrypoint.prod.sh"]

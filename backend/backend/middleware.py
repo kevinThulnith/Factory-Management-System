@@ -2,14 +2,19 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 from channels.db import database_sync_to_async
 from django.http import HttpResponse
-from rich.console import Console
-from rich.text import Text
+from django.conf import settings
 import asyncio
 import logging
 import time
 
 logger = logging.getLogger(__name__)
-console = Console()
+
+# Import Rich only if in DEBUG mode
+if settings.DEBUG:
+    from rich.console import Console
+    from rich.text import Text
+
+    console = Console()
 
 
 # TODO: Show execution for API requests
@@ -35,7 +40,7 @@ class CancelledErrorMiddleware:
 
 
 class RequestTimeLoggingMiddleware:
-    "Middleware to log the execution time of each request with stylized badges."
+    "Middleware to log the execution time of each request."
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -57,42 +62,60 @@ class RequestTimeLoggingMiddleware:
         if response.status_code == 499:
             return response
 
-        # --- STYLING LOGIC ---
+        # --- LOGGING LOGIC ---
         status_code = response.status_code
 
-        # Default settings (Blue INFO)
-        badge_text = " INFO "
-        badge_style = "bold white on blue"
+        # Build log message
+        log_message = (
+            f"{request.method} {request.path} - Status: {status_code} - {time_display}"
+        )
 
-        # Dynamic styling based on Status Code
+        # Log at appropriate level
         if 200 <= status_code < 300:
-            badge_text = " SUCCESS "
-            badge_style = "bold black on green"  # Black text on green looks better
+            log_level = logging.INFO
         elif 400 <= status_code < 500:
-            badge_text = " WARNING "
-            badge_style = "bold black on yellow"
+            log_level = logging.WARNING
         elif status_code >= 500:
-            badge_text = " ERROR "
-            badge_style = "bold white on red"
+            log_level = logging.ERROR
+        else:
+            log_level = logging.INFO
 
-        # Construct the log message
-        # 1. The Badge
-        log_text = Text(badge_text, style=badge_style)
-        log_text.append(" ")  # Spacer
+        logger.log(log_level, log_message)
 
-        # 2. The Request Info
-        log_text.append(f"{request.method} ", style="bold cyan")
-        log_text.append(f"{request.path} ", style="white")
+        # --- DEVELOPMENT STYLING (optional) ---
+        if settings.DEBUG:
+            # Default settings (Blue INFO)
+            badge_text = " INFO "
+            badge_style = "bold white on blue"
 
-        # 3. The Status
-        status_style = "black" if status_code < 400 else "blue"
-        log_text.append(f"- Status: {status_code} ", style=status_style)
+            # Dynamic styling based on Status Code
+            if 200 <= status_code < 300:
+                badge_text = " SUCCESS "
+                badge_style = "bold black on green"
+            elif 400 <= status_code < 500:
+                badge_text = " WARNING "
+                badge_style = "bold black on yellow"
+            elif status_code >= 500:
+                badge_text = " ERROR "
+                badge_style = "bold white on red"
 
-        # 4. The Time
-        log_text.append(f"- ⌛ {time_display}", style="yellow")
+            # Construct the styled log message for development
+            log_text = Text(badge_text, style=badge_style)
+            log_text.append(" ")  # Spacer
 
-        # Print using Rich Console
-        console.print(log_text)
+            # The Request Info
+            log_text.append(f"{request.method} ", style="bold cyan")
+            log_text.append(f"{request.path} ", style="white")
+
+            # The Status
+            status_style = "black" if status_code < 400 else "blue"
+            log_text.append(f"- Status: {status_code} ", style=status_style)
+
+            # The Time
+            log_text.append(f"- ⌛ {time_display}", style="yellow")
+
+            # Print using Rich Console
+            console.print(log_text)
 
         return response
 
