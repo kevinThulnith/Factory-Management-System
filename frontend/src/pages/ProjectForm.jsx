@@ -5,6 +5,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Buttons,
   InfoItem,
   InputItem,
   SelectItem,
@@ -22,7 +23,6 @@ import {
   Target,
   Users,
   Clock,
-  Save,
   Info,
 } from "lucide-react";
 
@@ -433,30 +433,11 @@ const ProjectsForm = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-            <button
-              type="button"
-              onClick={() => navigate("/project")}
-              disabled={loading}
-              className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-            >
-              <XCircle size={18} /> Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !canSubmitForm}
-              className="bg-indigo-600 hover:bg-indigo-700 text-stone-100 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save size={18} />{" "}
-                  {isCreateMode ? "Create Project" : "Save Changes"}
-                </>
-              )}
-            </button>
-          </div>
+          <Buttons
+            onCancel={() => navigate("/project")}
+            text_01={isCreateMode ? "Create Project" : "Save Changes"}
+            disabled={loading || !canSubmitForm}
+          />
         </form>
       )}
     </Form>

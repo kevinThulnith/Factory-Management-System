@@ -1,9 +1,15 @@
-import { InfoItem, InputItem, SelectItem } from "../components/components";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
+
+import {
+  Buttons,
+  InfoItem,
+  InputItem,
+  SelectItem,
+} from "../components/components";
 
 import {
   CalendarClock,
@@ -18,7 +24,6 @@ import {
   Trash2,
   Beaker,
   Clock,
-  Save,
 } from "lucide-react";
 
 // --- Material Consumption Line Item Form ---
@@ -697,30 +702,11 @@ const ProductionScheduleListForm = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-            <button
-              type="button"
-              onClick={() => navigate("/production-schedule")}
-              disabled={loading}
-              className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !canManage}
-              className="bg-cyan-600 hover:bg-cyan-700 text-stone-100 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save size={18} />{" "}
-                  {isCreateMode ? "Create Schedule" : "Save Changes"}
-                </>
-              )}
-            </button>
-          </div>
+          <Buttons
+            onCancel={() => navigate("/production-schedule")}
+            text_01={isCreateMode ? "Create Schedule" : "Save Changes"}
+            disabled={loading || !canManage}
+          />
         </form>
       )}
     </Form>

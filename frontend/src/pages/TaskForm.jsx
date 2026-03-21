@@ -5,6 +5,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Buttons,
   InfoItem,
   InputItem,
   SelectItem,
@@ -26,7 +27,6 @@ import {
   Beaker,
   Target,
   Users,
-  Save,
   Info,
 } from "lucide-react";
 
@@ -381,10 +381,8 @@ const TasksForm = () => {
       } else {
         await api.patch(`api/task/${taskId}/`, payload);
       }
-      alert("Task saved successfully!");
-      navigate(
-        formData.project ? `/project/view/${formData.project}` : "/task",
-      );
+      alert("Task saved successfully !!!");
+      navigate("/task");
     } catch (err) {
       console.error("Error saving task:", err);
       setPageError(
@@ -769,36 +767,17 @@ const TasksForm = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-            <button
-              type="button"
-              onClick={() =>
-                navigate(
-                  formData.project
-                    ? `/project/view/${formData.project}`
-                    : "/task",
-                )
-              }
-              disabled={loading}
-              className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !canSubmitForm}
-              className="bg-emerald-600 hover:bg-emerald-700 text-stone-100 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save size={18} />{" "}
-                  {isCreateMode ? "Create Task" : "Save Changes"}
-                </>
-              )}
-            </button>
-          </div>
+          <Buttons
+            onCancel={() =>
+              navigate(
+                formData.project
+                  ? `/project/view/${formData.project}`
+                  : "/task",
+              )
+            }
+            text_01={isCreateMode ? "Create Task" : "Save Changes"}
+            disabled={loading || !canSubmitForm}
+          />
         </form>
       )}
     </Form>
