@@ -5,6 +5,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Buttons,
   InfoItem,
   InputItem,
   SelectItem,
@@ -13,7 +14,6 @@ import {
 
 import {
   Cog,
-  Save,
   Wrench,
   Factory,
   XCircle,
@@ -417,29 +417,11 @@ const ProductionLineForm = () => {
             </div>
           )}
 
-          <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-stone-500">
-            <button
-              type="button"
-              onClick={() => navigate("/production-line")}
-              disabled={loading}
-              className="bg-stone-600 hover:bg-stone-700 text-stone-200 font-medium py-2 px-3 rounded-md transition text-[14px] inline-flex items-center gap-2"
-            >
-              <XCircle size={18} /> Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || (!canSubmitFullForm && !canEditStatusOnly)}
-              className="bg-orange-500 hover:bg-orange-600 text-stone-900 font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save size={18} /> Save Changes
-                </>
-              )}
-            </button>
-          </div>
+          <Buttons
+            onCancel={() => navigate("/production-line")}
+            text_01={isCreateMode ? "Create Line" : "Save Changes"}
+            disabled={loading || (!canSubmitFullForm && !canEditStatusOnly)}
+          />
         </form>
       )}
     </Form>
