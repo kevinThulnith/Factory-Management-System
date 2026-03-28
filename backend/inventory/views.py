@@ -1,6 +1,7 @@
 from .models import Material, Supplier, Order, OrderMaterial, MaterialConsumption
 from django.shortcuts import get_object_or_404
 from core.views import ModelViewSet
+from django.db.models import Q
 
 from .permissions import (
     MaterialConsumptionPermission,
@@ -156,8 +157,6 @@ class MaterialConsumptionViewSet(ModelViewSet):
             return qs
 
         if user.role == "SUPERVISOR":
-            from django.db.models import Q
-
             return qs.filter(
                 Q(task__project__project_manager__department=user.department)
                 | Q(
@@ -166,16 +165,12 @@ class MaterialConsumptionViewSet(ModelViewSet):
             )
 
         if user.role == "MANAGER":
-            from django.db.models import Q
-
             return qs.filter(
                 Q(task__project__project_manager=user)
                 | Q(production_schedule__production_line__workshop__manager=user)
             )
 
         if user.role == "OPERATOR":
-            from django.db.models import Q
-
             return qs.filter(
                 Q(task__assigned_to=user)
                 | Q(
