@@ -19,10 +19,29 @@ services:
       options:
         max-size: "100m"
         max-file: "10"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
 
   fms-slim-redis:
     image: redis:7-alpine
     container_name: fms-slim-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     volumes:
       - fms-slim-redis-data:/data
       - fms-slim-logs:/var/log/redis
@@ -38,6 +57,20 @@ services:
       options:
         max-size: "100m"
         max-file: "10"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   fms-slim-frontend:
     build:
@@ -60,6 +93,11 @@ services:
       options:
         max-size: "50m"
         max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
 
   fms-slim-proxy:
     image: nginx:1.25-alpine-slim
@@ -70,6 +108,7 @@ services:
       - fms-slim-media-files:/app/media
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - fms-slim-network
     depends_on:
@@ -91,6 +130,28 @@ services:
       options:
         max-size: "100m"
         max-file: "10"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
 
   fms-slim-backend:
     build:
@@ -117,6 +178,24 @@ services:
       options:
         max-size: "100m"
         max-file: "10"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --quiet --tries=1 --spider http://localhost:8000/api/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
 
 networks:
   fms-slim-network:

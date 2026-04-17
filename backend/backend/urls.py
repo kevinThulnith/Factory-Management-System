@@ -1,5 +1,6 @@
 from django.conf.urls.static import static
 from django.urls import path, include
+from django.http import JsonResponse
 from django.contrib import admin
 from django.conf import settings
 from main.views import MeView
@@ -17,6 +18,11 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
     path("api/token/blacklist/", TokenBlacklistView.as_view(), name="blacklist_token"),
+    path(
+        "api/health",
+        lambda request: JsonResponse({"status": "healthy"}),
+        name="health_check",
+    ),
     # !User URLs
     path("api/user/me/", MeView.as_view(), name="user_me"),
     path("api/", include("main.urls")),
