@@ -19,7 +19,7 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
     path("api/token/blacklist/", TokenBlacklistView.as_view(), name="blacklist_token"),
     path(
-        "api/health",
+        "api/health/",
         lambda request: JsonResponse({"status": "healthy"}),
         name="health_check",
     ),
