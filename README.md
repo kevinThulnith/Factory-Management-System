@@ -412,20 +412,55 @@ const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/<resource>/`);
 
 ### 📋 What Gets Broadcast
 
-| Event        | Trigger                                      | Payload        |
-| ------------ | -------------------------------------------- | -------------- |
-| `created`    | New record added to the database             | New object     |
-| `updated`    | Existing record modified                     | Updated object |
-| `deleted`    | Record removed from the database             | Object ID      |
-| `stats`      | Any change that affects dashboard KPIs       | Stats object   |
+| Event     | Trigger                                | Payload        |
+| --------- | -------------------------------------- | -------------- |
+| `created` | New record added to the database       | New object     |
+| `updated` | Existing record modified               | Updated object |
+| `deleted` | Record removed from the database       | Object ID      |
+| `stats`   | Any change that affects dashboard KPIs | Stats object   |
 
 ### 🛠️ Backend Stack
 
-| Component          | Role                                         |
-| ------------------ | -------------------------------------------- |
-| **Django Channels** | WebSocket consumer routing & group layer    |
-| **Daphne (ASGI)**  | Async server — handles WS + HTTP together    |
-| **Redis**          | Channel layer backend for message passing    |
+| Component           | Role                                      |
+| ------------------- | ----------------------------------------- |
+| **Django Channels** | WebSocket consumer routing & group layer  |
+| **Daphne (ASGI)**   | Async server — handles WS + HTTP together |
+| **Redis**           | Channel layer backend for message passing |
+
+---
+
+## 🧠 Redis Cache (RBAC-Aware)
+
+The backend uses **django-redis** for caching and session storage, with cache keys scoped to avoid RBAC data leaks.
+
+### ✅ What’s Cached
+
+- **List/detail endpoints** are cached with **per-user scope** by default (role/department filters stay safe)
+- **Reference data** (materials, suppliers, products, processes) uses **global scope** for higher cache hit rates
+- Cache entries are **invalidated on write** via signals and view hooks
+
+### ⚙️ Environment Variables
+
+Ensure these are set in `backend/.env` (defaults shown in setup section):
+
+```env
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+```
+
+### 🧪 Quick Cache Check
+
+```sh
+uv run manage.py shell
+```
+
+```py
+from django.core.cache import cache
+cache.set("fms_cache_test", "ok", 30)
+cache.get("fms_cache_test")
+```
+
+Expected output: `"ok"`
 
 ---
 
