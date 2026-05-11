@@ -1,3 +1,4 @@
+from core.cache_utils import RBACCacheMixin, TIMEOUT_SHORT, invalidate_resource
 from .permissions import ProjectPermissions, TaskPermissions
 from .serializers import ProjectSerializer, TaskSerializer
 from rest_framework.viewsets import ModelViewSet
@@ -5,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from .models import Project, Task
 
 
-class ProjectViewSet(ModelViewSet):
+class ProjectViewSet(RBACCacheMixin, ModelViewSet):
     """
     Project API:
     - Admins: Full CRUD.
@@ -16,6 +17,9 @@ class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [ProjectPermissions]
+    cache_resource = "project"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -34,9 +38,10 @@ class ProjectViewSet(ModelViewSet):
         Handle project creation - ensure admin users can create projects
         """
         serializer.save()
+        invalidate_resource(self.cache_resource)
 
 
-class TaskListView(ModelViewSet):
+class TaskListView(RBACCacheMixin, ModelViewSet):
     """
     Task List API:
     - Operators: List tasks assigned to them
@@ -44,6 +49,9 @@ class TaskListView(ModelViewSet):
 
     serializer_class = TaskSerializer
     permission_classes = [TaskPermissions]
+    cache_resource = "task"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -62,7 +70,7 @@ class TaskListView(ModelViewSet):
         return Task.objects.none()
 
 
-class ProjectTaskViewSet(ModelViewSet):
+class ProjectTaskViewSet(RBACCacheMixin, ModelViewSet):
     """
     Project Task API (Nested):
     - Must include project_id in URL
@@ -73,6 +81,9 @@ class ProjectTaskViewSet(ModelViewSet):
 
     serializer_class = TaskSerializer
     permission_classes = [TaskPermissions]
+    cache_resource = "task"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         # !Get tasks for the specific project
@@ -97,3 +108,4 @@ class ProjectTaskViewSet(ModelViewSet):
         project_id = self.kwargs.get("project_pk")
         project = get_object_or_404(Project, pk=project_id)
         serializer.save(project=project)
+        invalidate_resource(self.cache_resource)

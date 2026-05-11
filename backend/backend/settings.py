@@ -275,3 +275,38 @@ LOGGING = {
         },
     },
 }
+
+# !Redis caching configuration
+CACHES = {
+    # Default cache — used by all low-level cache calls and view decorators
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', '127.0.01')}:{os.getenv('REDIS_PORT', 6379)}/1",
+        "KEY_PREFIX": "fms",
+        "TIMEOUT": 300,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
+            "IGNORE_EXCEPTIONS": True,  # graceful cache miss on Redis down
+            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
+            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 20},
+        },
+    },
+    # Separate logical DB for session storage
+    "session": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{os.getenv("REDIS_HOST", "127.0.0.1")}:{os.getenv("REDIS_HOST", "127.0.0.1")}/2",
+        "KEY_PREFIX": "fms-session",
+        "TIMEOUT": 86400,  # 24 hours
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,
+        },
+    },
+}
+
+# Store Django sessions in Redis instead of the DB
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "session"

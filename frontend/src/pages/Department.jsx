@@ -1,10 +1,10 @@
 import LoadingIndicator from "../components/LoadingIndicator";
 import { useState, useMemo, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
-import { Link, useNavigate } from "react-router-dom";
 
 import {
   ExportCsvButton,
@@ -17,7 +17,6 @@ import {
 
 import {
   ChevronRight,
-  PlusCircle,
   Building2,
   UserCheck,
   Calendar,

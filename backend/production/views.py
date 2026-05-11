@@ -4,6 +4,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 
+from core.cache_utils import (
+    invalidate_resource,
+    RBACCacheMixin,
+    TIMEOUT_MEDIUM,
+    TIMEOUT_SHORT,
+    TIMEOUT_LONG,
+)
+
 from .permissions import (
     ManufacturingProcessPermission,
     ProductionSchedulePermission,
@@ -16,11 +24,10 @@ from .serializers import (
     ProductionLineSerializer,
 )
 
-
 # TODO: Create production model views
 
 
-class ManufacturingProcessViewSet(ModelViewSet):
+class ManufacturingProcessViewSet(RBACCacheMixin, ModelViewSet):
     """
     Manufacturing Process API
     - Admins: Full CRUD access
@@ -30,14 +37,20 @@ class ManufacturingProcessViewSet(ModelViewSet):
     serializer_class = ManufacturingProcessSerializer
     permission_classes = [ManufacturingProcessPermission]
     queryset = ManufacturingProcess.objects.all()
+    cache_resource = "manufacturing_process"
+    cache_timeout = TIMEOUT_LONG
+    cache_scope = "global"
 
 
-class ProductionLineViewSet(ModelViewSet):
+class ProductionLineViewSet(RBACCacheMixin, ModelViewSet):
     "Production Line API with machine management"
 
     serializer_class = ProductionLineSerializer
     permission_classes = [ProductionLinePermission]
     queryset = ProductionLine.objects.all()
+    cache_resource = "production_line"
+    cache_timeout = TIMEOUT_MEDIUM
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -104,12 +117,13 @@ class ProductionLineViewSet(ModelViewSet):
                 },
                 status=status.HTTP_200_OK,
             )
-
         except Exception as e:
             return Response("Error invalid data", status=status.HTTP_400_BAD_REQUEST)
+        finally:
+            invalidate_resource(self.cache_resource)
 
 
-class ProductionScheduleViewSet(ModelViewSet):
+class ProductionScheduleViewSet(RBACCacheMixin, ModelViewSet):
     """
     Production Schedule API
     - Admins: Full CRUD access
@@ -120,6 +134,9 @@ class ProductionScheduleViewSet(ModelViewSet):
     serializer_class = ProductionScheduleSerializer
     permission_classes = [ProductionSchedulePermission]
     queryset = ProductionSchedule.objects.all()
+    cache_resource = "production_schedule"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
