@@ -1,3 +1,4 @@
+from .cache_utils import RBACCacheMixin, TIMEOUT_LONG, TIMEOUT_MEDIUM, TIMEOUT_SHORT
 from .models import MachineOperatorAssignment, Department, Workshop, Machine
 from rest_framework.viewsets import ModelViewSet
 
@@ -19,7 +20,7 @@ from .serializers import (
 # TODO: Create core model views
 
 
-class DepartmentViewSet(ModelViewSet):
+class DepartmentViewSet(RBACCacheMixin, ModelViewSet):
     """
     Departments API
     - Admins: Full CRUD.
@@ -28,6 +29,9 @@ class DepartmentViewSet(ModelViewSet):
 
     serializer_class = DepartmentSerializer
     permission_classes = [DepartmentPermissions]
+    cache_resource = "department"
+    cache_timeout = TIMEOUT_LONG
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -43,7 +47,7 @@ class DepartmentViewSet(ModelViewSet):
         return Department.objects.none()
 
 
-class WorkshopViewSet(ModelViewSet):
+class WorkshopViewSet(RBACCacheMixin, ModelViewSet):
     """
     Workshops API
     - Admins: Full CRUD access
@@ -55,6 +59,9 @@ class WorkshopViewSet(ModelViewSet):
 
     serializer_class = WorkshopSerializer
     permission_classes = [WorkshopPermissions]
+    cache_resource = "workshop"
+    cache_timeout = TIMEOUT_LONG
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -73,7 +80,7 @@ class WorkshopViewSet(ModelViewSet):
         return Workshop.objects.none()
 
 
-class MachineViewSet(ModelViewSet):
+class MachineViewSet(RBACCacheMixin, ModelViewSet):
     """
     Machines API:
     - Admins: Full CRUD access
@@ -85,6 +92,9 @@ class MachineViewSet(ModelViewSet):
 
     serializer_class = MachineSerializer
     permission_classes = [MachinePermissions]
+    cache_resource = "machine"
+    cache_timeout = TIMEOUT_MEDIUM
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -105,7 +115,7 @@ class MachineViewSet(ModelViewSet):
         return Machine.objects.none()
 
 
-class MachineOperatorAssignmentViewSet(ModelViewSet):
+class MachineOperatorAssignmentViewSet(RBACCacheMixin, ModelViewSet):
     """
     API endpoints for machine operator assignments
     - Admins: Full CRUD
@@ -116,6 +126,9 @@ class MachineOperatorAssignmentViewSet(ModelViewSet):
 
     serializer_class = MachineOperatorAssignmentSerializer
     permission_classes = [MachineOperatorAssignmentPermissions]
+    cache_resource = "machine_operator_assignment"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
