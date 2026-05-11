@@ -1,3 +1,4 @@
+from core.cache_utils import RBACCacheMixin, TIMEOUT_MEDIUM, TIMEOUT_SHORT
 from .permissions import LaborAllocationPermission, SkillMatrixPermission
 from .serializers import LaborAllocationSerializer, SkillMatrixSerializer
 from .models import LaborAllocation, SkillMatrix
@@ -7,7 +8,7 @@ from django.db.models import Q
 # TODO: Create labor views
 
 
-class LaborAllocationViewset(ModelViewSet):
+class LaborAllocationViewset(RBACCacheMixin, ModelViewSet):
     """
     LaborAllocation View
     - Admins: Full CRUD Access
@@ -18,6 +19,9 @@ class LaborAllocationViewset(ModelViewSet):
 
     serializer_class = LaborAllocationSerializer
     permission_classes = [LaborAllocationPermission]
+    cache_resource = "labor_allocation"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -43,7 +47,7 @@ class LaborAllocationViewset(ModelViewSet):
         return LaborAllocation.objects.none()
 
 
-class SkillMatrixViewset(ModelViewSet):
+class SkillMatrixViewset(RBACCacheMixin, ModelViewSet):
     """
     SkillMatrix View
     - Admins: Full CRUD Access
@@ -53,6 +57,9 @@ class SkillMatrixViewset(ModelViewSet):
 
     serializer_class = SkillMatrixSerializer
     permission_classes = [SkillMatrixPermission]
+    cache_resource = "skill_matrix"
+    cache_timeout = TIMEOUT_MEDIUM
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user

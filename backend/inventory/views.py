@@ -3,6 +3,13 @@ from django.shortcuts import get_object_or_404
 from core.views import ModelViewSet
 from django.db.models import Q
 
+from core.cache_utils import (
+    invalidate_resource,
+    RBACCacheMixin,
+    TIMEOUT_SHORT,
+    TIMEOUT_LONG,
+)
+
 from .permissions import (
     MaterialConsumptionPermission,
     OrderMaterialPermission,
@@ -22,7 +29,7 @@ from .serializers import (
 # TODO: create inventory model views
 
 
-class MaterialViewSet(ModelViewSet):
+class MaterialViewSet(RBACCacheMixin, ModelViewSet):
     """
     Material API
     - Admins: Full CRUD access
@@ -32,9 +39,12 @@ class MaterialViewSet(ModelViewSet):
     serializer_class = MaterialSerializer
     permission_classes = [MaterialPermission]
     queryset = Material.objects.all()
+    cache_resource = "material"
+    cache_timeout = TIMEOUT_LONG
+    cache_scope = "global"
 
 
-class SupplierViewSet(ModelViewSet):
+class SupplierViewSet(RBACCacheMixin, ModelViewSet):
     """
     Supplier API
     - Admins: Full CRUD access
@@ -44,9 +54,12 @@ class SupplierViewSet(ModelViewSet):
     serializer_class = SupplierSerializer
     permission_classes = [BasePermissions]
     queryset = Supplier.objects.all()
+    cache_resource = "supplier"
+    cache_timeout = TIMEOUT_LONG
+    cache_scope = "global"
 
 
-class OrderViewSet(ModelViewSet):
+class OrderViewSet(RBACCacheMixin, ModelViewSet):
     """
     Order API :
     - Admins: Full CRUD access
@@ -56,6 +69,9 @@ class OrderViewSet(ModelViewSet):
 
     serializer_class = OrderSerializer
     permission_classes = [OrderPermission]
+    cache_resource = "order"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -84,7 +100,7 @@ class OrderViewSet(ModelViewSet):
         return Order.objects.none()
 
 
-class OrderMaterialViewSet(ModelViewSet):
+class OrderMaterialViewSet(RBACCacheMixin, ModelViewSet):
     """
     OrderMaterial API (Nested under Order):
     - Must specify order_id to access materials
@@ -95,6 +111,9 @@ class OrderMaterialViewSet(ModelViewSet):
 
     serializer_class = OrderMaterialSerializer
     permission_classes = [OrderMaterialPermission]
+    cache_resource = "order_material"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         # !Get order materials for the specified order
@@ -115,11 +134,13 @@ class OrderMaterialViewSet(ModelViewSet):
         order_id = self.kwargs.get("order_pk")
         order = get_object_or_404(Order, id=order_id)
         serializer.save(order=order)
+        invalidate_resource(self.cache_resource)
 
     def perform_update(self, serializer):
         order_id = self.kwargs.get("order_pk")
         order = get_object_or_404(Order, id=order_id)
         serializer.save(order=order)
+        invalidate_resource(self.cache_resource)
 
     def perform_destroy(self, instance):
         # Prevent deletion if user is SUPERVISOR
@@ -127,9 +148,10 @@ class OrderMaterialViewSet(ModelViewSet):
         if user.role == "SUPERVISOR":
             raise PermissionError("Supervisors cannot delete order materials.")
         instance.delete()
+        invalidate_resource(self.cache_resource)
 
 
-class MaterialConsumptionViewSet(ModelViewSet):
+class MaterialConsumptionViewSet(RBACCacheMixin, ModelViewSet):
     """
     Material Consumption API:
     - Admins: Full CRUD
@@ -140,6 +162,9 @@ class MaterialConsumptionViewSet(ModelViewSet):
 
     serializer_class = MaterialConsumptionSerializer
     permission_classes = [MaterialConsumptionPermission]
+    cache_resource = "material_consumption"
+    cache_timeout = TIMEOUT_SHORT
+    cache_scope = "user"
 
     def get_queryset(self):
         user = self.request.user
@@ -182,3 +207,4 @@ class MaterialConsumptionViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(consumed_by=self.request.user)
+        invalidate_resource(self.cache_resource)
