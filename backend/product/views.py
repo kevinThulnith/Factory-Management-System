@@ -1,6 +1,5 @@
 from core.cache_utils import RBACCacheMixin, TIMEOUT_LONG, invalidate_resource
 from .serializers import ProductSerializer, ProductProcessSerializer
-from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
 from .permissions import ProductPermission
 from .models import Product
@@ -8,7 +7,7 @@ from .models import Product
 # TODO: Create product model views
 
 
-class ProductViewSet(RBACCacheMixin, ModelViewSet):
+class ProductViewSet(RBACCacheMixin):
     """
     Product API
     - Admins: Full CRUD access
@@ -24,7 +23,7 @@ class ProductViewSet(RBACCacheMixin, ModelViewSet):
     cache_scope = "global"
 
 
-class ProductProcessViewSet(RBACCacheMixin, ModelViewSet):
+class ProductProcessViewSet(RBACCacheMixin):
     """
     Product Process API
     - Must be accessed through a product

@@ -1,6 +1,5 @@
 from .models import Material, Supplier, Order, OrderMaterial, MaterialConsumption
 from django.shortcuts import get_object_or_404
-from core.views import ModelViewSet
 from django.db.models import Q
 
 from core.cache_utils import (
@@ -26,10 +25,10 @@ from .serializers import (
     OrderSerializer,
 )
 
-# TODO: create inventory model views
+# TODO: Create inventory model views
 
 
-class MaterialViewSet(RBACCacheMixin, ModelViewSet):
+class MaterialViewSet(RBACCacheMixin):
     """
     Material API
     - Admins: Full CRUD access
@@ -44,7 +43,7 @@ class MaterialViewSet(RBACCacheMixin, ModelViewSet):
     cache_scope = "global"
 
 
-class SupplierViewSet(RBACCacheMixin, ModelViewSet):
+class SupplierViewSet(RBACCacheMixin):
     """
     Supplier API
     - Admins: Full CRUD access
@@ -59,7 +58,7 @@ class SupplierViewSet(RBACCacheMixin, ModelViewSet):
     cache_scope = "global"
 
 
-class OrderViewSet(RBACCacheMixin, ModelViewSet):
+class OrderViewSet(RBACCacheMixin):
     """
     Order API :
     - Admins: Full CRUD access
@@ -100,7 +99,7 @@ class OrderViewSet(RBACCacheMixin, ModelViewSet):
         return Order.objects.none()
 
 
-class OrderMaterialViewSet(RBACCacheMixin, ModelViewSet):
+class OrderMaterialViewSet(RBACCacheMixin):
     """
     OrderMaterial API (Nested under Order):
     - Must specify order_id to access materials
@@ -151,7 +150,7 @@ class OrderMaterialViewSet(RBACCacheMixin, ModelViewSet):
         invalidate_resource(self.cache_resource)
 
 
-class MaterialConsumptionViewSet(RBACCacheMixin, ModelViewSet):
+class MaterialConsumptionViewSet(RBACCacheMixin):
     """
     Material Consumption API:
     - Admins: Full CRUD

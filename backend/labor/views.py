@@ -2,13 +2,12 @@ from core.cache_utils import RBACCacheMixin, TIMEOUT_MEDIUM, TIMEOUT_SHORT
 from .permissions import LaborAllocationPermission, SkillMatrixPermission
 from .serializers import LaborAllocationSerializer, SkillMatrixSerializer
 from .models import LaborAllocation, SkillMatrix
-from rest_framework.viewsets import ModelViewSet
 from django.db.models import Q
 
-# TODO: Create labor views
+# TODO: Create labor model views
 
 
-class LaborAllocationViewset(RBACCacheMixin, ModelViewSet):
+class LaborAllocationViewset(RBACCacheMixin):
     """
     LaborAllocation View
     - Admins: Full CRUD Access
@@ -47,7 +46,7 @@ class LaborAllocationViewset(RBACCacheMixin, ModelViewSet):
         return LaborAllocation.objects.none()
 
 
-class SkillMatrixViewset(RBACCacheMixin, ModelViewSet):
+class SkillMatrixViewset(RBACCacheMixin):
     """
     SkillMatrix View
     - Admins: Full CRUD Access

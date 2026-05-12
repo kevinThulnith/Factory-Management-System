@@ -1,5 +1,4 @@
 from .models import ManufacturingProcess, ProductionLine, ProductionSchedule
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -27,7 +26,7 @@ from .serializers import (
 # TODO: Create production model views
 
 
-class ManufacturingProcessViewSet(RBACCacheMixin, ModelViewSet):
+class ManufacturingProcessViewSet(RBACCacheMixin):
     """
     Manufacturing Process API
     - Admins: Full CRUD access
@@ -42,7 +41,7 @@ class ManufacturingProcessViewSet(RBACCacheMixin, ModelViewSet):
     cache_scope = "global"
 
 
-class ProductionLineViewSet(RBACCacheMixin, ModelViewSet):
+class ProductionLineViewSet(RBACCacheMixin):
     "Production Line API with machine management"
 
     serializer_class = ProductionLineSerializer
@@ -123,7 +122,7 @@ class ProductionLineViewSet(RBACCacheMixin, ModelViewSet):
             invalidate_resource(self.cache_resource)
 
 
-class ProductionScheduleViewSet(RBACCacheMixin, ModelViewSet):
+class ProductionScheduleViewSet(RBACCacheMixin):
     """
     Production Schedule API
     - Admins: Full CRUD access

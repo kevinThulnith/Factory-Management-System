@@ -5,7 +5,6 @@ from .permissions import (
     ProductionLinePermission,
 )
 
-
 # TODO: Create consumer classes for production models
 
 
