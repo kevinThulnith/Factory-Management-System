@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from datetime import timedelta
-from dotenv import load_dotenv
-from pathlib import Path
 import os
+from datetime import timedelta
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -309,9 +310,9 @@ CACHES = {
     # Separate logical DB for session storage
     "session": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{os.getenv("REDIS_HOST", "127.0.0.1")}:{os.getenv("REDIS_HOST", "127.0.0.1")}/2",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', '6379')}/2",
         "KEY_PREFIX": "fms-session",
-        "TIMEOUT": 86400,  # 24 hours
+        "TIMEOUT": 86400,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "IGNORE_EXCEPTIONS": True,
