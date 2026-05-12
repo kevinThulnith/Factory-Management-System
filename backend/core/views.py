@@ -1,6 +1,5 @@
 from .cache_utils import RBACCacheMixin, TIMEOUT_LONG, TIMEOUT_MEDIUM, TIMEOUT_SHORT
 from .models import MachineOperatorAssignment, Department, Workshop, Machine
-from rest_framework.viewsets import ModelViewSet
 
 from .permissions import (
     MachineOperatorAssignmentPermissions,
@@ -16,11 +15,10 @@ from .serializers import (
     MachineSerializer,
 )
 
-
 # TODO: Create core model views
 
 
-class DepartmentViewSet(RBACCacheMixin, ModelViewSet):
+class DepartmentViewSet(RBACCacheMixin):
     """
     Departments API
     - Admins: Full CRUD.
@@ -47,7 +45,7 @@ class DepartmentViewSet(RBACCacheMixin, ModelViewSet):
         return Department.objects.none()
 
 
-class WorkshopViewSet(RBACCacheMixin, ModelViewSet):
+class WorkshopViewSet(RBACCacheMixin):
     """
     Workshops API
     - Admins: Full CRUD access
@@ -80,7 +78,7 @@ class WorkshopViewSet(RBACCacheMixin, ModelViewSet):
         return Workshop.objects.none()
 
 
-class MachineViewSet(RBACCacheMixin, ModelViewSet):
+class MachineViewSet(RBACCacheMixin):
     """
     Machines API:
     - Admins: Full CRUD access
@@ -115,7 +113,7 @@ class MachineViewSet(RBACCacheMixin, ModelViewSet):
         return Machine.objects.none()
 
 
-class MachineOperatorAssignmentViewSet(RBACCacheMixin, ModelViewSet):
+class MachineOperatorAssignmentViewSet(RBACCacheMixin):
     """
     API endpoints for machine operator assignments
     - Admins: Full CRUD

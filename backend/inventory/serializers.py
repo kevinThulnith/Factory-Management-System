@@ -9,7 +9,7 @@ from rest_framework.serializers import (
 )
 
 
-# TODO: Create inventory serializers
+# TODO: Create inventory model serializers
 
 
 class MaterialSerializer(ModelSerializer):
