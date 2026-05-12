@@ -11,7 +11,7 @@ from rest_framework.serializers import (
     CharField,
 )
 
-# TODO: Create project serializers
+# TODO: Create project model serializers
 
 
 class TaskSerializer(ModelSerializer):

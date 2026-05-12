@@ -11,7 +11,7 @@ from django.db.models import (
     Index,
 )
 
-# TODO: Create product tables
+# TODO: Create product app models
 
 
 class Product(Model):

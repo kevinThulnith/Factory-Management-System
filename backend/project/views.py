@@ -1,12 +1,13 @@
 from core.cache_utils import RBACCacheMixin, TIMEOUT_SHORT, invalidate_resource
 from .permissions import ProjectPermissions, TaskPermissions
 from .serializers import ProjectSerializer, TaskSerializer
-from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_object_or_404
 from .models import Project, Task
 
+# TODO: Create project model view
 
-class ProjectViewSet(RBACCacheMixin, ModelViewSet):
+
+class ProjectViewSet(RBACCacheMixin):
     """
     Project API:
     - Admins: Full CRUD.
@@ -41,7 +42,7 @@ class ProjectViewSet(RBACCacheMixin, ModelViewSet):
         invalidate_resource(self.cache_resource)
 
 
-class TaskListView(RBACCacheMixin, ModelViewSet):
+class TaskListView(RBACCacheMixin):
     """
     Task List API:
     - Operators: List tasks assigned to them
@@ -70,7 +71,7 @@ class TaskListView(RBACCacheMixin, ModelViewSet):
         return Task.objects.none()
 
 
-class ProjectTaskViewSet(RBACCacheMixin, ModelViewSet):
+class ProjectTaskViewSet(RBACCacheMixin):
     """
     Project Task API (Nested):
     - Must include project_id in URL

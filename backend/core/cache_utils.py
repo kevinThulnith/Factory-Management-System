@@ -1,8 +1,10 @@
-import hashlib
-from urllib.parse import urlencode
-
-from django.core.cache import cache
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from django.core.cache import cache
+from urllib.parse import urlencode
+import hashlib
+
+# TODO: RBAC caching class
 
 TIMEOUT_SHORT = 60
 TIMEOUT_LONG = 3600
@@ -105,7 +107,8 @@ def get_or_set(key, callable_, timeout=TIMEOUT_MEDIUM):
     return cache.get_or_set(key, callable_, timeout)
 
 
-class RBACCacheMixin:
+# !Custom Model view set with redis caching
+class RBACCacheMixin(ModelViewSet):
     cache_resource = None
     cache_timeout = TIMEOUT_MEDIUM
     cache_scope = "user"

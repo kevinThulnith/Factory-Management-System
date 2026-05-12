@@ -1,6 +1,5 @@
 from core.permissions import PermissionBlock, SAFE_METHODS
 
-
 # TODO: Create production model permissions
 
 
