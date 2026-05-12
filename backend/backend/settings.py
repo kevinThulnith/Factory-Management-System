@@ -297,7 +297,7 @@ CACHES = {
     # Separate logical DB for session storage
     "session": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{os.getenv("REDIS_HOST", "127.0.0.1")}:{os.getenv("REDIS_HOST", "127.0.0.1")}/2",
+        "LOCATION": f"redis://{os.getenv("REDIS_HOST", "127.0.0.1")}:{os.getenv('REDIS_PORT', 6379)}/2",
         "KEY_PREFIX": "fms-session",
         "TIMEOUT": 86400,  # 24 hours
         "OPTIONS": {
