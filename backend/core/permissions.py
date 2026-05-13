@@ -1,10 +1,10 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 # TODO: Create core model permissions
 
 
 class PermissionBlock(BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request, view) -> bool:  # type: ignore[override]
         if not request.user.is_authenticated:
             return False
 
@@ -13,7 +13,7 @@ class PermissionBlock(BasePermission):
 
         return False
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request, view, obj) -> bool:  # type: ignore[override]
         if request.user.role == "ADMIN":
             return True
 
@@ -97,7 +97,7 @@ class WorkshopPermissions(PermissionBlock):
 
         if user.role == "MANAGER":
             return obj.manager == user
-        
+
         if user.role == "TECHNICIAN":
             return True
 
