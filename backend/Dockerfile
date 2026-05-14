@@ -36,6 +36,11 @@ RUN find /app/.venv/lib -type d \( -name "tests" -o -name "test" \) \
     ! -path "*/django/test" \
     | xargs rm -rf
 
+# Strip .dist-info metadata and compiled files
+RUN find /app/.venv -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null || true && \
+    find /app/.venv -type f -name "*.pyc" -delete && \
+    find /app/.venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+
 # Stage 2: Production
 FROM python:3.14-alpine
 
