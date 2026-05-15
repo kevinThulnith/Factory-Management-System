@@ -5,6 +5,7 @@ import json
 
 # TODO: Create custom social account adapter to handle social login logic for labor app.
 
+
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
         "Check if user exists and is active before allowing social login."
@@ -20,7 +21,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                 HttpResponse(
                     content=json.dumps(
                         {"error": "No email was provided by the social account."}
-                    ),
+                    ).encode("utf-8"),
                     status=400,
                     content_type="application/json",
                 )
@@ -41,7 +42,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                             "error": "Your email is not registered in our system. Please contact the system administrator to request access.",
                             "message": "Contact admin at admin@factorymanagementsystem.com to request access using your Gmail account.",
                         }
-                    ),
+                    ).encode("utf-8"),
                     status=403,
                     content_type="application/json",
                 )
