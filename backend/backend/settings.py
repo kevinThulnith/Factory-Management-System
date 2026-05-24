@@ -293,7 +293,7 @@ CACHES = {
     # Default cache — used by all low-level cache calls and view decorators
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{os.getenv('REDIS_HOST', '127.0.01')}:{os.getenv('REDIS_PORT', 6379)}/1",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', 6379)}/1",
         "KEY_PREFIX": "fms",
         "TIMEOUT": 300,
         "OPTIONS": {
