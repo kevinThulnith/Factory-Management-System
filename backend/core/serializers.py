@@ -75,7 +75,6 @@ class MachineSerializer(ModelSerializer):
 
     def validate(self, attrs):
         "Validate machine data including operator assignment"
-        from django.core.exceptions import ValidationError as DjangoValidationError
 
         operator = attrs.get("operator")
         workshop = attrs.get("workshop", getattr(self.instance, "workshop", None))
