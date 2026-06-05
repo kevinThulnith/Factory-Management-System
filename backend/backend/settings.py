@@ -145,15 +145,27 @@ CHANNEL_LAYERS = {
     },
 }
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 # ! When using online databases
-# DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
+# ! When using online databases
+_db_url = os.getenv("SUPABASE_URL")
+if not _db_url:
+    raise ValueError("SUPABASE_URL is not set in .env")
+
+db_config = dj_database_url.parse(_db_url)
+db_config["CONN_MAX_AGE"] = 60
+db_config["OPTIONS"] = {
+    "connect_timeout": 10,
+    "sslmode": "require",
+}
+
+DATABASES = {"default": db_config}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
