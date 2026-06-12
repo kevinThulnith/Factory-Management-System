@@ -1,5 +1,4 @@
 from inventory.serializers import MaterialConsumptionSerializer
-from django.utils.translation import gettext_lazy as _
 from inventory.models import MaterialConsumption
 from .models import Project, Task
 from core.models import User

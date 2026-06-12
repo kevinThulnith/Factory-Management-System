@@ -26,7 +26,7 @@ def create_production_lines():
         workshop = workshops[i]
         name = f"{workshop.name} {SAMPLE_PRODUCTION_LINES[i]}"
         try:
-            production_line = ProductionLine.objects.create(
+            ProductionLine.objects.create(
                 name=name,
                 workshop=workshop,
                 production_capacity=random.choice(SAMPLE_PRODUCTION_LINE_CAPACITIES),

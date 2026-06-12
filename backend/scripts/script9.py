@@ -119,7 +119,7 @@ def create_production_schedules():
                 if existing:
                     continue  # Skip if similar schedule exists
 
-                schedule = ProductionSchedule.objects.create(
+                ProductionSchedule.objects.create(
                     production_line=production_line,
                     product=product,
                     quantity=quantity,

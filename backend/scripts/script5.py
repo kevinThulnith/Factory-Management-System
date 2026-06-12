@@ -31,7 +31,7 @@ def create_suppliers():
         )
 
         if not Supplier.objects.filter(email=email).exists():
-            supplier = Supplier.objects.create(  # Changed create_user to create
+            Supplier.objects.create(  # Changed create_user to create
                 name=name,
                 address=address,
                 email=email,
