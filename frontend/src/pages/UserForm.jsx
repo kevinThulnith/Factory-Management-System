@@ -10,13 +10,13 @@ import {
   ShieldAlert,
   ShieldCheck,
   UsersRound,
+  Building2,
   Activity,
   CogIcon,
   Package,
   EyeOff,
   Crown,
   Eye,
-  Building2,
 } from "lucide-react";
 
 const ErrorMessage = ({ message }) => (

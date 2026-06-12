@@ -24,11 +24,11 @@ const SupplierForm = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    contact_person: "",
     email: "",
     phone: "",
     address: "",
     website: "",
+    contact_person: "",
   });
 
   const [errors, setErrors] = useState({});
