@@ -19,8 +19,8 @@ import {
 } from "../components/components";
 
 import {
-  Users,
   Info,
+  Users,
   Clock,
   Factory,
   Briefcase,

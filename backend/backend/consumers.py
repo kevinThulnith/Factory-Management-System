@@ -2,6 +2,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 import json
 
+# TODO: WebSocket Consumers with permission checks and group management for live updates
+
 
 # ? Dummy view object for permission checks
 class DummyView:
