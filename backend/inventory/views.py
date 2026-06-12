@@ -206,4 +206,3 @@ class MaterialConsumptionViewSet(RBACCacheMixin):
 
     def perform_create(self, serializer):
         serializer.save(consumed_by=self.request.user)
-        invalidate_resource(self.cache_resource)
