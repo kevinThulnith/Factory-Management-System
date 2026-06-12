@@ -82,7 +82,7 @@ A Full-stack **Factory Management System (FMS)** built using **Django**, **React
 | **Real-Time**      | Django Channels 4.3.1, Redis 7, Daphne (ASGI)                |
 | **Auth**           | SimpleJWT 5.5.1, Google OAuth 2.0 (django-allauth)           |
 | **Frontend**       | React 19.1.1, Vite 7.1.7 (SWC), Tailwind CSS 3.4.18          |
-| **Database**       | SQLite (dev / main branch) · PostgreSQL 14 (docker branches) |
+| **Database**       | Supabase (PostgreSQL 14) · PostgreSQL 14 (docker branches) |
 | **Infrastructure** | Docker, Docker Compose, Nginx 1.25                           |
 
 ## 🏗️ System Architecture
@@ -164,6 +164,17 @@ Generate a secure key with:
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
+#### 🗄️ Supabase Database Setup (Mandatory)
+
+This project uses **Supabase** (PostgreSQL) as the primary database.
+
+1. Create a free account at [Supabase](https://supabase.com/).
+2. Create a new project and wait for it to be provisioned.
+3. Go to **Project Settings → Database → Connection string**.
+4. Select **URI** and copy the link (looks like `postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres`).
+5. Replace `[YOUR-PASSWORD]` with the password you set during project creation.
+6. Copy this link and add it to your `backend/.env` file as `SUPABASE_URL`.
+
 ---
 
 **`backend/.env`**
@@ -176,6 +187,9 @@ SECRET_KEY=your-django-secret-key        # ← generated above
 
 # Comma-separated, no spaces
 ALLOWED_HOSTS=localhost,127.0.0.1,localhost:5173,localhost:8000
+
+# Supabase Database Link
+SUPABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres
 
 # Google OAuth — from Google Cloud Console (step 6 above)
 GOOGLE_CLIENT_ID=your-google-client-id
@@ -265,7 +279,7 @@ REDIS_PORT=6379
 
 | Branch           | Database   | Frontend                               | Notes                |
 | ---------------- | ---------- | -------------------------------------- | -------------------- |
-| `main`           | SQLite     | Vite dev server                        | Local development    |
+| `main`           | Supabase   | Vite dev server                        | Local development    |
 | `docker-compose` | PostgreSQL | Separate container                     | Full docker stack    |
 | `docker-slim`    | PostgreSQL | Dist files in volume, served via Nginx | Optimized production |
 
