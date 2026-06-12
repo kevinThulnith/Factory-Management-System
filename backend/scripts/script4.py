@@ -51,7 +51,7 @@ def create_machines():
                     last_maintenance_date=last_maintenance_date,
                     next_maintenance_date=next_maintenance_date,
                 ).save()
-                print(f"✅ Created machine")
+                print("✅ Created machine")
             print("\n\n")
 
     print(f"Total machines created: {created_count}")

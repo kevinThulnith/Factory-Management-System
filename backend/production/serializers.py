@@ -72,7 +72,7 @@ class ProductionLineSerializer(ModelSerializer):
                     )
 
                 instance.machines.set(machines)
-            except Exception as e:
+            except Exception:
                 raise ValidationError("Invalid machine IDs provided.")
 
         return instance
@@ -99,7 +99,7 @@ class ProductionLineSerializer(ModelSerializer):
                         )
 
                 instance.machines.set(machines)
-            except Exception as e:
+            except Exception:
                 raise ValidationError("Invalid machine IDs provided.")
 
         return instance

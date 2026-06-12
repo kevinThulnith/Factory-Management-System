@@ -18,7 +18,6 @@ from core.models import Workshop, Department, User
 
 def create_workshops():
     departments = Department.objects.all()
-    i = 0
     for department in departments:
         if department.name in SAMPLE_WORKSHOPS:
             workshop_list = SAMPLE_WORKSHOPS[department.name]
