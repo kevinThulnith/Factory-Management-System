@@ -145,6 +145,7 @@ CHANNEL_LAYERS = {
     },
 }
 
+# !When using deafault databases
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.sqlite3",
@@ -152,8 +153,7 @@ CHANNEL_LAYERS = {
 #     }
 # }
 
-# ! When using online databases
-# ! When using online databases
+# !When using online databases
 _db_url = os.getenv("SUPABASE_URL")
 if not _db_url:
     raise ValueError("SUPABASE_URL is not set in .env")

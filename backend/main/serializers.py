@@ -115,7 +115,6 @@ class GoogleLoginSerializer(SocialLoginSerializer):
     def validate(self, attrs):
         # Use the standard dj-rest-auth flow with GoogleOAuth2Adapter
         view = self.context.get("view")
-        request = self.context.get("request")
 
         # Set the adapter for this request
         if not hasattr(view, "adapter_class"):
@@ -123,5 +122,3 @@ class GoogleLoginSerializer(SocialLoginSerializer):
 
         # Let the parent serializer handle the validation
         return super().validate(attrs)
-
-        return attrs
