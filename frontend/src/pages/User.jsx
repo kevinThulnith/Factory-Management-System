@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useEffect, useState, useMemo } from "react";
+import useFetchData from "../hooks/useFetchData";
+import useDelete from "../hooks/useDelete";
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   RefreshButton,
@@ -40,16 +41,7 @@ function User() {
     role: "all",
   });
 
-  const fetchUsers = useCallback(() => {
-    setLoading(true);
-    api
-      .get("api/user/")
-      .then((res) => setAllUsers(res.data))
-      .catch((error) =>
-        alert("Failed to fetch users. Please try again.", error),
-      )
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchUsers = useFetchData("user", setLoading, setAllUsers);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -61,21 +53,7 @@ function User() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleDeleteUser = (userId, userName) => {
-    if (window.confirm(`Are you sure you want to delete user "${userName}"?`)) {
-      api
-        .delete(`api/user/${userId}/`)
-        .then(() => {
-          setAllUsers((prevUsers) =>
-            prevUsers.filter((user) => user.id !== userId),
-          );
-          alert(`User "${userName}" has been deleted.`);
-        })
-        .catch((error) =>
-          alert("Failed to delete user. Please try again.", error),
-        );
-    }
-  };
+  const handleDeleteUser = useDelete("user", setLoading, "users", fetchUsers);
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -371,9 +349,7 @@ function User() {
                             </Link>
                             {u.id !== user.id && u.role !== "ADMIN" && (
                               <button
-                                onClick={() =>
-                                  handleDeleteUser(u.id, u.username)
-                                }
+                                onClick={() => handleDeleteUser(u.id)}
                                 className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                                 title="Delete User"
                               >
