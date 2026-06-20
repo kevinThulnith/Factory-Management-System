@@ -28,3 +28,17 @@ dev = [
     "faker>=37.8.0",
     "rich>=14.2.0",
 ]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["core*", "main*", "backend*", "inventory*", "labor*", "product*", "production*", "project*"]
+exclude = ["*.tests", "*.tests.*", "tests*"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.html", "*.txt"]

@@ -19,7 +19,15 @@ import os
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# !FIX: Previously `Path(__file__).resolve().parent.parent`, which resolves
+# !relative to wherever settings.py physically lives. When this package is
+# !installed (e.g. via `pip install` from a built wheel), settings.py lands
+# !inside site-packages, so BASE_DIR pointed at site-packages instead of the
+# !actual project root — STATIC_ROOT/MEDIA_ROOT would write there silently.
+# !DJANGO_PROJECT_ROOT lets an installed deployment point BASE_DIR at the
+# !real working directory; running from source (the normal case) is
+# !unaffected since the env var won't be set and falls back to the old behavior.
+BASE_DIR = Path(os.getenv("DJANGO_PROJECT_ROOT", Path(__file__).resolve().parent.parent))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -146,26 +154,26 @@ CHANNEL_LAYERS = {
 }
 
 # !When using deafault databases
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
-# !When using online databases
-_db_url = os.getenv("SUPABASE_URL")
-if not _db_url:
-    raise ValueError("SUPABASE_URL is not set in .env")
-
-db_config = dj_database_url.parse(_db_url)
-db_config["CONN_MAX_AGE"] = 60
-db_config["OPTIONS"] = {
-    "connect_timeout": 10,
-    "sslmode": "require",
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
-DATABASES = {"default": db_config}
+# !When using online databases
+# _db_url = os.getenv("SUPABASE_URL")
+# if not _db_url:
+#     raise ValueError("SUPABASE_URL is not set in .env")
+
+# db_config = dj_database_url.parse(_db_url)
+# db_config["CONN_MAX_AGE"] = 60
+# db_config["OPTIONS"] = {
+#     "connect_timeout": 10,
+#     "sslmode": "require",
+# }
+
+# DATABASES = {"default": db_config}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
