@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -34,6 +35,15 @@ const MachineForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
+  const { user } = useAuth();
+  const [errors, setErrors] = useState({});
+  const [machine, setMachine] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [workshops, setWorkshops] = useState([]);
+  const [operators, setOperators] = useState([]);
+  const [pageError, setPageError] = useState("");
+  const [workshopsLoading, setWorkshopsLoading] = useState(false);
+  const [operatorsLoading, setOperatorsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     model_number: "",
@@ -47,62 +57,45 @@ const MachineForm = () => {
     specifications: "",
   });
 
-  const { user } = useAuth();
-  const [errors, setErrors] = useState({});
-  const [machine, setMachine] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [workshops, setWorkshops] = useState([]);
-  const [operators, setOperators] = useState([]);
-  const [pageError, setPageError] = useState("");
-  const [workshopsLoading, setWorkshopsLoading] = useState(false);
-  const [operatorsLoading, setOperatorsLoading] = useState(false);
+  // !Get all operators
+  const fetchOperators = useFetchData("user", setOperatorsLoading, (data) => {
+    const operatorUsers = data.filter((u) => ["OPERATOR"].includes(u.role));
+    setOperators(operatorUsers);
+  });
+
+  // !Get all workshops
+  const fetchWorkshops = useFetchData(
+    "workshop",
+    setWorkshopsLoading,
+    setWorkshops,
+  );
+
+  // !Fetch machine data
+  const fetchMachine = useFetchData(
+    `machine/${machineId}`,
+    setLoading,
+    (data) => {
+      setMachine(data);
+      setFormData({
+        name: data.name || "",
+        model_number: data.model_number || "",
+        serial_number: data.serial_number || "",
+        workshop: data.workshop || "",
+        operator: data.operator || "",
+        status: data.status || "OPERATIONAL",
+        purchase_date: data.purchase_date || "",
+        last_maintenance_date: data.last_maintenance_date || "",
+        next_maintenance_date: data.next_maintenance_date || "",
+        specifications: data.specifications || "",
+      });
+    },
+  );
 
   useEffect(() => {
-    api
-      .get("api/workshop/")
-      .then((response) =>
-        setWorkshops(response.data.results || response.data || []),
-      )
-      .catch((error) => console.error("Failed to fetch workshops:", error))
-      .finally(() => setWorkshopsLoading(false));
-    setOperatorsLoading(true);
-
-    api
-      .get("api/user/")
-      .then((response) => {
-        const allUsers = response.data.results || response.data || [];
-        const operatorUsers = allUsers.filter((u) => u.role === "OPERATOR"); // !Filter for operators only
-        setOperators(operatorUsers);
-      })
-      .catch((error) => console.error("Failed to fetch operators:", error))
-      .finally(() => setOperatorsLoading(false));
-
-    if (machineId) {
-      setLoading(true);
-      api
-        .get(`api/machine/${machineId}/`)
-        .then((response) => {
-          const mc = response.data;
-          setMachine(mc);
-          setFormData({
-            name: mc.name || "",
-            model_number: mc.model_number || "",
-            serial_number: mc.serial_number || "",
-            workshop: mc.workshop || "",
-            operator: mc.operator || "",
-            status: mc.status || "OPERATIONAL",
-            purchase_date: mc.purchase_date || "",
-            last_maintenance_date: mc.last_maintenance_date || "",
-            next_maintenance_date: mc.next_maintenance_date || "",
-            specifications: mc.specifications || "",
-          });
-        })
-        .catch((error) => {
-          setPageError("Failed to load machine details.");
-          console.error(error);
-        })
-        .finally(() => setLoading(false));
-    }
+    fetchWorkshops();
+    fetchOperators();
+    if (machineId) fetchMachine();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [machineId]);
 
   const handleChange = (e) => {
@@ -111,17 +104,8 @@ const MachineForm = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Machine name is required";
-    if (!formData.workshop) newErrors.workshop = "Workshop is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     setLoading(true);
     setPageError("");

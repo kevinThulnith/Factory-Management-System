@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -30,7 +30,7 @@ import {
   Info,
 } from "lucide-react";
 
-// --- Material Consumption Line Item Form ---
+// Material Consumption Line Item Form
 const ConsumptionItemForm = ({ materials, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
     material: "",
@@ -106,6 +106,52 @@ const ConsumptionItemForm = ({ materials, onSave, onCancel, loading }) => {
   );
 };
 
+// Shared Consumption List (used in both view and edit mode)
+const ConsumptionList = ({ consumptions, canDelete, onDelete }) => {
+  if (consumptions.length === 0) {
+    return (
+      <p className="text-stone-400 italic text-center py-4">
+        No material consumption recorded yet.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {consumptions.map((item) => (
+        <div
+          key={item.id}
+          className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
+        >
+          <div>
+            <p className="font-semibold text-stone-300">{item.material_name}</p>
+            <p className="text-sm text-stone-400">
+              {parseFloat(item.quantity).toFixed(2)}{" "}
+              {item.material_unit || "units"} &middot; by{" "}
+              {item.consumed_by_name || "Unknown"} &middot;{" "}
+              {new Date(item.consumed_at).toLocaleString()}
+            </p>
+            {item.notes && (
+              <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+                <FileText size={12} /> {item.notes}
+              </p>
+            )}
+          </div>
+          {canDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(item.id)}
+              className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const TasksForm = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
@@ -125,7 +171,6 @@ const TasksForm = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [associatedProject, setAssociatedProject] = useState(null);
   const [showAddConsumption, setShowAddConsumption] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     project: "",
@@ -135,21 +180,6 @@ const TasksForm = () => {
     assigned_to: "",
     status: "PENDING",
   });
-
-  // Permissions
-  const canAlwaysManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
-
-  const isProjectManager =
-    user && associatedProject && associatedProject.project_manager === user.id;
-
-  const canCreate =
-    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
-
-  const canSubmitForm =
-    (isCreateMode && canCreate) ||
-    (!isCreateMode && (canAlwaysManage || isProjectManager));
-
-  const canAddConsumption = canSubmitForm || user?.role === "OPERATOR";
 
   // Data Fetching
   useEffect(() => {
@@ -245,6 +275,26 @@ const TasksForm = () => {
       .catch((err) => console.error("Error refreshing consumptions:", err));
   }, [taskId]);
 
+  // Permissions
+  const canAlwaysManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
+
+  const isProjectManager = useMemo(() => {
+    if (!user || !formData.project) return false;
+    return (
+      allProjects.find((p) => p.id === parseInt(formData.project))
+        ?.project_manager === user.id
+    );
+  }, [user, formData.project, allProjects]);
+
+  const canCreate =
+    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
+
+  const canSubmitForm =
+    (isCreateMode && canCreate) ||
+    (!isCreateMode && (canAlwaysManage || isProjectManager));
+
+  const canAddConsumption = canSubmitForm || user?.role === "OPERATOR";
+
   const handleAddConsumption = async (payload) => {
     setActionLoading(true);
     try {
@@ -308,47 +358,16 @@ const TasksForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check permissions for managers creating tasks
-    if (
-      !isCreateMode &&
-      user?.role === "MANAGER" &&
-      !canAlwaysManage &&
-      !isProjectManager
-    ) {
-      setPageError("You can only edit tasks in projects you manage.");
-      return;
-    }
-
-    if (isCreateMode && user?.role === "MANAGER" && formData.project) {
-      const selectedProject = allProjects.find(
-        (p) => p.id === parseInt(formData.project),
-      );
-      if (
-        selectedProject &&
-        selectedProject.project_manager !== user.id &&
-        !canAlwaysManage
-      ) {
-        setPageError(
-          "Managers can only create tasks for projects they manage.",
-        );
-        return;
-      }
-    }
-
     if (!canSubmitForm) {
-      setPageError("You do not have permission to save this task.");
+      setPageError(
+        isCreateMode
+          ? "You do not have permission to create tasks for this project."
+          : "You can only edit tasks in projects you manage.",
+      );
       return;
     }
 
     // Validation
-    if (!formData.name.trim()) {
-      setPageError("Task name is required.");
-      return;
-    }
-    if (!formData.project) {
-      setPageError("Project is required.");
-      return;
-    }
     if (
       formData.end_date &&
       formData.start_date &&
@@ -366,33 +385,30 @@ const TasksForm = () => {
       description: formData.description || null,
       project: parseInt(formData.project),
       assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
+      start_date: formData.start_date || null,
       end_date: formData.end_date || null,
       status: formData.status,
     };
 
-    // Only include start_date for edit mode
-    if (!isCreateMode && formData.start_date) {
-      payload.start_date = formData.start_date;
-    }
+    const url = isCreateMode ? "api/task/" : `api/task/${taskId}/`;
+    const method = isCreateMode ? "post" : "patch";
 
-    try {
-      if (isCreateMode) {
-        await api.post("api/task/", payload);
-      } else {
-        await api.patch(`api/task/${taskId}/`, payload);
-      }
-      alert("Task saved successfully !!!");
-      navigate("/task");
-    } catch (err) {
-      console.error("Error saving task:", err);
-      setPageError(
-        err.response?.data?.detail ||
-          err.response?.data?.name?.[0] ||
-          "Failed to save task.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    api[method](url, payload)
+      .then(() => {
+        alert(`Task ${isCreateMode ? "created" : "saved"} successfully !!!`);
+        navigate("/task");
+      })
+      .catch((err) => {
+        console.error("Error saving task:", err);
+        setPageError(
+          err.response?.data?.detail ||
+            Object.values(err.response?.data || {})
+              .flat()
+              .join(", ") ||
+            "Failed to save task.",
+        );
+      })
+      .finally(() => setLoading(false));
   };
 
   const getStatusBadge = (status) => {
@@ -543,45 +559,11 @@ const TasksForm = () => {
               />
             )}
 
-            {consumptions.length > 0 ? (
-              <div className="space-y-4">
-                {consumptions.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
-                  >
-                    <div>
-                      <p className="font-semibold text-stone-300">
-                        {item.material_name}
-                      </p>
-                      <p className="text-sm text-stone-400">
-                        {parseFloat(item.quantity).toFixed(2)}{" "}
-                        {item.material_unit || "units"} &middot; by{" "}
-                        {item.consumed_by_name || "Unknown"} &middot;{" "}
-                        {new Date(item.consumed_at).toLocaleString()}
-                      </p>
-                      {item.notes && (
-                        <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                          <FileText size={12} /> {item.notes}
-                        </p>
-                      )}
-                    </div>
-                    {canSubmitForm && (
-                      <button
-                        onClick={() => handleDeleteConsumption(item.id)}
-                        className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-stone-400 italic text-center py-4">
-                No material consumption recorded yet.
-              </p>
-            )}
+            <ConsumptionList
+              consumptions={consumptions}
+              canDelete={canSubmitForm}
+              onDelete={handleDeleteConsumption}
+            />
           </div>
         </div>
       ) : (
@@ -724,46 +706,11 @@ const TasksForm = () => {
                 />
               )}
 
-              {consumptions.length > 0 ? (
-                <div className="space-y-4">
-                  {consumptions.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
-                    >
-                      <div>
-                        <p className="font-semibold text-stone-300">
-                          {item.material_name}
-                        </p>
-                        <p className="text-sm text-stone-400">
-                          {parseFloat(item.quantity).toFixed(2)}{" "}
-                          {item.material_unit || "units"} &middot; by{" "}
-                          {item.consumed_by_name || "Unknown"} &middot;{" "}
-                          {new Date(item.consumed_at).toLocaleString()}
-                        </p>
-                        {item.notes && (
-                          <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                            <FileText size={12} /> {item.notes}
-                          </p>
-                        )}
-                      </div>
-                      {canSubmitForm && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteConsumption(item.id)}
-                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-stone-400 italic text-center py-4">
-                  No material consumption recorded yet.
-                </p>
-              )}
+              <ConsumptionList
+                consumptions={consumptions}
+                canDelete={canSubmitForm}
+                onDelete={handleDeleteConsumption}
+              />
             </div>
           )}
 

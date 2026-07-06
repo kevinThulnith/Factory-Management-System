@@ -135,19 +135,7 @@ const ProjectsForm = () => {
       return;
     }
 
-    // Validation
-    if (!formData.name.trim()) {
-      setPageError("Project name is required.");
-      return;
-    }
-    if (!formData.project_manager) {
-      setPageError("Project manager is required.");
-      return;
-    }
-    if (!formData.start_date) {
-      setPageError("Start date is required.");
-      return;
-    }
+    // !Date Validation
     if (
       formData.end_date &&
       formData.start_date &&

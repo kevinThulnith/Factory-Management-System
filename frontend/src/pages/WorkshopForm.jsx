@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -31,14 +32,6 @@ const WorkshopForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    manager: "",
-    department: "",
-    description: "",
-    operational_status: "ACTIVE",
-  });
-
   const { user } = useAuth();
   const [errors, setErrors] = useState({});
   const [managers, setManagers] = useState([]);
@@ -48,52 +41,50 @@ const WorkshopForm = () => {
   const [departments, setDepartments] = useState([]);
   const [managersLoading, setManagersLoading] = useState(false);
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    manager: "",
+    department: "",
+    description: "",
+    operational_status: "ACTIVE",
+  });
+
+  const fetchDepartments = useFetchData(
+    "department",
+    setDepartmentsLoading,
+    setDepartments,
+  );
+
+  // !Managers — needs post-fetch filtering, so shape it in the setter
+  const fetchManagers = useFetchData("user", setManagersLoading, (data) => {
+    const managerUsers = data.filter((u) =>
+      ["SUPERVISOR", "MANAGER", "ADMIN"].includes(u.role),
+    );
+    setManagers(managerUsers);
+  });
+
+  // !Workshop — only relevant in edit/view mode, shapes formData too
+  const fetchWorkshop = useFetchData(
+    `workshop/${workshopId}`,
+    setLoading,
+    (data) => {
+      setWorkshop(data);
+      setFormData({
+        name: data.name || "",
+        description: data.description || "",
+        department: data.department || "",
+        manager: data.manager || "",
+        operational_status: data.operational_status || "ACTIVE",
+        location: data.location || "",
+      });
+    },
+  );
 
   useEffect(() => {
-    api
-      .get("api/department/")
-      .then((response) =>
-        setDepartments(response.data.results || response.data || []),
-      )
-      .catch((error) => console.error("Failed to fetch departments:", error))
-      .finally(() => setDepartmentsLoading(false));
-    setManagersLoading(true);
-
-    api
-      .get("api/user/")
-      .then((response) => {
-        const allUsers = response.data.results || response.data || [];
-        // ?Filter for managers or relevant roles
-        const managerUsers = allUsers.filter((u) =>
-          ["SUPERVISOR", "MANAGER", "ADMIN"].includes(u.role),
-        );
-        setManagers(managerUsers);
-      })
-      .catch((error) => console.error("Failed to fetch managers:", error))
-      .finally(() => setManagersLoading(false));
-
-    if (workshopId) {
-      setLoading(true);
-      api
-        .get(`api/workshop/${workshopId}/`)
-        .then((response) => {
-          const ws = response.data;
-          setWorkshop(ws);
-          setFormData({
-            name: ws.name || "",
-            description: ws.description || "",
-            department: ws.department || "",
-            manager: ws.manager || "",
-            operational_status: ws.operational_status || "ACTIVE",
-            location: ws.location || "",
-          });
-        })
-        .catch((error) => {
-          setPageError("Failed to load workshop details.");
-          console.error(error);
-        })
-        .finally(() => setLoading(false));
-    }
+    fetchDepartments();
+    fetchManagers();
+    if (workshopId) fetchWorkshop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workshopId]);
 
   const handleChange = (e) => {
@@ -102,17 +93,8 @@ const WorkshopForm = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Workshop name is required";
-    if (!formData.department) newErrors.department = "Department is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     setLoading(true);
     setPageError("");

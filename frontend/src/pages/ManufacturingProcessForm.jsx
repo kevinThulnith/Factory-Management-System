@@ -29,18 +29,16 @@ const ManufacturingProcessForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
-  // State
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [pageError, setPageError] = useState("");
+  const [processData, setProcessData] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     standard_time: "00:00:00",
     quality_parameters: "{}",
   });
-
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
-  const [processData, setProcessData] = useState(null);
 
   useEffect(() => {
     if (processId) {

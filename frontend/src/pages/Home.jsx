@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { MdDashboard } from "react-icons/md";
+import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import api from "../api";
 
@@ -23,16 +24,16 @@ import {
 } from "lucide-react";
 
 function Home() {
-  const [userInfo, setUserInfo] = useState({ username: "", email: "" });
+  const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState({
-    departments: [],
-    workshops: [],
-    projects: [],
-    machines: [],
-    products: [],
-    orders: [],
-    tasks: [],
     users: [],
+    tasks: [],
+    orders: [],
+    machines: [],
+    projects: [],
+    products: [],
+    workshops: [],
+    departments: [],
   });
 
   // TODO: Refresh the page when the page is loaded for the first time
@@ -43,98 +44,42 @@ function Home() {
 
   // TODO: Fetch data
   useEffect(() => {
-    if (localStorage.getItem("refreshed") === "true") {
-      api
-        .get("api/user/me/")
-        .then((res) => setUserInfo(res.data))
-        .catch((error) => alert(error));
-    }
-    api
-      .get("api/user/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          users: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching users:"));
-
-    api
-      .get("api/department/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          departments: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching departments:"));
-
-    api
-      .get("api/workshop/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          workshops: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching workshops:"));
-
-    api
-      .get("api/machine/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          machines: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching machines:"));
-
-    api
-      .get("api/project/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          projects: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching projects:"));
-
-    api
-      .get("api/task/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          tasks: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching tasks:"));
-
-    api
-      .get("api/product/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          products: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching products:"));
-
-    api
-      .get("api/order/")
-      .then((res) => {
-        setDashboardData((prevData) => ({
-          ...prevData,
-          orders: res.data,
-        }));
-      })
-      .catch(() => console.error("Error fetching orders:"));
+    const endpoints = [
+      { key: "users", url: "api/user/" },
+      { key: "departments", url: "api/department/" },
+      { key: "workshops", url: "api/workshop/" },
+      { key: "machines", url: "api/machine/" },
+      { key: "projects", url: "api/project/" },
+      { key: "tasks", url: "api/task/" },
+      { key: "products", url: "api/product/" },
+      { key: "orders", url: "api/order/" },
+    ];
+  
+    Promise.allSettled(endpoints.map((e) => api.get(e.url)))
+      .then((results) => {
+        const updatedData = {};
+  
+        results.forEach((result, index) => {
+          const { key } = endpoints[index];
+          if (result.status === "fulfilled") {
+            updatedData[key] = result.value.data;
+          } else {
+            console.error(`Error fetching ${key}:`, result.reason);
+          }
+        });
+  
+        // Single, atomic state update
+        if (Object.keys(updatedData).length > 0) {
+          setDashboardData((prev) => ({ ...prev, ...updatedData }));
+        }
+      });
   }, []);
 
   // !Render quick stats cards based on user role
   const renderQuickStats = () => {
     const stats = [];
 
-    if (["ADMIN", "SUPERVISOR"].includes(userInfo.role)) {
+    if (["ADMIN", "SUPERVISOR"].includes(user?.role)) {
       stats.push(
         {
           title: "Departments",
@@ -160,7 +105,7 @@ function Home() {
       );
     }
 
-    if (["ADMIN", "SUPERVISOR", "MANAGER"].includes(userInfo.role)) {
+    if (["ADMIN", "SUPERVISOR", "MANAGER"].includes(user?.role)) {
       stats.push(
         {
           title: "Total Users",
@@ -186,9 +131,7 @@ function Home() {
       );
     }
 
-    if (
-      ["ADMIN", "SUPERVISOR", "MANAGER", "PURCHASING"].includes(userInfo.role)
-    ) {
+    if (["ADMIN", "SUPERVISOR", "MANAGER", "PURCHASING"].includes(user?.role)) {
       stats.push(
         {
           title: "Products",
@@ -214,27 +157,25 @@ function Home() {
   const userStats = useMemo(() => {
     const myTasks = dashboardData.tasks.filter(
       (task) =>
-        task.assigned_to === userInfo.id ||
-        (userInfo.role === "MANAGER" &&
-          task.project_manager_id === userInfo.id),
+        task.assigned_to === user?.id ||
+        (user?.role === "MANAGER" && task.project_manager_id === user?.id),
     );
 
     const myMachine = dashboardData.machines.find(
-      (machine) => machine.operator === userInfo.id,
+      (machine) => machine.operator === user?.id,
     );
 
     const myDepartment = dashboardData.departments.find(
-      (dept) => dept.manager === userInfo.id,
+      (dept) => dept.manager === user?.id,
     );
 
     const myWorkshop = dashboardData.workshops.find(
-      (workshop) => workshop.supervisor === userInfo.id,
+      (workshop) => workshop.supervisor === user?.id,
     );
 
     const myProjects = dashboardData.projects.filter(
       (project) =>
-        project.manager === userInfo.id ||
-        project.project_manager_id === userInfo.id,
+        project.manager === user?.id || project.project_manager_id === user?.id,
     );
 
     return {
@@ -253,7 +194,7 @@ function Home() {
         return dueDate < new Date() && task.status !== "COMPLETED";
       }).length,
     };
-  }, [dashboardData, userInfo]);
+  }, [dashboardData, user]);
 
   return (
     <div className="w-full">
@@ -272,24 +213,24 @@ function Home() {
             Dashboard
           </h1>
           <p className="text-1xl font-medium text-stone-400">
-            Welcome back {userInfo.name}!
+            Welcome back {user?.name}!
           </p>
           <div className="flex sm:items-center mt-3 text-star-dust-300">
             <span className="mr-2">Current role :</span>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm ${
-                userInfo.role == "ADMIN"
+                user?.role == "ADMIN"
                   ? "bg-gradient-to-r from-orange-700 to-purple-700 text-stone-200"
                   : "bg-gradient-to-r from-yellow-600 to-blue-700 text-stone-100"
               }`}
             >
-              {userInfo.role}
+              {user?.role}
             </span>
           </div>
         </div>
 
         {/* Admin quick actions */}
-        {userInfo.role == "ADMIN" && (
+        {user?.role == "ADMIN" && (
           <div className="hidden lg:flex items-center space-x-4">
             <Link
               to="/user"
@@ -314,7 +255,7 @@ function Home() {
           </div>
         )}
         {/* Non-admin user actions */}
-        {userInfo.role != "ADMIN" && (
+        {user?.role != "ADMIN" && (
           <div className="hidden lg:block">
             <div className="p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white text-center shadow-lg">
               <BarChart3 size={32} className="mx-auto mb-2 text-white" />
@@ -325,7 +266,7 @@ function Home() {
       </div>
 
       {/* admin management panel */}
-      {userInfo.role == "ADMIN" && (
+      {user?.role == "ADMIN" && (
         <div className="mb-8 shadow-lg bg-card-main sm:p-8 p-6 rounded-lg">
           <div className="flex items-center mb-6">
             <div className="p-2 rounded-md mr-3 shadow-md bg-star-dust-700">

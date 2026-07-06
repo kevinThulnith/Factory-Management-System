@@ -177,39 +177,62 @@ const OrderForm = () => {
   }, [orderId]);
 
   useEffect(() => {
-    // api.get("api/user/me/").then((res) => setUser(res.data));
-    api
-      .get("api/supplier/")
-      .then((res) => setSuppliers(res.data.results || res.data));
-    api
-      .get("api/material/")
-      .then((res) => setMaterials(res.data.results || res.data));
+    Promise.all([
+      api.get("api/supplier/"),
+      api.get("api/material/"),
+      fetchOrderData(),
+    ])
+      .then(([supplierRes, materialRes]) => {
+        setSuppliers(supplierRes.data.results || supplierRes.data);
+        setMaterials(materialRes.data.results || materialRes.data);
+      })
+      .catch((error) => {
+        console.error("One of the requests failed:", error);
+      });
     fetchOrderData();
   }, [fetchOrderData]);
 
   const handleHeaderSubmit = async (e) => {
     e.preventDefault();
     setLoading((prev) => ({ ...prev, action: true }));
-    try {
-      if (isCreateMode) {
-        const res = await api.post("api/order/", {
-          supplier: formData.supplier,
-          status: "DRAFT",
-        });
-        alert("Order created! Now you can add items.");
-        navigate(`/order/view/${res.data.id}`);
-      } else {
-        await api.patch(`api/order/${orderId}/`, {
-          supplier: formData.supplier,
-        });
-        alert("Order header updated!");
-        fetchOrderData(); // Refetch to confirm changes
-      }
-    } catch (err) {
-      setPageError("Failed to save order header.", err);
-    } finally {
-      setLoading((prev) => ({ ...prev, action: false }));
-    }
+
+    const url = isCreateMode ? "api/order/" : `api/order/${orderId}/`;
+    const method = isCreateMode ? "post" : "patch";
+    const payload = {
+      supplier: formData.supplier,
+      ...(isCreateMode && { status: "DRAFT" }), // Only include status if creating
+    };
+
+    api[method](url, payload)
+      .then((res) => {
+        alert(
+          isCreateMode
+            ? "Order created! Now you can add items."
+            : "Order header updated!",
+        );
+
+        if (isCreateMode) navigate(`/order/view/${res.data.id}`);
+        else fetchOrderData();
+      })
+      .catch((err) => {
+        console.error("Form submission error:", err.response);
+        const apiErrors = err.response?.data || {};
+
+        const newErrors = Object.fromEntries(
+          Object.entries(apiErrors)
+            .filter(([k]) => k in formData)
+            .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : v]),
+        );
+
+        setPageError(
+          Object.keys(newErrors).length > 0
+            ? "Please correct the errors below."
+            : apiErrors.detail || "Failed to save order header.",
+        );
+      })
+      .finally(() => {
+        setLoading((prev) => ({ ...prev, action: false }));
+      });
   };
 
   const handleSaveLineItem = async (payload, itemId) => {

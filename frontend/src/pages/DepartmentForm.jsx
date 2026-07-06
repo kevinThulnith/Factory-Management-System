@@ -1,5 +1,6 @@
 import { Building2, FileText, MapPin, House, User } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -22,13 +23,6 @@ const DepartmentForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    location: "",
-    supervisor: "",
-    description: "",
-  });
-
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [errors, setErrors] = useState({});
@@ -36,38 +30,34 @@ const DepartmentForm = () => {
   const [pageError, setPageError] = useState("");
   const [department, setDepartment] = useState(null);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    supervisor: "",
+    description: "",
+  });
+
+  const fetchUsers = useFetchData("user", setUsersLoading, setUsers);
+
+  const fetchDepartment = useFetchData(
+    `department/${departmentId}`,
+    setLoading,
+    (data) => {
+      setDepartment(data);
+      setFormData({
+        name: data.name || "",
+        location: data.location || "",
+        supervisor: data.supervisor || "",
+        description: data.description || "",
+      });
+    },
+  );
 
   useEffect(() => {
-    setUsersLoading(true);
-    api
-      .get("api/user/")
-      .then((response) =>
-        setUsers(response.data.results || response.data || []),
-      )
-      .catch((error) => console.error("Failed to fetch users:", error))
-      .finally(() => setUsersLoading(false));
-
-    if (departmentId) {
-      setLoading(true);
-      api
-        .get(`api/department/${departmentId}/`)
-        .then((response) => {
-          const dept = response.data;
-          setDepartment(dept);
-          setFormData({
-            name: dept.name || "",
-            location: dept.location || "",
-            supervisor: dept.supervisor || "",
-            description: dept.description || "",
-          });
-        })
-        .catch((error) => {
-          setPageError("Failed to load department details.");
-          console.error(error);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [departmentId, isEditMode, isViewMode, navigate]);
+    fetchUsers();
+    if (departmentId) fetchDepartment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [departmentId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,58 +65,45 @@ const DepartmentForm = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Department name is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     setLoading(true);
     setPageError("");
     setErrors({});
 
-    const payload = {
-      ...formData,
-      supervisor: formData.supervisor || null,
-    };
+    const payload = { ...formData, supervisor: formData.supervisor || null };
+    const url = isEditMode
+      ? `api/department/${departmentId}/`
+      : "api/department/";
 
-    try {
-      if (isEditMode) await api.put(`api/department/${departmentId}/`, payload);
-      else await api.post("api/department/", payload);
-      alert("Department updated successfully !!!");
-      navigate("/department");
-    } catch (error) {
-      console.error("Form submission error:", error.response);
-      const apiErrors = error.response?.data;
-
-      if (apiErrors && typeof apiErrors === "object") {
-        const newFormErrors = {};
-        for (const key in apiErrors) {
-          if (Object.hasOwn(formData, key) && Array.isArray(apiErrors[key])) {
-            newFormErrors[key] = apiErrors[key].join(" ");
-          }
-        }
-        setErrors(newFormErrors);
-
-        if (Object.keys(newFormErrors).length === 0) {
-          setPageError(
-            apiErrors.detail || "An error occurred. Please try again.",
-          );
-        } else setPageError("Please correct the errors below.");
-      } else {
-        setPageError(
-          error.response?.data?.detail ||
-            "An error occurred. Please try again.",
+    api[isEditMode ? "put" : "post"](url, payload)
+      .then(() => {
+        alert(
+          `Department ${isEditMode ? "updated" : "created"} successfully !!!`,
         );
-      }
-    } finally {
-      setLoading(false);
-    }
+        navigate("/department");
+      })
+      .catch((err) => {
+        console.error("Form submission error:", err.response);
+        const apiErrors = err.response?.data || {};
+
+        const newErrors = Object.fromEntries(
+          Object.entries(apiErrors)
+            .filter(([k]) => k in formData)
+            .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : v]),
+        );
+
+        setErrors(newErrors);
+        setPageError(
+          Object.keys(newErrors).length > 0
+            ? "Please correct the errors below."
+            : apiErrors.detail || "An error occurred. Please try again.",
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const getUserOptions = () => {
@@ -160,7 +137,7 @@ const DepartmentForm = () => {
       onClick={() => navigate("/department")}
       fnction={() => navigate(`/department/edit/${departmentId}`)}
       gradient="from-red-600 to-red-800"
-      isViewMode={user?.role === "ADMIN"}
+      isViewMode={isViewMode && user?.role === "ADMIN"}
       pageError={pageError}
       loading={loading}
     >

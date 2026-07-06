@@ -22,6 +22,10 @@ const InputItem = ({ label, name, caption, ...props }) => (
 );
 
 function Register() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
   const [formData, setFormData] = useState({
     username: "",
     first_name: "",
@@ -35,11 +39,6 @@ function Register() {
     role: USER_ROLES.OPERATOR,
     department: "",
   });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [departments, setDepartments] = useState([]);
-  const [loadingDepartments, setLoadingDepartments] = useState(true);
 
   useEffect(() => {
     api
