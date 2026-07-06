@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { MapPin, Truck, Phone, Mail } from "lucide-react";
+import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -22,6 +23,10 @@ const SupplierForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [supplier, setSupplier] = useState(null);
+  const [pageError, setPageError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,29 +36,25 @@ const SupplierForm = () => {
     contact_person: "",
   });
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [supplier, setSupplier] = useState(null);
-  const [pageError, setPageError] = useState("");
+  const fetchSupplier = useFetchData(
+    `supplier/${supplierId}`,
+    setLoading,
+    (data) => {
+      setSupplier(data);
+      setFormData({
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        website: data.website || "",
+        contact_person: data.contact_person || "",
+      });
+    },
+  );
 
   useEffect(() => {
-    if (supplierId) {
-      setLoading(true);
-      api
-        .get(`api/supplier/${supplierId}/`)
-        .then((response) => {
-          const sData = response.data;
-          setSupplier(sData);
-          setFormData({
-            name: sData.name || "",
-            email: sData.email || "",
-            phone: sData.phone || "",
-            address: sData.address || "",
-          });
-        })
-        .catch(() => setPageError("Failed to load supplier details."))
-        .finally(() => setLoading(false));
-    }
+    if (supplierId) fetchSupplier();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supplierId]);
 
   const handleChange = (e) => {
@@ -64,7 +65,6 @@ const SupplierForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Supplier name is required.";
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address.";
     }
@@ -169,6 +169,7 @@ const SupplierForm = () => {
               onChange={handleChange}
               placeholder="e.g., contact@globalparts.com"
               error={errors.email}
+              required
             />
             <InputItem
               label="Phone"

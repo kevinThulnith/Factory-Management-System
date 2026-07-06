@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Star, Users, Award } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { Star, Users, Award } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -80,13 +80,17 @@ const SkillForm = () => {
 
   const isMySkillsMode = useMemo(
     () => location.pathname.includes("/my-skills"),
-    [location.pathname]
+    [location.pathname],
   );
   const isViewMode = useMemo(
     () => location.pathname.includes("/view"),
-    [location.pathname]
+    [location.pathname],
   );
 
+  const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [pageError, setPageError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -94,19 +98,12 @@ const SkillForm = () => {
     level: "BEGINNER",
     employee: "",
   });
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
-  const [formErrors, setFormErrors] = useState({});
 
   const canManageForm = useMemo(
-    () =>
-      isMySkillsMode ||
-      (user && (user.role === "ADMIN" || user.role === "SUPERVISOR")),
-    [isMySkillsMode, user]
+    () => isMySkillsMode || ["ADMIN", "SUPERVISOR"].includes(user.role),
+    [isMySkillsMode, user],
   );
 
-  // Fetch initial data
   useEffect(() => {
     if (!isMySkillsMode) {
       api
@@ -139,7 +136,7 @@ const SkillForm = () => {
       return ROLE_CATEGORY_MAP[user.role] || ALL_SKILL_CATEGORIES;
     if (!isMySkillsMode && formData.employee) {
       const selectedEmp = employees.find(
-        (e) => e.id === parseInt(formData.employee)
+        (e) => e.id === parseInt(formData.employee),
       );
       return (
         (selectedEmp && ROLE_CATEGORY_MAP[selectedEmp.role]) ||

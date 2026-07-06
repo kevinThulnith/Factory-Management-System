@@ -1,5 +1,6 @@
 import { Warehouse, FileText, Package, Ruler, Box } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -21,6 +22,11 @@ const MaterialForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
+  const { user } = useAuth();
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [material, setMaterial] = useState(null);
+  const [pageError, setPageError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -29,34 +35,24 @@ const MaterialForm = () => {
     unit_of_measurement: "",
   });
 
-  const { user } = useAuth();
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [material, setMaterial] = useState(null);
-  const [pageError, setPageError] = useState("");
+  const fetchMaterial = useFetchData(
+    `material/${materialId}`,
+    setLoading,
+    (data) => {
+      setMaterial(data);
+      setFormData({
+        name: data.name || "",
+        description: data.description || "",
+        unit_of_measurement: data.unit_of_measurement || "",
+        quantity: parseFloat(data.quantity || 0).toFixed(2),
+        reorder_level: parseFloat(data.reorder_level || 0).toFixed(2),
+      });
+    },
+  );
 
   useEffect(() => {
-    if (materialId) {
-      setLoading(true);
-      api
-        .get(`api/material/${materialId}/`)
-        .then((response) => {
-          const mData = response.data;
-          setMaterial(mData);
-          setFormData({
-            name: mData.name || "",
-            description: mData.description || "",
-            unit_of_measurement: mData.unit_of_measurement || "",
-            quantity: parseFloat(mData.quantity || 0).toFixed(2),
-            reorder_level: parseFloat(mData.reorder_level || 0).toFixed(2),
-          });
-        })
-        .catch((error) => {
-          setPageError("Failed to load material details.");
-          console.error(error);
-        })
-        .finally(() => setLoading(false));
-    }
+    if (materialId) fetchMaterial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [materialId]);
 
   const handleChange = (e) => {
@@ -77,28 +73,8 @@ const MaterialForm = () => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Material name is required.";
-    if (
-      isNaN(parseFloat(formData.quantity)) ||
-      parseFloat(formData.quantity) < 0
-    ) {
-      newErrors.quantity = "Quantity must be a non-negative number.";
-    }
-    if (
-      isNaN(parseFloat(formData.reorder_level)) ||
-      parseFloat(formData.reorder_level) < 0
-    ) {
-      newErrors.reorder_level = "Reorder level must be a non-negative number.";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     setLoading(true);
     setPageError("");
@@ -232,6 +208,7 @@ const MaterialForm = () => {
               onChange={handleChange}
               placeholder="e.g., kg, meters, units"
               error={errors.unit_of_measurement}
+              required
             />
 
             <InputItem
@@ -241,7 +218,10 @@ const MaterialForm = () => {
               value={formData.quantity}
               onChange={handleDecimalChange}
               required
-              inputMode="decimal"
+              type="text"
+              pattern="^(0*[1-9]\d*(\.\d+)?|0*\.\d*[1-9]\d*)$"
+              inputmode="decimal"
+              placeholder="e.g. 12.5"
               error={errors.quantity}
             />
 
@@ -252,7 +232,10 @@ const MaterialForm = () => {
               value={formData.reorder_level}
               onChange={handleDecimalChange}
               required
-              inputMode="decimal"
+              type="text"
+              pattern="^(0*[1-9]\d*(\.\d+)?|0*\.\d*[1-9]\d*)$"
+              inputmode="decimal"
+              placeholder="e.g. 12.5"
               error={errors.reorder_level}
             />
 

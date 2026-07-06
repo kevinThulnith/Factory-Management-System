@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchData from "../hooks/useFetchData";
 import { useAuth } from "../hooks/useAuth";
 import { useState, useEffect } from "react";
 import Form from "../components/Form";
@@ -37,6 +38,12 @@ const ProductForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
+  const [errors, setErrors] = useState({});
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [pageError, setPageError] = useState("");
+  const [allProcesses, setAllProcesses] = useState([]);
+  const [processToAdd, setProcessToAdd] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -46,45 +53,39 @@ const ProductForm = () => {
     selected_processes: [],
   });
 
-  const [errors, setErrors] = useState({});
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
-  const [allProcesses, setAllProcesses] = useState([]);
-  const [processToAdd, setProcessToAdd] = useState("");
+  const fetchProcessos = useFetchData(
+    "manufacturing-process",
+    setLoading,
+    setAllProcesses,
+  );
+
+  const fetchProduct = useFetchData(
+    `product/${productId}`,
+    setLoading,
+    (data) => {
+      setProduct(data);
+      setFormData({
+        name: data.name || "",
+        code: data.code || "",
+        status: data.status || "ACTIVE",
+        unit_of_measurement: data.unit_of_measurement || "",
+        specifications: JSON.stringify(data.specifications || {}, null, 2),
+        selected_processes: (data.processes || [])
+          .map((p, index) => ({
+            id: p.manufacturing_processes?.[index] || index,
+            name: p.process__name,
+            sequence: p.sequence,
+          }))
+          .sort((a, b) => a.sequence - b.sequence),
+      });
+    },
+  );
 
   // Fetch user for permissions & all available processes
   useEffect(() => {
-    api
-      .get("api/manufacturing-process/")
-      .then((res) => setAllProcesses(res.data.results || res.data));
-
-    if (productId) {
-      setLoading(true);
-      api
-        .get(`api/product/${productId}/`)
-        .then((response) => {
-          const pData = response.data;
-          setProduct(pData);
-          setFormData({
-            name: pData.name || "",
-            code: pData.code || "",
-            status: pData.status || "ACTIVE",
-            unit_of_measurement: pData.unit_of_measurement || "",
-            specifications: JSON.stringify(pData.specifications || {}, null, 2),
-            selected_processes: (pData.processes || [])
-              .map((p, index) => ({
-                // Use manufacturing_processes array for IDs or fallback to index
-                id: pData.manufacturing_processes?.[index] || index,
-                name: p.process__name, // Map from process__name instead of name
-                sequence: p.sequence,
-              }))
-              .sort((a, b) => a.sequence - b.sequence),
-          });
-        })
-        .catch(() => setPageError("Failed to load product details."))
-        .finally(() => setLoading(false));
-    }
+    fetchProcessos();
+    if (productId) fetchProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
   const handleChange = (e) => {
@@ -349,6 +350,7 @@ const ProductForm = () => {
               icon={<ClipboardList />}
               value={formData.unit_of_measurement}
               onChange={handleChange}
+              required
             />
           </div>
           {/* Form: Specs */}

@@ -46,7 +46,6 @@ const LaborAllocationForm = () => {
   const [allocation, setAllocation] = useState(null);
   const [allEmployees, setAllEmployees] = useState([]);
   const [allProductionLines, setAllProductionLines] = useState([]);
-
   const [formData, setFormData] = useState({
     task: "",
     project: "",
