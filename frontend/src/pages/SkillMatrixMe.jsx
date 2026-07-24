@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import { useState, useEffect, useMemo } from "react";
 import useFetchData from "../hooks/useFetchData";
 import { Link } from "react-router-dom";
 
