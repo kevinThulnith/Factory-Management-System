@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuth } from "./hooks/useAuth";
 import { lazy, Suspense } from "react";
+import useAuth from "./hooks/useAuth";
 
 const ManufacturingProcess = lazy(() => import("./pages/ManufacturingProcess"));
 const LaborAllocationForm = lazy(() => import("./pages/LaborAllocationForm"));
@@ -90,8 +90,8 @@ function App() {
     { path: "/my-skills", element: <MySkillsPage /> },
     { path: "/skill-matrix", element: <SkillMatrix /> },
     { path: "/skill-matrix/add", element: <SkillMatrixForm /> },
-    { path: "/skills/edit/:skillMatrixId", element: <SkillMatrixForm /> },
-    { path: "/skills/view/:skillMatrixId", element: <SkillMatrixForm /> },
+    { path: "/skill-matrix/edit/:skillMatrixId", element: <SkillMatrixForm /> },
+    { path: "/skill-matrix/view/:skillMatrixId", element: <SkillMatrixForm /> },
 
     // Supplier
     { path: "/supplier", element: <Supplier /> },

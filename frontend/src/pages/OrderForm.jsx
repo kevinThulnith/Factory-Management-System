@@ -1,8 +1,9 @@
-import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { SelectItem, InputItem, InfoItem } from "../components/components";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useFetchData from "../hooks/useFetchData";
 import Form from "../components/Form.jsx";
+import useAuth from "../hooks/useAuth";
 import api from "../api";
 
 import {
@@ -152,45 +153,38 @@ const OrderForm = () => {
 
   const isEditable = isCreateMode || (order?.status === "DRAFT" && canManage);
 
-  const fetchOrderData = useCallback(() => {
-    if (!orderId) {
-      setLoading((prev) => ({ ...prev, page: false }));
-      return;
-    }
-    setLoading((prev) => ({ ...prev, page: true }));
+  // !Fetch component data
+  const fetchSuppliers = useFetchData("supplier", setLoading, setSuppliers);
+  const fetchMaterials = useFetchData("material", setLoading, setMaterials);
+  const fetchOrder = useFetchData(`order/${orderId}`, setLoading, setOrder);
+  const fetchLineItems = useFetchData(
+    `order/${orderId}/material`,
+    setLoading,
+    setLineItems,
+  );
 
-    // Fetch order details
-    Promise.all([
-      api.get(`api/order/${orderId}/`),
-      api.get(`api/order/${orderId}/material/`),
-    ])
-      .then(([orderRes, materialsRes]) => {
-        setOrder(orderRes.data);
-        setLineItems(materialsRes.data.results || materialsRes.data || []);
-        setFormData({
-          supplier: orderRes.data.supplier,
-          status: orderRes.data.status,
-        });
-      })
-      .catch(() => setPageError("Failed to load order details."))
-      .finally(() => setLoading((prev) => ({ ...prev, page: false })));
-  }, [orderId]);
+  const fetchOrderData = useCallback(() => {
+    if (!isCreateMode) {
+      fetchOrder();
+      fetchLineItems();
+    }
+  }, [fetchOrder, fetchLineItems, isCreateMode]);
 
   useEffect(() => {
-    Promise.all([
-      api.get("api/supplier/"),
-      api.get("api/material/"),
-      fetchOrderData(),
-    ])
-      .then(([supplierRes, materialRes]) => {
-        setSuppliers(supplierRes.data.results || supplierRes.data);
-        setMaterials(materialRes.data.results || materialRes.data);
-      })
-      .catch((error) => {
-        console.error("One of the requests failed:", error);
-      });
+    fetchSuppliers();
+    fetchMaterials();
     fetchOrderData();
-  }, [fetchOrderData]);
+  }, [fetchSuppliers, fetchMaterials, fetchOrderData]);
+
+  // Sync formData whenever order data actually arrives — no fetch triggered here
+  useEffect(() => {
+    if (order) {
+      setFormData({
+        supplier: order.supplier || "",
+        status: order.status || "DRAFT",
+      });
+    }
+  }, [order]);
 
   const handleHeaderSubmit = async (e) => {
     e.preventDefault();
@@ -207,8 +201,8 @@ const OrderForm = () => {
       .then((res) => {
         alert(
           isCreateMode
-            ? "Order created! Now you can add items."
-            : "Order header updated!",
+            ? "Order created !!! Now you can add items."
+            : "Order header updated !!!",
         );
 
         if (isCreateMode) navigate(`/order/view/${res.data.id}`);
@@ -237,43 +231,48 @@ const OrderForm = () => {
 
   const handleSaveLineItem = async (payload, itemId) => {
     setLoading((prev) => ({ ...prev, action: true }));
+    const method = itemId ? "patch" : "post";
+    const url = itemId
+      ? `api/order/${orderId}/material/${itemId}/`
+      : `api/order/${orderId}/material/`;
+    const payloadToSend = {
+      quantity: payload.quantity,
+      unit_price: payload.unit_price,
+      ...(itemId ? {} : { material: payload.material }), // ?Only include material on creation
+    };
 
-    try {
-      if (itemId) {
-        // Update existing item - use nested endpoint with PATCH
-        await api.patch(`api/order/${orderId}/material/${itemId}/`, {
-          quantity: payload.quantity,
-          unit_price: payload.unit_price,
-        });
-      } else {
-        // Create new item - use nested endpoint with POST
-        await api.post(`api/order/${orderId}/material/`, payload);
-      }
-
-      setShowAddItemForm(false);
-      setEditingItem(null);
-      fetchOrderData(); // Refetch all data
-    } catch (err) {
-      console.error("API error:", err.response?.data || err.message);
-      setPageError("Failed to save line item.");
-    } finally {
-      setLoading((prev) => ({ ...prev, action: false }));
-    }
+    api[method](url, payloadToSend)
+      .then(() => {
+        setShowAddItemForm(false);
+        setEditingItem(null);
+        fetchOrderData();
+      })
+      .catch((err) => {
+        console.error("API error:", err.response?.data || err.message);
+        setPageError("Failed to save line item.");
+      })
+      .finally(() => {
+        setLoading((prev) => ({ ...prev, action: false }));
+      });
   };
 
   const handleDeleteLineItem = async (itemId) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     setLoading((prev) => ({ ...prev, action: true }));
-    try {
-      // Use nested endpoint for deletion
-      await api.delete(`api/order/${orderId}/material/${itemId}/`);
-      fetchOrderData();
-    } catch (err) {
-      console.error("Delete error:", err.response?.data || err.message);
-      setPageError(err.response?.data?.detail || "Failed to delete line item.");
-    } finally {
-      setLoading((prev) => ({ ...prev, action: false }));
-    }
+    api
+      .delete(`api/order/${orderId}/material/${itemId}/`)
+      .then(() => {
+        fetchOrderData();
+      })
+      .catch((err) => {
+        console.error("Delete error:", err.response?.data || err.message);
+        setPageError(
+          err.response?.data?.detail || "Failed to delete line item.",
+        );
+      })
+      .finally(() => {
+        setLoading((prev) => ({ ...prev, action: false }));
+      });
   };
 
   const handleOrderStatusUpdate = async (newStatus) => {
@@ -282,35 +281,41 @@ const OrderForm = () => {
     )
       return;
 
-    // Check if invoice is required for RECEIVED status
+    // !Check if invoice is required for RECEIVED status
     if (newStatus === "RECEIVED" && !order?.invoice && !invoice) {
       setPageError("Please upload an invoice before marking as received.");
       return;
     }
 
+    const formDataToSend = new FormData();
+    formDataToSend.append("status", newStatus);
+
+    // !Append the invoice file to the FormData payload if it exists
+    if (invoice) {
+      formDataToSend.append("invoice", invoice);
+    }
+
     setLoading((prev) => ({ ...prev, action: true }));
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("status", newStatus);
-
-      // If there's a new invoice, add it
-      if (invoice) {
-        formDataToSend.append("invoice", invoice);
-      }
-
-      await api.patch(`api/order/${orderId}/`, formDataToSend, {
+    api
+      .patch(`api/order/${orderId}/`, formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+      })
+      .then(() => {
+        setInvoice(null); // Clear the invoice state after successful upload
+        fetchOrderData();
+      })
+      .catch((err) => {
+        console.error(
+          "Status update error:",
+          err.response?.data || err.message,
+        );
+        setPageError(err.response?.data?.detail || "Failed to update status.");
+      })
+      .finally(() => {
+        setLoading((prev) => ({ ...prev, action: false }));
       });
-
-      setInvoice(null); // Clear the invoice state after successful upload
-      fetchOrderData();
-    } catch (err) {
-      setPageError(err.response?.data?.detail || "Failed to update status.");
-    } finally {
-      setLoading((prev) => ({ ...prev, action: false }));
-    }
   };
 
   const orderSummary = useMemo(() => {

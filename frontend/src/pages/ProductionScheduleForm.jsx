@@ -1,6 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
+import Consumption from "../components/Consumption";
+import useFetchData from "../hooks/useFetchData";
+import useMaterials from "../hooks/useMaterials";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -15,92 +18,12 @@ import {
   CalendarClock,
   AlertCircle,
   CheckCircle,
-  PlusCircle,
   Activity,
-  FileText,
   Package,
   Factory,
   XCircle,
-  Trash2,
-  Beaker,
   Clock,
 } from "lucide-react";
-
-// --- Material Consumption Line Item Form ---
-const ConsumptionItemForm = ({ materials, onSave, onCancel, loading }) => {
-  const [formData, setFormData] = useState({
-    material: "",
-    quantity: "1.00",
-    notes: "",
-  });
-
-  const handleChange = (e) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.material || parseFloat(formData.quantity) <= 0) return;
-    onSave({
-      material: parseInt(formData.material),
-      quantity: formData.quantity,
-      notes: formData.notes || null,
-    });
-    setFormData({ material: "", quantity: "1.00", notes: "" });
-  };
-
-  return (
-    <div className="bg-stone-800 rounded-xl p-4 my-4 inset-shadow-2xl">
-      <h4 className="text-md font-semibold text-stone-200 mb-4">
-        Add Material Consumption
-      </h4>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <SelectItem
-            label="Material"
-            name="material"
-            value={formData.material}
-            onChange={handleChange}
-            options={materials.map((m) => ({
-              value: m.id,
-              label: `${m.name} (${m.quantity} ${m.unit_of_measurement || ""})`,
-            }))}
-            required
-          />
-          <InputItem
-            label="Quantity"
-            name="quantity"
-            value={formData.quantity}
-            onChange={handleChange}
-            type="number"
-            required
-          />
-          <InputItem
-            label="Notes (optional)"
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="bg-stone-600 hover:bg-stone-700 text-stone-200 py-2 px-3 rounded-md text-[14px]"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md text-[14px]"
-          >
-            {loading ? "Saving..." : "Add Consumption"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
 
 const ProductionScheduleListForm = () => {
   const { scheduleId } = useParams();
@@ -111,11 +34,11 @@ const ProductionScheduleListForm = () => {
   const isCreateMode = location.pathname.includes("/new");
 
   const { user } = useAuth();
+  const { materials } = useMaterials();
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
   const [schedule, setSchedule] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
-  const [allMaterials, setAllMaterials] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
   const [allProductionLines, setAllProductionLines] = useState([]);
   const [showAddConsumption, setShowAddConsumption] = useState(false);
@@ -129,27 +52,24 @@ const ProductionScheduleListForm = () => {
     status: "SCHEDULED",
   });
 
-  // Permissions
+  // !Permissions checks
   const canManage =
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   const canAddConsumption = canManage || (user && user.role === "OPERATOR");
 
-  // Data Fetching
+  // !Fetching component data
+  const fetchProducts = useFetchData("product", setLoading, setAllProducts);
+  const fetchProductionLines = useFetchData(
+    "production-line",
+    setLoading,
+    setAllProductionLines,
+  );
+
   useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      api
-        .get("api/production-line/")
-        .then((res) => setAllProductionLines(res.data.results || res.data)),
-      api
-        .get("api/product/")
-        .then((res) => setAllProducts(res.data.results || res.data)),
-      api
-        .get("api/material/")
-        .then((res) => setAllMaterials(res.data.results || res.data)),
-    ]).finally(() => setLoading(false));
-  }, []);
+    fetchProductionLines();
+    fetchProducts();
+  }, [fetchProducts, fetchProductionLines]);
 
   const fetchScheduleData = useCallback(() => {
     if (!scheduleId) {
@@ -205,8 +125,6 @@ const ProductionScheduleListForm = () => {
     fetchScheduleData();
   }, [fetchScheduleData]);
 
-  // Fetch material consumptions for this schedule
-  // Refresh consumptions by re-fetching the schedule (consumptions are nested in the schedule response)
   const fetchConsumptions = useCallback(() => {
     if (!scheduleId) return;
     api
@@ -222,45 +140,46 @@ const ProductionScheduleListForm = () => {
   // Material consumption handlers
   const handleAddConsumption = async (payload) => {
     setActionLoading(true);
-    try {
-      await api.post("api/material-consumption/", {
+    api
+      .post("api/material-consumption/", {
         ...payload,
         production_schedule: parseInt(scheduleId),
+      })
+      .then(() => {
+        setShowAddConsumption(false);
+        fetchConsumptions();
+        window.location.reload();
+      })
+      .catch((err) => {
+        const msg =
+          err.response?.data?.detail ||
+          err.response?.data?.non_field_errors?.[0] ||
+          Object.values(err.response?.data || {})
+            .flat()
+            .join(", ") ||
+          "Failed to add consumption.";
+        setPageError(msg);
+      })
+      .finally(() => {
+        setActionLoading(false);
       });
-      setShowAddConsumption(false);
-      fetchConsumptions();
-      // Refresh materials to get updated stock
-      api
-        .get("api/material/")
-        .then((res) => setAllMaterials(res.data.results || res.data));
-    } catch (err) {
-      const msg =
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        Object.values(err.response?.data || {})
-          .flat()
-          .join(", ") ||
-        "Failed to add consumption.";
-      setPageError(msg);
-    } finally {
-      setActionLoading(false);
-    }
   };
 
   const handleDeleteConsumption = async (id) => {
     if (!window.confirm("Delete this material consumption record?")) return;
     setActionLoading(true);
-    try {
-      await api.delete(`api/material-consumption/${id}/`);
-      fetchConsumptions();
-      api
-        .get("api/material/")
-        .then((res) => setAllMaterials(res.data.results || res.data));
-    } catch {
-      setPageError("Failed to delete consumption record.");
-    } finally {
-      setActionLoading(false);
-    }
+    api
+      .delete(`api/material-consumption/${id}/`)
+      .then(() => {
+        fetchConsumptions();
+        window.location.reload();
+      })
+      .catch(() => {
+        setPageError("Failed to delete consumption record.");
+      })
+      .finally(() => {
+        setActionLoading(false);
+      });
   };
 
   // Event Handlers
@@ -477,70 +396,17 @@ const ProductionScheduleListForm = () => {
           </div>
 
           {/* Material Consumption Section - View Mode */}
-          <div className="mt-6 pt-5 border-t border-stone-700">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
-                <Beaker size={20} /> Material Consumption
-              </h3>
-              {canAddConsumption && !showAddConsumption && (
-                <button
-                  onClick={() => setShowAddConsumption(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                >
-                  <PlusCircle size={18} /> Add Consumption
-                </button>
-              )}
-            </div>
-
-            {showAddConsumption && (
-              <ConsumptionItemForm
-                materials={allMaterials}
-                onSave={handleAddConsumption}
-                onCancel={() => setShowAddConsumption(false)}
-                loading={actionLoading}
-              />
-            )}
-
-            {consumptions.length > 0 ? (
-              <div className="space-y-4">
-                {consumptions.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
-                  >
-                    <div>
-                      <p className="font-semibold text-stone-300">
-                        {item.material_name}
-                      </p>
-                      <p className="text-sm text-stone-400">
-                        {parseFloat(item.quantity).toFixed(2)}{" "}
-                        {item.material_unit || "units"} &middot; by{" "}
-                        {item.consumed_by_name || "Unknown"} &middot;{" "}
-                        {new Date(item.consumed_at).toLocaleString()}
-                      </p>
-                      {item.notes && (
-                        <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                          <FileText size={12} /> {item.notes}
-                        </p>
-                      )}
-                    </div>
-                    {canManage && (
-                      <button
-                        onClick={() => handleDeleteConsumption(item.id)}
-                        className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-stone-400 italic text-center py-4">
-                No material consumption recorded yet.
-              </p>
-            )}
-          </div>
+          <Consumption
+            materials={materials}
+            consumptions={consumptions}
+            canAdd={canAddConsumption}
+            canDelete={canManage}
+            showAddConsumption={showAddConsumption}
+            setShowAddConsumption={setShowAddConsumption}
+            onSave={handleAddConsumption}
+            onDelete={handleDeleteConsumption}
+            loading={actionLoading}
+          />
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -634,72 +500,17 @@ const ProductionScheduleListForm = () => {
 
           {/* Material Consumption Section - Edit Mode */}
           {!isCreateMode && (
-            <div className="mt-6 pt-5 border-t border-stone-700">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
-                  <Beaker size={20} /> Material Consumption
-                </h3>
-                {canAddConsumption && !showAddConsumption && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAddConsumption(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                  >
-                    <PlusCircle size={18} /> Add Consumption
-                  </button>
-                )}
-              </div>
-
-              {showAddConsumption && (
-                <ConsumptionItemForm
-                  materials={allMaterials}
-                  onSave={handleAddConsumption}
-                  onCancel={() => setShowAddConsumption(false)}
-                  loading={actionLoading}
-                />
-              )}
-
-              {consumptions.length > 0 ? (
-                <div className="space-y-4">
-                  {consumptions.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-3 rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2 bg-card-sub"
-                    >
-                      <div>
-                        <p className="font-semibold text-stone-300">
-                          {item.material_name}
-                        </p>
-                        <p className="text-sm text-stone-400">
-                          {parseFloat(item.quantity).toFixed(2)}{" "}
-                          {item.material_unit || "units"} &middot; by{" "}
-                          {item.consumed_by_name || "Unknown"} &middot;{" "}
-                          {new Date(item.consumed_at).toLocaleString()}
-                        </p>
-                        {item.notes && (
-                          <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                            <FileText size={12} /> {item.notes}
-                          </p>
-                        )}
-                      </div>
-                      {canManage && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteConsumption(item.id)}
-                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-stone-400 italic text-center py-4">
-                  No material consumption recorded yet.
-                </p>
-              )}
-            </div>
+            <Consumption
+              materials={materials}
+              consumptions={consumptions}
+              canAdd={canAddConsumption}
+              canDelete={canManage}
+              showAddConsumption={showAddConsumption}
+              setShowAddConsumption={setShowAddConsumption}
+              onSave={handleAddConsumption}
+              onDelete={handleDeleteConsumption}
+              loading={actionLoading}
+            />
           )}
 
           <Buttons

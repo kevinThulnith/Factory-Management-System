@@ -1,10 +1,12 @@
 import { Building2, FileText, MapPin, House, User } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import useEntityFormData from "../hooks/useEntityFormData";
+import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
-import api from "../api";
 
 import {
   TextareaItem,
@@ -14,50 +16,59 @@ import {
   Buttons,
 } from "../components/components";
 
+// !Default values for the form
+const DEPARTMENT_DEFAULTS = {
+  name: "",
+  location: "",
+  supervisor: "",
+  description: "",
+};
+
 const DepartmentForm = () => {
   const { departmentId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine mode from route path
+  // !Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
   const [department, setDepartment] = useState(null);
   const [usersLoading, setUsersLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    location: "",
-    supervisor: "",
-    description: "",
-  });
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [formData, setFormData] = useState(DEPARTMENT_DEFAULTS);
 
-  const fetchUsers = useFetchData("user", setUsersLoading, setUsers);
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Fetch component data
+  const fetchUsers = useFetchUsersByRole([], setUsersLoading, setUsers);
+
+  const handleDepartmentData = useEntityFormData(
+    setDepartment,
+    setFormData,
+    DEPARTMENT_DEFAULTS,
+  );
 
   const fetchDepartment = useFetchData(
     `department/${departmentId}`,
-    setLoading,
-    (data) => {
-      setDepartment(data);
-      setFormData({
-        name: data.name || "",
-        location: data.location || "",
-        supervisor: data.supervisor || "",
-        description: data.description || "",
-      });
-    },
+    setFetchLoading,
+    handleDepartmentData,
   );
 
   useEffect(() => {
-    fetchUsers();
+    if (!isViewMode) fetchUsers();
     if (departmentId) fetchDepartment();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departmentId]);
+  }, [fetchUsers, fetchDepartment, isViewMode, departmentId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,46 +76,23 @@ const DepartmentForm = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // !Submit form data
+  const method = isEditMode ? "put" : "post";
+  const payload = { ...formData, supervisor: formData.supervisor || null };
+  const message = `Department ${isEditMode ? "updated" : "created"} successfully !!!`;
+  const url = isEditMode
+    ? `api/department/${departmentId}/`
+    : "api/department/";
 
-    setLoading(true);
-    setPageError("");
-    setErrors({});
-
-    const payload = { ...formData, supervisor: formData.supervisor || null };
-    const url = isEditMode
-      ? `api/department/${departmentId}/`
-      : "api/department/";
-
-    api[isEditMode ? "put" : "post"](url, payload)
-      .then(() => {
-        alert(
-          `Department ${isEditMode ? "updated" : "created"} successfully !!!`,
-        );
-        navigate("/department");
-      })
-      .catch((err) => {
-        console.error("Form submission error:", err.response);
-        const apiErrors = err.response?.data || {};
-
-        const newErrors = Object.fromEntries(
-          Object.entries(apiErrors)
-            .filter(([k]) => k in formData)
-            .map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : v]),
-        );
-
-        setErrors(newErrors);
-        setPageError(
-          Object.keys(newErrors).length > 0
-            ? "Please correct the errors below."
-            : apiErrors.detail || "An error occurred. Please try again.",
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  const HandleSubmit = (e) =>
+    submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/department"),
+    });
 
   const getUserOptions = () => {
     return users.map((user) => ({
@@ -173,7 +161,7 @@ const DepartmentForm = () => {
         </div>
       ) : (
         // !Edit/Create Mode
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <InputItem

@@ -1,6 +1,10 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import Consumption from "../components/Consumption";
+import useMaterials from "../hooks/useMaterials";
+import useProjects from "../hooks/useProjects";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -16,141 +20,15 @@ import {
   AlertTriangle,
   CalendarDays,
   CheckCircle,
-  PlusCircle,
   PlayCircle,
   ListChecks,
   Briefcase,
-  FileText,
   Activity,
   XCircle,
-  Trash2,
-  Beaker,
   Target,
   Users,
   Info,
 } from "lucide-react";
-
-// Material Consumption Line Item Form
-const ConsumptionItemForm = ({ materials, onSave, onCancel, loading }) => {
-  const [formData, setFormData] = useState({
-    material: "",
-    quantity: "1.00",
-    notes: "",
-  });
-
-  const handleChange = (e) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.material || parseFloat(formData.quantity) <= 0) return;
-    onSave({
-      material: parseInt(formData.material),
-      quantity: formData.quantity,
-      notes: formData.notes || null,
-    });
-    setFormData({ material: "", quantity: "1.00", notes: "" });
-  };
-
-  return (
-    <div className="bg-stone-800 rounded-xl p-4 my-4 inset-shadow-2xl">
-      <h4 className="text-md font-semibold text-stone-200 mb-4">
-        Add Material Consumption
-      </h4>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <SelectItem
-            label="Material"
-            name="material"
-            value={formData.material}
-            onChange={handleChange}
-            options={materials.map((m) => ({
-              value: m.id,
-              label: `${m.name} (${m.quantity} ${m.unit_of_measurement || ""})`,
-            }))}
-            required
-          />
-          <InputItem
-            label="Quantity"
-            name="quantity"
-            value={formData.quantity}
-            onChange={handleChange}
-            type="number"
-            required
-          />
-          <InputItem
-            label="Notes (optional)"
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="bg-stone-600 hover:bg-stone-700 text-stone-200 py-2 px-3 rounded-md text-[14px]"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md text-[14px]"
-          >
-            {loading ? "Saving..." : "Add Consumption"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-// Shared Consumption List (used in both view and edit mode)
-const ConsumptionList = ({ consumptions, canDelete, onDelete }) => {
-  if (consumptions.length === 0) {
-    return (
-      <p className="text-stone-400 italic text-center py-4">
-        No material consumption recorded yet.
-      </p>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {consumptions.map((item) => (
-        <div
-          key={item.id}
-          className="p-3 bg-card-sub rounded-lg flex flex-col md:flex-row justify-between md:items-center gap-2"
-        >
-          <div>
-            <p className="font-semibold text-stone-300">{item.material_name}</p>
-            <p className="text-sm text-stone-400">
-              {parseFloat(item.quantity).toFixed(2)}{" "}
-              {item.material_unit || "units"} &middot; by{" "}
-              {item.consumed_by_name || "Unknown"} &middot;{" "}
-              {new Date(item.consumed_at).toLocaleString()}
-            </p>
-            {item.notes && (
-              <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                <FileText size={12} /> {item.notes}
-              </p>
-            )}
-          </div>
-          {canDelete && (
-            <button
-              type="button"
-              onClick={() => onDelete(item.id)}
-              className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
 
 const TasksForm = () => {
   const { taskId } = useParams();
@@ -161,12 +39,12 @@ const TasksForm = () => {
   const isCreateMode = location.pathname.includes("/add");
 
   const { user } = useAuth();
+  const { projects } = useProjects();
+  const { materials } = useMaterials();
   const [task, setTask] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
-  const [allProjects, setAllProjects] = useState([]);
-  const [allMaterials, setAllMaterials] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
   const [associatedProject, setAssociatedProject] = useState(null);
@@ -181,23 +59,10 @@ const TasksForm = () => {
     status: "PENDING",
   });
 
-  // Data Fetching
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      api
-        .get("api/project/")
-        .then((res) => setAllProjects(res.data.results || res.data)),
-      api
-        .get("api/user/")
-        .then((res) => setAllUsers(res.data.results || res.data)),
-      api
-        .get("api/material/")
-        .then((res) => setAllMaterials(res.data.results || res.data)),
-    ])
-      .catch((err) => console.error("Error fetching data:", err))
-      .finally(() => setLoading(false));
-  }, []);
+  // !Fetch components data
+  const fetchUsers = useFetchUsersByRole(["OPERATOR"], setLoading, setAllUsers);
+
+  useEffect(() => fetchUsers(), [fetchUsers]);
 
   const fetchTaskData = useCallback(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -281,10 +146,10 @@ const TasksForm = () => {
   const isProjectManager = useMemo(() => {
     if (!user || !formData.project) return false;
     return (
-      allProjects.find((p) => p.id === parseInt(formData.project))
+      projects.find((p) => p.id === parseInt(formData.project))
         ?.project_manager === user.id
     );
-  }, [user, formData.project, allProjects]);
+  }, [user, formData.project, projects]);
 
   const canCreate =
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
@@ -305,9 +170,7 @@ const TasksForm = () => {
       setShowAddConsumption(false);
       fetchConsumptions();
       // Refresh materials to update stock quantities
-      api
-        .get("api/material/")
-        .then((res) => setAllMaterials(res.data.results || res.data));
+      window.location.reload();
     } catch (err) {
       const msg =
         err.response?.data?.detail ||
@@ -331,9 +194,7 @@ const TasksForm = () => {
     try {
       await api.delete(`api/material-consumption/${consumptionId}/`);
       fetchConsumptions();
-      api
-        .get("api/material/")
-        .then((res) => setAllMaterials(res.data.results || res.data));
+      window.location.reload();
     } catch {
       setPageError("Failed to delete consumption record.");
     } finally {
@@ -457,9 +318,7 @@ const TasksForm = () => {
     }
 
     // Start date disabled in edit mode
-    if (fieldName === "start_date" && !isCreateMode) return true;
-
-    return false;
+    return fieldName === "start_date" && !isCreateMode;
   };
 
   return (
@@ -535,36 +394,17 @@ const TasksForm = () => {
           />
 
           {/* Material Consumption Section - View Mode */}
-          <div className="mt-6 pt-5 border-t border-stone-700">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
-                <Beaker size={20} /> Material Consumption
-              </h3>
-              {canAddConsumption && !showAddConsumption && (
-                <button
-                  onClick={() => setShowAddConsumption(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                >
-                  <PlusCircle size={18} /> Add Consumption
-                </button>
-              )}
-            </div>
-
-            {showAddConsumption && (
-              <ConsumptionItemForm
-                materials={allMaterials}
-                onSave={handleAddConsumption}
-                onCancel={() => setShowAddConsumption(false)}
-                loading={actionLoading}
-              />
-            )}
-
-            <ConsumptionList
-              consumptions={consumptions}
-              canDelete={canSubmitForm}
-              onDelete={handleDeleteConsumption}
-            />
-          </div>
+          <Consumption
+            materials={materials}
+            consumptions={consumptions}
+            canAdd={canAddConsumption}
+            canDelete={canSubmitForm}
+            showAddConsumption={showAddConsumption}
+            setShowAddConsumption={setShowAddConsumption}
+            onSave={handleAddConsumption}
+            onDelete={handleDeleteConsumption}
+            loading={actionLoading}
+          />
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -586,7 +426,7 @@ const TasksForm = () => {
               icon={<Briefcase />}
               value={formData.project}
               onChange={handleChange}
-              options={allProjects.map((proj) => ({
+              options={projects.map((proj) => ({
                 value: proj.id,
                 label: proj.name,
               }))}
@@ -681,37 +521,17 @@ const TasksForm = () => {
 
           {/* Material Consumption Section - Edit Mode */}
           {!isCreateMode && (
-            <div className="mt-6 pt-5 border-t border-stone-700">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-stone-200 flex items-center gap-2">
-                  <Beaker size={20} /> Material Consumption
-                </h3>
-                {canAddConsumption && !showAddConsumption && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAddConsumption(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
-                  >
-                    <PlusCircle size={18} /> Add Consumption
-                  </button>
-                )}
-              </div>
-
-              {showAddConsumption && (
-                <ConsumptionItemForm
-                  materials={allMaterials}
-                  onSave={handleAddConsumption}
-                  onCancel={() => setShowAddConsumption(false)}
-                  loading={actionLoading}
-                />
-              )}
-
-              <ConsumptionList
-                consumptions={consumptions}
-                canDelete={canSubmitForm}
-                onDelete={handleDeleteConsumption}
-              />
-            </div>
+            <Consumption
+              materials={materials}
+              consumptions={consumptions}
+              canAdd={canAddConsumption}
+              canDelete={canSubmitForm}
+              showAddConsumption={showAddConsumption}
+              setShowAddConsumption={setShowAddConsumption}
+              onSave={handleAddConsumption}
+              onDelete={handleDeleteConsumption}
+              loading={actionLoading}
+            />
           )}
 
           <Buttons

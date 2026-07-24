@@ -1,7 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
-import { Star, Users, Award } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import { Star, UsersRound, Award } from "lucide-react";
+import useFormSubmit from "../hooks/useFormSubmit";
+import { useState, useEffect } from "react";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -13,7 +15,7 @@ import {
   Buttons,
 } from "../components/components";
 
-// --- Constants (as in the original) ---
+// --- Constants ---
 const SKILL_CATEGORIES_MAP = {
   OTHER: "Other",
   SAFETY: "Safety",
@@ -40,81 +42,50 @@ const SKILL_LEVELS_MAP = {
 const ALL_SKILL_CATEGORIES = Object.keys(SKILL_CATEGORIES_MAP);
 const SKILL_LEVELS = Object.keys(SKILL_LEVELS_MAP);
 
-const ROLE_CATEGORY_MAP = {
-  ADMIN: ALL_SKILL_CATEGORIES,
-  SUPERVISOR: ALL_SKILL_CATEGORIES,
-  MANAGER: [
-    "OTHER",
-    "SOFTWARE",
-    "TECHNICAL",
-    "MANAGEMENT",
-    "OPERATIONS",
-    "ADMINISTRATION",
-  ],
-  TECHNICIAN: [
-    "OTHER",
-    "SAFETY",
-    "SOFTWARE",
-    "TECHNICAL",
-    "MECHANICAL",
-    "ELECTRICAL",
-    "OPERATIONS",
-    "MAINTENANCE",
-  ],
-  OPERATOR: [
-    "OTHER",
-    "SAFETY",
-    "TECHNICAL",
-    "OPERATIONS",
-    "MECHANICAL",
-    "MAINTENANCE",
-    "QUALITY_CONTROL",
-  ],
-};
-
 const SkillForm = () => {
-  const { user } = useAuth();
+  const { skillMatrixId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { skillMatrixId } = useParams();
 
-  const isMySkillsMode = useMemo(
-    () => location.pathname.includes("/my-skills"),
-    [location.pathname],
-  );
-  const isViewMode = useMemo(
-    () => location.pathname.includes("/view"),
-    [location.pathname],
-  );
+  // Determine mode from route path
+  const isMySkillsMode = location.pathname.includes("/my-skills");
+  const isViewMode = location.pathname.includes("/view");
 
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
-  const [pageError, setPageError] = useState("");
-  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    category: "TECHNICAL",
-    level: "BEGINNER",
     employee: "",
+    description: "",
+    level: "BEGINNER",
+    category: "TECHNICAL",
   });
 
-  const canManageForm = useMemo(
-    () => isMySkillsMode || ["ADMIN", "SUPERVISOR"].includes(user.role),
-    [isMySkillsMode, user],
-  );
+  const {
+    loading: submitLoading,
+    errors: formErrors,
+    pageError,
+    setErrors: setFormErrors,
+    setPageError,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Permission checks
+  const canManageForm = ["ADMIN", "SUPERVISOR"].includes(user?.role);
+
+  // Fetch employees (only for admin/supervisor mode)
+  const fetchEmployees = useFetchUsersByRole([], setFetchLoading, setEmployees);
 
   useEffect(() => {
-    if (!isMySkillsMode) {
-      api
-        .get("api/user/")
-        .then((res) => setEmployees(res.data.results || res.data));
-    }
+    if (!isMySkillsMode) fetchEmployees();
 
     if (skillMatrixId) {
       const endpoint = isMySkillsMode
         ? `api/skill/my-skills/${skillMatrixId}/`
         : `api/skill-matrix/${skillMatrixId}/`;
+      setFetchLoading(true);
       api
         .get(endpoint)
         .then((res) => {
@@ -124,27 +95,13 @@ const SkillForm = () => {
             description,
             category,
             level,
-            employee: String(employee || ""),
+            employee: String(employee || ""), // ensure string for select
           });
         })
-        .catch(() => setPageError("Failed to load skill details."));
+        .catch(() => setPageError("Failed to load skill details."))
+        .finally(() => setFetchLoading(false));
     }
-  }, [skillMatrixId, isMySkillsMode]);
-
-  const getAllowedCategories = useMemo(() => {
-    if (isMySkillsMode && user.role)
-      return ROLE_CATEGORY_MAP[user.role] || ALL_SKILL_CATEGORIES;
-    if (!isMySkillsMode && formData.employee) {
-      const selectedEmp = employees.find(
-        (e) => e.id === parseInt(formData.employee),
-      );
-      return (
-        (selectedEmp && ROLE_CATEGORY_MAP[selectedEmp.role]) ||
-        ALL_SKILL_CATEGORIES
-      );
-    }
-    return ALL_SKILL_CATEGORIES;
-  }, [isMySkillsMode, user, formData.employee, employees]);
+  }, [skillMatrixId, isMySkillsMode, fetchEmployees, setPageError]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -152,60 +109,48 @@ const SkillForm = () => {
     if (formErrors[name]) setFormErrors((prev) => ({ ...prev, [name]: null }));
   };
 
+  // Submit handler
+  const method = skillMatrixId ? "patch" : "post";
+  const message = `Skill matrix ${skillMatrixId ? "updated" : "created"} successfully !!!`;
+  const endpoint = isMySkillsMode
+    ? `api/skill-matrix/${skillMatrixId ? `${skillMatrixId}/` : ""}`
+    : `api/skill-matrix/${skillMatrixId ? `${skillMatrixId}/` : ""}`;
+  // (both use same endpoint, but kept separate for clarity)
+
+  const payload = {
+    name: formData.name,
+    description: formData.description || null,
+    category: formData.category,
+    level: formData.level,
+    employee: isMySkillsMode ? user.id : parseInt(formData.employee),
+  };
+
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Skill name is required.";
-    if (!isMySkillsMode && !skillMatrixId && !formData.employee)
-      newErrors.employee = "An employee must be selected.";
-    if (!getAllowedCategories.includes(formData.category))
-      newErrors.category =
-        "This category is not applicable for the selected user role.";
+    if (!ALL_SKILL_CATEGORIES.includes(formData.category))
+      newErrors.category = "Invalid category selected.";
     setFormErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      setPageError("Please correct the errors below.");
+    }
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const HandleSubmit = (e) => {
     if (!validateForm()) {
-      setPageError("Please correct the errors below.");
+      e.preventDefault();
       return;
     }
-    setLoading(true);
-    setPageError("");
-    setFormErrors({});
 
-    const payload = {
-      name: formData.name,
-      description: formData.description || null,
-      category: formData.category,
-      level: formData.level,
-      employee: isMySkillsMode ? user.id : parseInt(formData.employee),
-    };
-
-    const mySkillsEndpoint = skillMatrixId
-      ? `api/skill-matrix/${skillMatrixId}/`
-      : `api/skill-matrix/`;
-    const adminEndpoint = skillMatrixId
-      ? `api/skill-matrix/${skillMatrixId}/`
-      : `api/skill-matrix/`;
-    const endpoint = isMySkillsMode ? mySkillsEndpoint : adminEndpoint;
-    const method = skillMatrixId ? "patch" : "post";
-
-    try {
-      await api[method](endpoint, payload);
-      alert("Skill saved successfully!");
-      navigate(isMySkillsMode ? "/my-skills" : "/skill-matrix");
-    } catch (error) {
-      const apiErrors = error.response?.data;
-      if (apiErrors && typeof apiErrors === "object") {
-        setFormErrors(apiErrors);
-        setPageError("Please correct the errors below.");
-      } else {
-        setPageError(apiErrors?.detail || "An unexpected error occurred.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    submit(e, {
+      method,
+      url: endpoint,
+      payload,
+      formData,
+      message,
+      onSuccess: () =>
+        navigate(isMySkillsMode ? "/my-skills" : "/skill-matrix"),
+    });
   };
 
   const backLink = isMySkillsMode ? "/my-skills" : "/skill-matrix";
@@ -219,7 +164,7 @@ const SkillForm = () => {
     if (isMySkillsMode) {
       navigate(`/my-skills/edit/${skillMatrixId}`);
     } else {
-      navigate(`/skills/edit/${skillMatrixId}`);
+      navigate(`/skill-matrix/edit/${skillMatrixId}`);
     }
   };
 
@@ -255,7 +200,7 @@ const SkillForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {!isMySkillsMode && (
             <InfoItem
-              icon={<Users />}
+              icon={<UsersRound />}
               label="Employee"
               value={getEmployeeName()}
             />
@@ -280,18 +225,17 @@ const SkillForm = () => {
           </div>
         </div>
       ) : (
-        // !Edit/Create Mode
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="space-y-6">
             {!isMySkillsMode && (
               <SelectItem
                 label="Employee"
                 name="employee"
-                icon={<Users />}
+                icon={<UsersRound />}
                 value={formData.employee}
                 onChange={handleChange}
                 options={employees.map((emp) => ({
-                  value: emp.id,
+                  value: String(emp.id), // ← fix type mismatch
                   label: `${emp.first_name || ""} ${emp.last_name || ""} (${
                     emp.username
                   }) - ${emp.role}`,
@@ -318,7 +262,7 @@ const SkillForm = () => {
                 icon={<Star />}
                 value={formData.category}
                 onChange={handleChange}
-                options={getAllowedCategories.map((cat) => ({
+                options={ALL_SKILL_CATEGORIES.map((cat) => ({
                   value: cat,
                   label: SKILL_CATEGORIES_MAP[cat],
                 }))}

@@ -1,10 +1,11 @@
 import LoadingIndicator from "../components/LoadingIndicator";
+import { getSortComparator } from "../utils/sort";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -31,8 +32,8 @@ import {
 
 const Order = () => {
   const { user } = useAuth();
-  const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allOrders, setAllOrders] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({ searchTerm: "", status: "all" });
   const [sortConfig, setSortConfig] = useState({
@@ -79,13 +80,9 @@ const Order = () => {
       return matchesSearch && matchesStatus;
     });
 
-    return [...filtered].sort((a, b) => {
-      const aVal = a[sortConfig.key] || "";
-      const bVal = b[sortConfig.key] || "";
-      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    return [...filtered].sort(
+      getSortComparator(sortConfig.key, sortConfig.direction),
+    );
   }, [allOrders, filters, sortConfig]);
 
   const stats = useMemo(

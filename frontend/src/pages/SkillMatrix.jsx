@@ -1,11 +1,12 @@
 import LoadingIndicator from "../components/LoadingIndicator";
 import { SKILL_CATEGORIES, SKILL_LEVELS } from "../constants";
+import { getSortComparator } from "../utils/sort";
 import useFetchData from "../hooks/useFetchData";
 import useWebSocket from "../hooks/useWebSocket";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -59,7 +60,6 @@ const SkillMatrix = () => {
 
   const fetchData = useFetchData("skill-matrix", setLoading, setAllSkills);
 
-  // useEffect(() => fetchData(), [fetchData]);
   useWebSocket("skill-matrix", setAllSkills, fetchData);
 
   const handleRefresh = () => {
@@ -120,7 +120,8 @@ const SkillMatrix = () => {
         skill.employee_name.toLowerCase().includes(searchTermLower);
 
       const matchesEmployee =
-        !filters.employee || skill.employee == filters.employee;
+        !filters.employee ||
+        String(skill.employee) === String(filters.employee);
       const matchesCategory =
         !filters.category || skill.category === filters.category;
       const matchesLevel = !filters.level || skill.level === filters.level;
@@ -130,13 +131,9 @@ const SkillMatrix = () => {
       );
     });
 
-    return [...filtered].sort((a, b) => {
-      const aVal = a[sortConfig.key] || "";
-      const bVal = b[sortConfig.key] || "";
-      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    return [...filtered].sort(
+      getSortComparator(sortConfig.key, sortConfig.direction),
+    );
   }, [processedSkills, filters, sortConfig]);
 
   // Statistics
@@ -150,7 +147,7 @@ const SkillMatrix = () => {
     [allSkills],
   );
 
-  // Permissions
+  // !Permissions check
   const canManage = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
 
   const getLevelPill = (level) => {
@@ -367,14 +364,14 @@ const SkillMatrix = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-2">
                             <Link
-                              to={`/skills/view/${skill.id}`}
+                              to={`/skill-matrix/view/${skill.id}`}
                               className="p-2 text-blue-400 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-colors duration-200"
                               title="View Details"
                             >
                               <Eye size={18} />
                             </Link>
                             <Link
-                              to={`/skills/edit/${skill.id}`}
+                              to={`/skill-matrix/edit/${skill.id}`}
                               className="p-2 text-indigo-200 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors duration-200"
                               title="Edit Skill"
                             >

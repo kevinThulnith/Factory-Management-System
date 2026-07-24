@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, cloneElement } from "react";
 import { MdDashboard } from "react-icons/md";
-import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 import api from "../api";
 
 import {
@@ -54,25 +54,22 @@ function Home() {
       { key: "products", url: "api/product/" },
       { key: "orders", url: "api/order/" },
     ];
-  
-    Promise.allSettled(endpoints.map((e) => api.get(e.url)))
-      .then((results) => {
-        const updatedData = {};
-  
-        results.forEach((result, index) => {
-          const { key } = endpoints[index];
-          if (result.status === "fulfilled") {
-            updatedData[key] = result.value.data;
-          } else {
-            console.error(`Error fetching ${key}:`, result.reason);
-          }
-        });
-  
-        // Single, atomic state update
-        if (Object.keys(updatedData).length > 0) {
-          setDashboardData((prev) => ({ ...prev, ...updatedData }));
-        }
+
+    Promise.allSettled(endpoints.map((e) => api.get(e.url))).then((results) => {
+      const updatedData = {};
+
+      results.forEach((result, index) => {
+        const { key } = endpoints[index];
+        if (result.status === "fulfilled") {
+          updatedData[key] = result.value.data;
+        } else console.error(`Error fetching ${key}:`, result.reason);
       });
+
+      // ?Single, atomic state update
+      if (Object.keys(updatedData).length > 0) {
+        setDashboardData((prev) => ({ ...prev, ...updatedData }));
+      }
+    });
   }, []);
 
   // !Render quick stats cards based on user role
@@ -181,9 +178,9 @@ function Home() {
     return {
       myTasks,
       myMachine,
-      myDepartment,
       myWorkshop,
       myProjects,
+      myDepartment,
       completedTasks: myTasks.filter((task) => task.status === "COMPLETED")
         .length,
       pendingTasks: myTasks.filter((task) => task.status === "PENDING").length,
@@ -219,7 +216,7 @@ function Home() {
             <span className="mr-2">Current role :</span>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm ${
-                user?.role == "ADMIN"
+                user?.role === "ADMIN"
                   ? "bg-gradient-to-r from-orange-700 to-purple-700 text-stone-200"
                   : "bg-gradient-to-r from-yellow-600 to-blue-700 text-stone-100"
               }`}
@@ -230,7 +227,7 @@ function Home() {
         </div>
 
         {/* Admin quick actions */}
-        {user?.role == "ADMIN" && (
+        {user?.role === "ADMIN" && (
           <div className="hidden lg:flex items-center space-x-4">
             <Link
               to="/user"
@@ -255,7 +252,7 @@ function Home() {
           </div>
         )}
         {/* Non-admin user actions */}
-        {user?.role != "ADMIN" && (
+        {user?.role !== "ADMIN" && (
           <div className="hidden lg:block">
             <div className="p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white text-center shadow-lg">
               <BarChart3 size={32} className="mx-auto mb-2 text-white" />
@@ -266,7 +263,7 @@ function Home() {
       </div>
 
       {/* admin management panel */}
-      {user?.role == "ADMIN" && (
+      {user?.role === "ADMIN" && (
         <div className="mb-8 shadow-lg bg-card-main sm:p-8 p-6 rounded-lg">
           <div className="flex items-center mb-6">
             <div className="p-2 rounded-md mr-3 shadow-md bg-star-dust-700">
@@ -383,7 +380,7 @@ function Home() {
           >
             <div className="flex  sm:mb-4">
               <div className="p-2 bg-star-dust-700 rounded-md text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
-                {React.cloneElement(stat.icon, {
+                {cloneElement(stat.icon, {
                   className: "mx-auto text-white",
                 })}
               </div>

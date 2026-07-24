@@ -3,7 +3,7 @@ import { MdOutlineConfirmationNumber } from "react-icons/md";
 import { RotateCcwKey, UserRound } from "lucide-react";
 import { Buttons } from "../components/components";
 import { LuUserRoundPen } from "react-icons/lu";
-import { useAuth } from "../hooks/useAuth.jsx";
+import useAuth from "../hooks/useAuth.jsx";
 import { useState } from "react";
 import api from "../api";
 
@@ -79,10 +79,8 @@ const ProfilePage = () => {
         setLoading(false);
         window.location.reload();
       })
-      .catch((error) => {
-        alert("API Error:", error.response?.data || error);
-        setLoading(false);
-      });
+      .catch((error) => alert(`API Error : ${error.response?.data || error}`))
+      .finally(() => setLoading(false));
   };
 
   return (

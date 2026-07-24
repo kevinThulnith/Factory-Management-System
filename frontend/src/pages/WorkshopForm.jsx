@@ -1,9 +1,12 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import useEntityFormData from "../hooks/useEntityFormData";
+import useDepartments from "../hooks/useDepartments";
+import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
-import api from "../api";
 
 import {
   TextareaItem,
@@ -23,6 +26,16 @@ import {
   User,
 } from "lucide-react";
 
+// !Default values for the form
+const WORKSHOP_DEFAULTS = {
+  name: "",
+  description: "",
+  department: "",
+  manager: "",
+  location: "",
+  operational_status: "ACTIVE",
+};
+
 const WorkshopForm = () => {
   const { workshopId } = useParams();
   const navigate = useNavigate();
@@ -33,59 +46,46 @@ const WorkshopForm = () => {
   const isEditMode = location.pathname.includes("/edit/");
 
   const { user } = useAuth();
-  const [errors, setErrors] = useState({});
   const [managers, setManagers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
   const [workshop, setWorkshop] = useState(null);
-  const [departments, setDepartments] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [formData, setFormData] = useState(WORKSHOP_DEFAULTS);
+  const { departments, departmentsLoading } = useDepartments();
   const [managersLoading, setManagersLoading] = useState(false);
-  const [departmentsLoading, setDepartmentsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    manager: "",
-    department: "",
-    description: "",
-    operational_status: "ACTIVE",
-  });
 
-  const fetchDepartments = useFetchData(
-    "department",
-    setDepartmentsLoading,
-    setDepartments,
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  const handleWorkshopData = useEntityFormData(
+    setWorkshop,
+    setFormData,
+    WORKSHOP_DEFAULTS,
   );
 
-  // !Managers — needs post-fetch filtering, so shape it in the setter
-  const fetchManagers = useFetchData("user", setManagersLoading, (data) => {
-    const managerUsers = data.filter((u) =>
-      ["SUPERVISOR", "MANAGER", "ADMIN"].includes(u.role),
-    );
-    setManagers(managerUsers);
-  });
+  const fetchManagers = useFetchUsersByRole(
+    ["SUPERVISOR", "MANAGER", "ADMIN"],
+    setManagersLoading,
+    setManagers,
+  );
 
   // !Workshop — only relevant in edit/view mode, shapes formData too
   const fetchWorkshop = useFetchData(
     `workshop/${workshopId}`,
-    setLoading,
-    (data) => {
-      setWorkshop(data);
-      setFormData({
-        name: data.name || "",
-        description: data.description || "",
-        department: data.department || "",
-        manager: data.manager || "",
-        operational_status: data.operational_status || "ACTIVE",
-        location: data.location || "",
-      });
-    },
+    setFetchLoading,
+    handleWorkshopData,
   );
 
   useEffect(() => {
-    fetchDepartments();
-    fetchManagers();
+    if (!isViewMode) fetchManagers();
     if (workshopId) fetchWorkshop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workshopId]);
+  }, [fetchManagers, fetchWorkshop, isViewMode,workshopId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -93,73 +93,32 @@ const WorkshopForm = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // !Submit form data
+  const method = isEditMode ? "patch" : "post";
+  const payload = { ...formData, manager: formData.manager || null };
+  const url = isEditMode ? `api/workshop/${workshopId}/` : "api/workshop/";
+  const message = `Workshop ${isEditMode ? "updated" : "created"} successfully !!!`;
+  const restrictedPayload =
+    isEditMode && user?.role === "MANAGER"
+      ? { operational_status: payload.operational_status }
+      : isEditMode && user?.role === "SUPERVISOR"
+        ? Object.fromEntries(
+            Object.entries(payload).filter(
+              ([k]) =>
+                !["name", "description", "department", "location"].includes(k),
+            ),
+          )
+        : payload;
 
-    setLoading(true);
-    setPageError("");
-    setErrors({});
-
-    const payload = {
-      ...formData,
-      manager: formData.manager || null,
-    };
-
-    try {
-      let finalPayload = payload;
-
-      if (user.role === "SUPERVISOR" && isEditMode) {
-        const {
-          name: _name,
-          description: _description,
-          department: _department,
-          location: _location,
-          ...supervisorPayload
-        } = payload;
-        finalPayload = supervisorPayload;
-      }
-      if (user.role === "MANAGER" && isEditMode) {
-        // Managers can only edit operational_status
-        finalPayload = {
-          operational_status: payload.operational_status,
-        };
-      }
-      if (isEditMode)
-        await api.patch(`api/workshop/${workshopId}/`, finalPayload);
-      else await api.post("api/workshop/", finalPayload);
-      alert("Workshop saved successfully!");
-      navigate("/workshop");
-    } catch (error) {
-      console.error("Form submission error:", error.response);
-      const apiErrors = error.response?.data;
-
-      if (apiErrors && typeof apiErrors === "object") {
-        const newFormErrors = {};
-        for (const key in apiErrors) {
-          if (
-            Object.prototype.hasOwnProperty.call(formData, key) &&
-            Array.isArray(apiErrors[key])
-          ) {
-            newFormErrors[key] = apiErrors[key].join(" ");
-          }
-        }
-        setErrors(newFormErrors);
-
-        if (Object.keys(newFormErrors).length === 0) {
-          setPageError(
-            apiErrors.detail || "An error occurred. Please try again.",
-          );
-        } else setPageError("Please correct the errors below.");
-      } else {
-        setPageError(
-          error.response?.data?.detail ||
-            "An error occurred. Please try again.",
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const HandleSubmit = (e) =>
+    submit(e, {
+      method,
+      url,
+      payload: restrictedPayload,
+      formData,
+      message,
+      onSuccess: () => navigate("/workshop"),
+    });
 
   const getDepartmentOptions = () => {
     return departments.map((dept) => ({
@@ -272,7 +231,7 @@ const WorkshopForm = () => {
         </div>
       ) : (
         // !Edit/Create Mode
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputItem
               label="Workshop Name"

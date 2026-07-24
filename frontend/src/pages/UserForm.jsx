@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import DepartmentDropdown from "../components/DepartmentDropDown";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import RoleDropdown from "../components/RoleDropDown";
+import useDepartments from "../hooks/useDepartments";
 import { Buttons } from "../components/components";
-import { useAuth } from "../hooks/useAuth";
+import useFormSubmit from "../hooks/useFormSubmit";
+import useAuth from "../hooks/useAuth";
 import api from "../api";
 
 import {
@@ -10,12 +14,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   UsersRound,
-  Building2,
-  Activity,
-  CogIcon,
-  Package,
   EyeOff,
-  Crown,
   Eye,
 } from "lucide-react";
 
@@ -37,7 +36,7 @@ const LoadingSpinner = () => (
       r="10"
       stroke="currentColor"
       strokeWidth="4"
-    ></circle>
+    />
     <path
       className="opacity-75"
       fill="currentColor"
@@ -48,7 +47,13 @@ const LoadingSpinner = () => (
 
 function UserForm() {
   const { userId } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  const { departments } = useDepartments();
+  const [showPassword, setShowPassword] = useState(false);
+  const [originalUsername, setOriginalUsername] = useState("");
+  const [initialPageLoading, setInitialPageLoading] = useState(true);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -62,92 +67,47 @@ function UserForm() {
     department: "",
     password: "",
   });
-  const [departments, setDepartments] = useState([]);
-  const [originalUsername, setOriginalUsername] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
-  const [formSubmitLoading, setFormSubmitLoading] = useState(false);
-  const [initialPageLoading, setInitialPageLoading] = useState(true);
-  const [pageError, setPageError] = useState("");
-  const [formErrors, setFormErrors] = useState({});
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
-  const [departmentDropdownOpen, setDepartmentDropdownOpen] = useState(false);
-  const { user } = useAuth();
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: formSubmitLoading,
+    errors: formErrors,
+    pageError,
+    setErrors: setFormErrors,
+    setPageError,
+    submit,
+  } = useFormSubmit();
 
+  // !Permission check
   const isAdmin = useMemo(() => user?.role === "ADMIN", [user]);
 
-  // Memoized role configuration
-  const roleConfig = useMemo(
-    () => ({
-      ADMIN: {
-        icon: <Crown size={16} />,
-        color: "purple-600",
-        label: "Administrator",
-      },
-      MANAGER: {
-        icon: <ShieldCheck size={16} />,
-        color: "blue-600",
-        label: "Manager",
-      },
-      SUPERVISOR: {
-        icon: <Eye size={16} />,
-        color: "green-600",
-        label: "Supervisor",
-      },
-      OPERATOR: {
-        icon: <CogIcon size={16} />,
-        color: "orange-600",
-        label: "Operator",
-      },
-      TECHNICIAN: {
-        icon: <Activity size={16} />,
-        color: "red-600",
-        label: "Technician",
-      },
-      PURCHASING: {
-        icon: <Package size={16} />,
-        color: "indigo-600",
-        label: "Purchasing",
-      },
-    }),
-    [],
-  );
-
   const fetchUserData = useCallback(() => {
-    if (userId) {
-      setInitialPageLoading(true);
-      api
-        .get(`api/user/${userId}/`)
-        .then((res) => {
-          setFormData({
-            first_name: res.data.first_name || "",
-            last_name: res.data.last_name || "",
-            email: res.data.email || "",
-            username: res.data.username || "",
-            dob: res.data.dob || "",
-            nic: res.data.nic || "",
-            mobile_no: res.data.mobile_no || "",
-            role: res.data.role || "OPERATOR",
-            is_active: res.data.is_active ?? true,
-            department: res.data.department || "",
-            password: "",
-          });
-          setOriginalUsername(res.data.username || "");
-        })
-        .catch((error) => setPageError("Failed to load user data.", error))
-        .finally(() => setInitialPageLoading(false));
-    }
-  }, [userId]);
+    setInitialPageLoading(true);
+    api
+      .get(`api/user/${userId}/`)
+      .then((res) => {
+        setFormData({
+          first_name: res.data.first_name || "",
+          last_name: res.data.last_name || "",
+          email: res.data.email || "",
+          username: res.data.username || "",
+          dob: res.data.dob || "",
+          nic: res.data.nic || "",
+          mobile_no: res.data.mobile_no || "",
+          role: res.data.role || "OPERATOR",
+          is_active: res.data.is_active ?? true,
+          department: res.data.department || "",
+          password: "",
+        });
+        setOriginalUsername(res.data.username || "");
+      })
+      .catch((error) => setPageError(`Failed to load user data. ${error}`))
+      .finally(() => setInitialPageLoading(false));
+  }, [userId, setPageError]);
 
   useEffect(() => {
-    fetchUserData();
-
-    api
-      .get("api/department/")
-      .then((res) => setDepartments(res.data))
-      .catch((error) => setPageError("Failed to load departments.", error))
-      .finally(() => setInitialPageLoading(false));
-  }, [fetchUserData]);
+    if (userId) fetchUserData();
+  }, [fetchUserData, userId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -161,46 +121,30 @@ function UserForm() {
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.first_name.trim())
-      errors.first_name = "First name is required.";
-    if (!formData.last_name.trim()) errors.last_name = "Last name is required.";
-    if (!formData.email.trim()) errors.email = "Email is required.";
     if (formData.password && formData.password.length < 8)
       errors.password = "New password must be at least 8 characters.";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    setFormSubmitLoading(true);
+  const HandleSubmit = (e) => {
+    if (!validateForm()) {
+      e.preventDefault();
+      return;
+    }
+
     const submitData = { ...formData };
     if (!submitData.password) delete submitData.password;
-    api
-      .put(`api/user/${userId}/`, submitData)
-      .then(() => {
-        alert("User updated Successfully !!!");
-        navigate("/user");
-      })
-      .catch((error) => {
-        if (error.response?.data) {
-          setFormErrors(error.response.data);
-        } else {
-          setPageError("Failed to submit form. Please try again.");
-        }
-      })
-      .finally(() => setFormSubmitLoading(false));
-  };
 
-  const userRoles = [
-    "ADMIN",
-    "MANAGER",
-    "SUPERVISOR",
-    "OPERATOR",
-    "TECHNICIAN",
-    "PURCHASING",
-  ];
+    submit(e, {
+      method: "put",
+      url: `api/user/${userId}/`,
+      payload: submitData,
+      formData,
+      message: "User updated Successfully !!!",
+      onSuccess: () => navigate("/user"),
+    });
+  };
 
   return (
     <div>
@@ -210,8 +154,8 @@ function UserForm() {
           <div className="rounded-2xl p-4 shadow-md mb-8 bg-card-main">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 mr-6 shadow-lg transform hover:scale-105 transition-all duration-300">
-                  <UsersRound size={40} />
+                <div className="p-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 mr-6 shadow-lg transform hover:scale-105 transition-all duration-300">
+                  <UsersRound size={46} />
                 </div>
                 <div>
                   <h1 className="text-2xl font-medium mb-2 tracking-tight">
@@ -246,7 +190,7 @@ function UserForm() {
           ) : (
             /* Form Section with Modern Design */
             <div className="rounded-2xl shadow-md bg-card-main overflow-hidden mb-10 text-star-dust-200 p-1">
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={HandleSubmit}>
                 <div className="sm:p-8 p-4 space-y-8">
                   {pageError && (
                     <div className="bg-red-500 rounded-xl p-4 flex items-center">
@@ -395,7 +339,7 @@ function UserForm() {
                           value={formData.username}
                           onChange={handleChange}
                           required
-                          disabled={userId}
+                          disabled={!!userId}
                           className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent ${
                             formErrors.username
                               ? "border-red-300 bg-red-50"
@@ -486,180 +430,45 @@ function UserForm() {
                     {/* Role & Department Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label
-                          htmlFor="role"
-                          className="block text-sm font-medium ml-1"
-                        >
-                          Role
-                        </label>
-                        <div className="relative">
-                          <button
-                            type="button"
-                            disabled={!isAdmin}
-                            onClick={() => setRoleDropdownOpen((o) => !o)}
-                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent flex items-center gap-2 text-left ${
-                              formErrors.role ? "ring-1 ring-red-400" : ""
-                            } ${!isAdmin ? "opacity-60 cursor-not-allowed" : "hover:bg-[#444]"}`}
-                          >
-                            <span
-                              className={`text-${roleConfig[formData.role].color}`}
-                            >
-                              {roleConfig[formData.role].icon}
-                            </span>
-                            <span className="flex-1 text-sm">
-                              {roleConfig[formData.role].label}
-                            </span>
-                            <ChevronLeft
-                              size={16}
-                              className={`transition-transform ${roleDropdownOpen ? "rotate-90" : "-rotate-90"}`}
-                            />
-                          </button>
-                          {roleDropdownOpen && isAdmin && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-0"
-                                onClick={() => setRoleDropdownOpen(false)}
-                              />
-                              <div className="absolute z-10 mt-1 w-full rounded-xl bg-[#2e2e2e] shadow-lg overflow-hidden">
-                                {userRoles.map((role) => (
-                                  <button
-                                    key={role}
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        role,
-                                      }));
-                                      setRoleDropdownOpen(false);
-                                      if (formErrors.role)
-                                        setFormErrors((prev) => ({
-                                          ...prev,
-                                          role: null,
-                                        }));
-                                      setPageError("");
-                                    }}
-                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-card-accent transition-colors ${
-                                      formData.role === role
-                                        ? "bg-card-accent"
-                                        : ""
-                                    }`}
-                                  >
-                                    <span
-                                      className={`text-${roleConfig[role].color}`}
-                                    >
-                                      {roleConfig[role].icon}
-                                    </span>
-                                    {roleConfig[role].label}
-                                  </button>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        {!isAdmin && (
-                          <p className="text-xs text-amber-500 mt-1">
-                            Only administrators can change user roles.
-                          </p>
-                        )}
+                        <RoleDropdown
+                          value={formData.role}
+                          onChange={(role) => {
+                            setFormData((prev) => ({ ...prev, role }));
+                            if (formErrors.role)
+                              setFormErrors((prev) => ({
+                                ...prev,
+                                role: null,
+                              }));
+                            setPageError("");
+                          }}
+                          disabled={!isAdmin}
+                          error={!!formErrors.role}
+                          helperText={
+                            !isAdmin
+                              ? "Only administrators can change user roles."
+                              : undefined
+                          }
+                        />
                       </div>
 
                       <div className="space-y-2">
-                        <label
-                          htmlFor="department"
-                          className="block text-sm font-medium ml-1"
-                        >
-                          Department
-                        </label>
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setDepartmentDropdownOpen((o) => !o)}
-                            className={`w-full px-2 py-2 border-none outline-none rounded-xl bg-card-accent flex items-center gap-2 text-left hover:bg-[#444] ${
-                              formErrors.department ? "ring-1 ring-red-400" : ""
-                            }`}
-                          >
-                            <span className="text-sky-400">
-                              <Building2 size={16} />
-                            </span>
-                            <span className="flex-1 text-sm">
-                              {departments.find(
-                                (d) =>
-                                  d.id === formData.department ||
-                                  d.id === Number(formData.department),
-                              )?.name || "Select Department"}
-                            </span>
-                            <ChevronLeft
-                              size={16}
-                              className={`transition-transform ${
-                                departmentDropdownOpen
-                                  ? "rotate-90"
-                                  : "-rotate-90"
-                              }`}
-                            />
-                          </button>
-                          {departmentDropdownOpen && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-0"
-                                onClick={() => setDepartmentDropdownOpen(false)}
-                              />
-                              <div className="absolute z-10 mt-1 w-full rounded-xl bg-[#2e2e2e] shadow-lg overflow-hidden max-h-48 overflow-y-auto">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setFormData((prev) => ({
-                                      ...prev,
-                                      department: "",
-                                    }));
-                                    setDepartmentDropdownOpen(false);
-                                    if (formErrors.department)
-                                      setFormErrors((prev) => ({
-                                        ...prev,
-                                        department: null,
-                                      }));
-                                    setPageError("");
-                                  }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-card-accent transition-colors text-stone-400 ${
-                                    !formData.department ? "bg-card-accent" : ""
-                                  }`}
-                                >
-                                  <Building2 size={16} />
-                                  Select Department
-                                </button>
-                                {departments.map((dept) => (
-                                  <button
-                                    key={dept.id}
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData((prev) => ({
-                                        ...prev,
-                                        department: dept.id,
-                                      }));
-                                      setDepartmentDropdownOpen(false);
-                                      if (formErrors.department)
-                                        setFormErrors((prev) => ({
-                                          ...prev,
-                                          department: null,
-                                        }));
-                                      setPageError("");
-                                    }}
-                                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-card-accent transition-colors ${
-                                      formData.department === dept.id ||
-                                      Number(formData.department) === dept.id
-                                        ? "bg-card-accent"
-                                        : ""
-                                    }`}
-                                  >
-                                    <span className="text-sky-400">
-                                      <Building2 size={16} />
-                                    </span>
-                                    {dept.name}
-                                  </button>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        <DepartmentDropdown
+                          departments={departments}
+                          value={formData.department}
+                          onChange={(department) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              department,
+                            }));
+                            if (formErrors.department)
+                              setFormErrors((prev) => ({
+                                ...prev,
+                                department: null,
+                              }));
+                            setPageError("");
+                          }}
+                          error={!!formErrors.department}
+                        />
                         {formErrors.department && (
                           <p className="text-sm text-red-600 font-medium">
                             {formErrors.department}

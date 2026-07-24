@@ -1,10 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useEntityFormData from "../hooks/useEntityFormData";
 import { MapPin, Truck, Phone, Mail } from "lucide-react";
+import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
-import api from "../api";
 
 import {
   Buttons,
@@ -13,8 +14,17 @@ import {
   TextareaItem,
 } from "../components/components";
 
+// !Default values for the form
+const SUPPLIER_DEFAULT = {
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  website: "",
+  contact_person: "",
+};
+
 const SupplierForm = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { supplierId } = useParams();
@@ -23,39 +33,40 @@ const SupplierForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [supplier, setSupplier] = useState(null);
-  const [pageError, setPageError] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    website: "",
-    contact_person: "",
-  });
+  const [formData, setFormData] = useState(SUPPLIER_DEFAULT);
+  const [fetchLoading, setFetchLoading] = useState(false);
+
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Check user permissions
+  const canManage = user?.role === "ADMIN";
+
+  // !Fetch component data
+  const handleSupplierData = useEntityFormData(
+    setSupplier,
+    setFormData,
+    SUPPLIER_DEFAULT,
+  );
 
   const fetchSupplier = useFetchData(
     `supplier/${supplierId}`,
-    setLoading,
-    (data) => {
-      setSupplier(data);
-      setFormData({
-        name: data.name || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        address: data.address || "",
-        website: data.website || "",
-        contact_person: data.contact_person || "",
-      });
-    },
+    setFetchLoading,
+    handleSupplierData,
   );
 
   useEffect(() => {
     if (supplierId) fetchSupplier();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supplierId]);
+  }, [supplierId, fetchSupplier]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,40 +83,30 @@ const SupplierForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // !Submit form data
+  const method = isEditMode ? "patch" : "post";
+  const url = isEditMode ? `api/supplier/${supplierId}/` : "api/supplier/";
+  const message = `Supplier ${isEditMode ? "updated" : "created"} successfully !!!`;
+  const payload = Object.entries(formData).reduce((acc, [key, value]) => {
+    acc[key] = value || null;
+    return acc;
+  }, {});
+
+  const HandleSubmit = (e) => {
     if (!validateForm()) {
-      setPageError("Please correct the errors below.");
+      e.preventDefault();
       return;
     }
 
-    setLoading(true);
-    setPageError("");
-    setErrors({});
-
-    // Filter out empty strings and send them as null if desired by the backend
-    const payload = Object.entries(formData).reduce((acc, [key, value]) => {
-      acc[key] = value || null;
-      return acc;
-    }, {});
-
-    try {
-      if (isEditMode) await api.patch(`api/supplier/${supplierId}/`, payload);
-      else await api.post("api/supplier/", payload);
-      alert("Supplier saved successfully!");
-      navigate("/supplier");
-    } catch (error) {
-      const apiErrors = error.response?.data;
-      if (apiErrors && typeof apiErrors === "object") {
-        setErrors(apiErrors);
-        setPageError("Please correct the errors below.");
-      } else setPageError(apiErrors?.detail || "An unexpected error occurred.");
-    } finally {
-      setLoading(false);
-    }
+    submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/supplier"),
+    });
   };
-
-  const canManage = user?.role === "ADMIN";
 
   return (
     <Form
@@ -148,7 +149,7 @@ const SupplierForm = () => {
         </div>
       ) : (
         // Edit/Create Mode
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputItem
               label="Supplier Name"

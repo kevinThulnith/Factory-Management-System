@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -38,7 +39,7 @@ const ProjectsForm = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pageError, setPageError] = useState("");
-  const [allManagers, setAllManagers] = useState([]);
+  const [allManagers, setManagers] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -62,15 +63,16 @@ const ProjectsForm = () => {
     [isCreateMode, canCreate, canAlwaysManage, isOriginalPM],
   );
 
-  // Data Fetching
+  // !Fetch component data
+  const fetchManagers = useFetchUsersByRole(
+    ["MANAGER"],
+    setLoading,
+    setManagers,
+  );
+
   useEffect(() => {
-    setLoading(true);
-    api
-      .get("api/user/", { params: { role: "MANAGER" } })
-      .then((res) => setAllManagers(res.data.results || res.data))
-      .catch((err) => console.error("Error fetching managers:", err))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchManagers();
+  }, [fetchManagers]);
 
   const fetchProjectData = useCallback(() => {
     if (!projectId) {
@@ -218,15 +220,12 @@ const ProjectsForm = () => {
     if (fieldName === "start_date" && !isCreateMode && !canAlwaysManage) {
       return true; // Only Admin/Supervisor can change start_date of existing project
     }
-    if (
+    return (
       fieldName === "project_manager" &&
       !isCreateMode &&
       !canAlwaysManage &&
       user?.role === "MANAGER"
-    ) {
-      return true; // Manager cannot change PM of existing project
-    }
-    return false;
+    );
   };
 
   return (

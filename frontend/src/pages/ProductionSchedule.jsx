@@ -2,9 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 import api from "../api";
 
 import {
@@ -78,24 +78,24 @@ const ProductionSchedule = () => {
       return;
 
     setLoading(true);
-    try {
-      await api.patch(`api/production-schedule/${scheduleId}/`, {
+    api.patch(`api/production-schedule/${scheduleId}/`, {
         status: newStatus,
-      });
-      await fetchSchedules();
-      alert("Schedule status updated successfully!");
-    } catch (error) {
-      console.error("Error updating schedule status:", error);
-      alert(
-        `Failed to update schedule status: ${
-          error.response?.data?.detail ||
-          error.response?.data?.status?.join(" ") ||
-          "Server error"
-        }`,
-      );
-    } finally {
-      setLoading(false);
-    }
+      })
+      .then(() => {
+        fetchSchedules();
+        alert("Schedule status updated successfully !!!");
+      })
+      .catch((error) => {
+        console.error("Error updating schedule status:", error);
+        alert(
+          `Failed to update schedule status: ${
+            error.response?.data?.detail ||
+            error.response?.data?.status?.join(" ") ||
+            "Server error"
+          }`,
+        );
+      })
+      .finally(() => setLoading(false));
   };
 
   const filteredSchedules = useMemo(() => {

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 
 import {
   ExportCsvButton,
@@ -110,7 +110,7 @@ function Department() {
   }, [allDepartments, searchTerm, filterBy]);
 
   const filteredAndSortedDepartments = useMemo(() => {
-    const sorted = [...filteredDepartments].sort((a, b) => {
+    return [...filteredDepartments].sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
@@ -129,8 +129,6 @@ function Department() {
         return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       else return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
     });
-
-    return sorted;
   }, [filteredDepartments, sortField, sortDirection]);
 
   const totalPages = Math.ceil(
@@ -230,7 +228,6 @@ function Department() {
                 refreshing={refreshing}
               />
               <ExportCsvButton handleExport={handleExport} term={searchTerm} />
-
               {user?.role === "ADMIN" && (
                 <AddButton url="/department/add" text="Add Department" />
               )}
@@ -490,10 +487,8 @@ function Department() {
                           >
                             <ChevronLeft size={16} />
                           </button>
-                          {Array.from(
-                            { length: totalPages },
-                            (_, i) => i + 1,
-                          ).map((page) => {
+                          {[...Array(totalPages).keys()].map((i) => {
+                            const page = i + 1;
                             if (
                               page === 1 ||
                               page === totalPages ||

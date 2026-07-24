@@ -2,9 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -169,7 +169,7 @@ const ProductionLine = () => {
                 refreshing={refreshing}
               />
               {canManage && (
-                <AddButton url="/production-line/add" text="Add Line" />
+                <AddButton url="/production-line/add" text="Add Production Line" />
               )}
             </div>
           </div>

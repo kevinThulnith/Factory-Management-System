@@ -1,10 +1,11 @@
 import { Warehouse, FileText, Package, Ruler, Box } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useEntityFormData from "../hooks/useEntityFormData";
+import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
-import api from "../api";
 
 import {
   Buttons,
@@ -12,6 +13,15 @@ import {
   InputItem,
   TextareaItem,
 } from "../components/components";
+
+// !Default values for form
+const MATERIAL_DEFAULTS = {
+  name: "",
+  description: "",
+  quantity: "0.00",
+  reorder_level: "0.00",
+  unit_of_measurement: "",
+};
 
 const MaterialForm = () => {
   const { materialId } = useParams();
@@ -23,37 +33,36 @@ const MaterialForm = () => {
   const isEditMode = location.pathname.includes("/edit/");
 
   const { user } = useAuth();
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [material, setMaterial] = useState(null);
-  const [pageError, setPageError] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    quantity: "0.00",
-    reorder_level: "0.00",
-    unit_of_measurement: "",
-  });
+  const [formData, setFormData] = useState(MATERIAL_DEFAULTS);
+
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Fetch component data
+  const handleMaterialData = useEntityFormData(
+    setMaterial,
+    setFormData,
+    MATERIAL_DEFAULTS,
+  );
 
   const fetchMaterial = useFetchData(
     `material/${materialId}`,
-    setLoading,
-    (data) => {
-      setMaterial(data);
-      setFormData({
-        name: data.name || "",
-        description: data.description || "",
-        unit_of_measurement: data.unit_of_measurement || "",
-        quantity: parseFloat(data.quantity || 0).toFixed(2),
-        reorder_level: parseFloat(data.reorder_level || 0).toFixed(2),
-      });
-    },
+    setFetchLoading,
+    handleMaterialData,
   );
 
   useEffect(() => {
     if (materialId) fetchMaterial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [materialId]);
+  }, [materialId, fetchMaterial]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -73,60 +82,25 @@ const MaterialForm = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setLoading(true);
-    setPageError("");
-    setErrors({});
-
-    const payload = {
-      ...formData,
-      quantity: parseFloat(formData.quantity).toFixed(2),
-      reorder_level: parseFloat(formData.reorder_level).toFixed(2),
-    };
-
-    try {
-      if (isEditMode) {
-        await api.patch(`api/material/${materialId}/`, payload);
-      } else {
-        await api.post("api/material/", payload);
-      }
-      alert("Material saved successfully!");
-      navigate("/material");
-    } catch (error) {
-      console.error("Form submission error:", error.response);
-      const apiErrors = error.response?.data;
-
-      if (apiErrors && typeof apiErrors === "object") {
-        const newFormErrors = {};
-        for (const key in apiErrors) {
-          if (
-            Object.prototype.hasOwnProperty.call(formData, key) &&
-            Array.isArray(apiErrors[key])
-          ) {
-            newFormErrors[key] = apiErrors[key].join(" ");
-          }
-        }
-        setErrors(newFormErrors);
-
-        if (Object.keys(newFormErrors).length === 0) {
-          setPageError(
-            apiErrors.detail || "An error occurred. Please try again.",
-          );
-        } else {
-          setPageError("Please correct the errors below.");
-        }
-      } else {
-        setPageError(
-          error.response?.data?.detail ||
-            "An error occurred. Please try again.",
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+  // !Submit form data
+  const method = isEditMode ? "patch" : "post";
+  const url = isEditMode ? `api/material/${materialId}/` : "api/material/";
+  const message = `Material ${isEditMode ? "updated" : "created"} successfully !!!`;
+  const payload = {
+    ...formData,
+    quantity: parseFloat(formData.quantity).toFixed(2),
+    reorder_level: parseFloat(formData.reorder_level).toFixed(2),
   };
+
+  const HandleSubmit = (e) =>
+    submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/material"),
+    });
 
   return (
     <Form
@@ -149,7 +123,9 @@ const MaterialForm = () => {
       onClick={() => navigate("/material")}
       fnction={() => navigate(`/material/edit/${materialId}`)}
       gradient="from-sky-600 to-sky-800"
-      isViewMode={isViewMode && user?.role !== "PURCHASING"}
+      isViewMode={
+        isViewMode && user?.role !== "PURCHASING" && user?.role === "ADMIN"
+      }
       pageError={pageError}
       loading={loading}
     >
@@ -185,7 +161,7 @@ const MaterialForm = () => {
         </div>
       ) : (
         // !Edit/Create Mode
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <InputItem
@@ -220,7 +196,7 @@ const MaterialForm = () => {
               required
               type="text"
               pattern="^(0*[1-9]\d*(\.\d+)?|0*\.\d*[1-9]\d*)$"
-              inputmode="decimal"
+              inputMode="decimal"
               placeholder="e.g. 12.5"
               error={errors.quantity}
             />
@@ -234,7 +210,7 @@ const MaterialForm = () => {
               required
               type="text"
               pattern="^(0*[1-9]\d*(\.\d+)?|0*\.\d*[1-9]\d*)$"
-              inputmode="decimal"
+              inputMode="decimal"
               placeholder="e.g. 12.5"
               error={errors.reorder_level}
             />

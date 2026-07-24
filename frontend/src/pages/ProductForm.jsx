@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import useFetchData from "../hooks/useFetchData";
-import { useAuth } from "../hooks/useAuth";
-import { useState, useEffect } from "react";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -29,10 +29,11 @@ import {
 } from "lucide-react";
 
 const ProductForm = () => {
+  const { productId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { productId } = useParams();
+  const canManage = user?.role === "ADMIN";
 
   // Determine mode
   const isViewMode = location.pathname.includes("/view/");
@@ -53,40 +54,41 @@ const ProductForm = () => {
     selected_processes: [],
   });
 
-  const fetchProcessos = useFetchData(
+  // !Fetch component data
+  const fetchProcesses = useFetchData(
     "manufacturing-process",
     setLoading,
     setAllProcesses,
   );
 
+  const handleProductData = useCallback((data) => {
+    setProduct(data);
+    setFormData({
+      name: data.name || "",
+      code: data.code || "",
+      status: data.status || "ACTIVE",
+      unit_of_measurement: data.unit_of_measurement || "",
+      specifications: JSON.stringify(data.specifications || {}, null, 2),
+      selected_processes: (data.processes || [])
+        .map((p, index) => ({
+          id: data.manufacturing_processes?.[index] || index,
+          name: p["process__name"],
+          sequence: p.sequence,
+        }))
+        .sort((a, b) => a.sequence - b.sequence),
+    });
+  }, []);
+
   const fetchProduct = useFetchData(
     `product/${productId}`,
     setLoading,
-    (data) => {
-      setProduct(data);
-      setFormData({
-        name: data.name || "",
-        code: data.code || "",
-        status: data.status || "ACTIVE",
-        unit_of_measurement: data.unit_of_measurement || "",
-        specifications: JSON.stringify(data.specifications || {}, null, 2),
-        selected_processes: (data.processes || [])
-          .map((p, index) => ({
-            id: p.manufacturing_processes?.[index] || index,
-            name: p.process__name,
-            sequence: p.sequence,
-          }))
-          .sort((a, b) => a.sequence - b.sequence),
-      });
-    },
+    handleProductData,
   );
 
-  // Fetch user for permissions & all available processes
   useEffect(() => {
-    fetchProcessos();
+    fetchProcesses();
     if (productId) fetchProduct();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [fetchProcesses, productId, fetchProduct]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -131,81 +133,84 @@ const ProductForm = () => {
     setFormData((prev) => ({ ...prev, selected_processes: resequenced }));
   };
 
-  const handleSubmit = async (e) => {
+  const saveProcesses = (productId, processes) =>
+    Promise.all(
+      processes.map((p) =>
+        api.post(`api/product/${productId}/process/`, {
+          process: p.id,
+          sequence: p.sequence,
+        }),
+      ),
+    );
+
+  const handleSubmit = (e) => {
     e.preventDefault();
+
+    // JSON validation stays early (synchronous)
+    let specifications;
+    try {
+      specifications = JSON.parse(formData.specifications);
+    } catch {
+      setErrors({ specifications: "Invalid JSON format" });
+      setPageError("Invalid JSON format in specifications.");
+      return;
+    }
+
     setLoading(true);
     setPageError("");
     setErrors({});
 
-    // Validate JSON specifications
-    try {
-      JSON.parse(formData.specifications);
-    } catch {
-      setErrors({ specifications: "Invalid JSON format" });
-      setLoading(false);
-      return;
-    }
-
-    // Product payload (without processes)
+    const { name, code, status, unit_of_measurement, selected_processes } =
+      formData;
     const productPayload = {
-      name: formData.name,
-      code: formData.code,
-      status: formData.status,
-      unit_of_measurement: formData.unit_of_measurement,
-      specifications: JSON.parse(formData.specifications),
+      name,
+      code,
+      status,
+      unit_of_measurement,
+      specifications,
     };
 
-    try {
-      let savedProduct;
-      if (isEditMode) {
-        // Update existing product
-        savedProduct = (
-          await api.patch(`api/product/${productId}/`, productPayload)
-        ).data;
+    // Start the promise chain
+    const productPromise = isEditMode
+      ? Promise.all([
+          api.patch(`api/product/${productId}/`, productPayload),
+          api.get(`api/product/${productId}/process/`),
+        ]).then(([patchResponse, existingResponse]) => {
+          const savedProduct = patchResponse.data;
+          const deletions =
+            existingResponse.data?.length > 0
+              ? existingResponse.data.map((pp) =>
+                  api.delete(`api/product/${productId}/process/${pp.id}/`),
+                )
+              : [];
+          return Promise.all(deletions).then(() => savedProduct);
+        })
+      : api
+          .post("api/product/", productPayload)
+          .then((response) => response.data);
 
-        // Delete existing processes for this product
-        const existingProcesses = (
-          await api.get(`api/product/${productId}/process/`)
-        ).data;
-        await Promise.all(
-          existingProcesses.map((pp) =>
-            api.delete(`api/product/${productId}/process/${pp.id}/`),
-          ),
-        );
-      } else {
-        // Create new product
-        savedProduct = (await api.post("api/product/", productPayload)).data;
-      }
-
-      // Create new process associations
-      await Promise.all(
-        formData.selected_processes.map((p) =>
-          api.post(`api/product/${savedProduct.id}/process/`, {
-            process: p.id,
-            sequence: p.sequence,
-          }),
-        ),
-      );
-
-      alert("Product saved successfully!");
-      navigate("/product");
-    } catch (error) {
-      if (error.response?.data) {
-        const errorData = error.response.data;
-        if (typeof errorData === "object") {
+    productPromise
+      .then((savedProduct) =>
+        saveProcesses(savedProduct.id, selected_processes),
+      )
+      .then(() => {
+        alert(`Product ${isEditMode ? "updated" : "created"} successfully !!!`);
+        navigate("/product");
+      })
+      .catch((error) => {
+        const errorData = error.response?.data;
+        if (errorData && typeof errorData === "object") {
           setErrors(errorData);
           setPageError(
             Object.values(errorData).flat().join(", ") ||
               "Failed to save product.",
           );
-        } else setPageError(errorData || "Failed to save product.");
-      } else setPageError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+        } else {
+          setPageError(errorData || "An error occurred. Please try again.");
+        }
+      })
+      .finally(() => setLoading(false));
   };
-
-  const canManage = user?.role === "ADMIN";
 
   const getStatusBadge = (status) => {
     const statusConfig = {

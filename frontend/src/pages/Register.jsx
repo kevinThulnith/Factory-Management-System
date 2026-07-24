@@ -1,7 +1,10 @@
-import { UserRoundPlus, FileText, UserCog, KeyRound } from "lucide-react";
-import { USER_ROLES, USER_ROLE_LABELS } from "../constants";
-import { useState, useEffect } from "react";
-import api from "../api";
+import { UserRoundPlus, FileText, KeyRound, UserCog } from "lucide-react";
+import DepartmentDropdown from "../components/DepartmentDropDown";
+import RoleDropdown from "../components/RoleDropDown";
+import useDepartments from "../hooks/useDepartments";
+import useFormSubmit from "../hooks/useFormSubmit";
+import { USER_ROLES } from "../constants";
+import { useState } from "react";
 
 // !Render input fields
 const InputItem = ({ label, name, caption, ...props }) => (
@@ -12,7 +15,7 @@ const InputItem = ({ label, name, caption, ...props }) => (
     <input
       id={name}
       name={name}
-      className="bg-card-accent border-none outline-none text-star-dust-300 rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
+      className="bg-card-accent border-none outline-none text-star-dust-200 rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
       {...props}
     />
     {caption && (
@@ -22,10 +25,7 @@ const InputItem = ({ label, name, caption, ...props }) => (
 );
 
 function Register() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [departments, setDepartments] = useState([]);
-  const [loadingDepartments, setLoadingDepartments] = useState(true);
+  const { departments } = useDepartments();
   const [formData, setFormData] = useState({
     username: "",
     first_name: "",
@@ -40,62 +40,46 @@ function Register() {
     department: "",
   });
 
-  useEffect(() => {
-    api
-      .get("api/department/")
-      .then((res) => setDepartments(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch departments:", err);
-        setError("Failed to load departments");
-      })
-      .finally(() => setLoadingDepartments(false));
-  }, []);
+  // !Form submission state + handler now come from the hook itself
+  const { loading, pageError, setPageError, submit } = useFormSubmit();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = (e) => {
     // !Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match");
+      e.preventDefault();
+      setPageError("Passwords don't match");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    const submitData = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      dob: formData.dob || null,
+      nic: formData.nic || null,
+      mobile_no: formData.mobile_no || null,
+      role: formData.role,
+      department: formData.department ? parseInt(formData.department) : null,
+      is_active: true, // Set user as active by default
+    };
 
-    try {
-      const submitData = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        dob: formData.dob || null,
-        nic: formData.nic || null,
-        mobile_no: formData.mobile_no || null,
-        role: formData.role,
-        department: formData.department ? parseInt(formData.department) : null,
-        is_active: true, // Set user as active by default
-      };
-
-      await api.post("api/user/", submitData);
-      alert("New user created successfully !!!");
-      window.location.href = "/";
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.detail ||
-        JSON.stringify(err.response?.data) ||
-        "Registration failed";
-      setError(errorMessage, err.response?.data);
-      console.error("Registration error:", err.response?.data);
-    } finally {
-      setLoading(false);
-    }
+    submit(e, {
+      method: "post",
+      url: "api/user/",
+      payload: submitData,
+      formData,
+      message: "New user created successfully !!!",
+      onSuccess: () => {
+        window.location.href = "/user";
+      },
+    });
   };
 
   return (
@@ -109,9 +93,9 @@ function Register() {
           <h1 className="text-4xl font-medium">Register User</h1>
         </div>
         {/* Error message */}
-        {error && (
+        {pageError && (
           <div className="mb-4 p-3 bg-red-900 text-red-200 rounded-lg">
-            {error}
+            {pageError}
           </div>
         )}
         {/* form body */}
@@ -195,47 +179,20 @@ function Register() {
               Set user role and department.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <div className="flex flex-col mb-[-5px]">
-                <label className="mb-2 text-sm text-burning-orange-300 ml-1">
-                  Role
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  className="bg-card-accent border-none outline-none text-primary-text rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
-                  onChange={handleChange}
-                  required
-                >
-                  {Object.entries(USER_ROLE_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col mb-[-5px]">
-                <label className="mb-2 text-sm text-burning-orange-300 ml-1">
-                  Department
-                </label>
-                <select
-                  name="department"
-                  value={formData.department}
-                  className="bg-card-accent border-none outline-none text-primary-text rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
-                  onChange={handleChange}
-                  disabled={loadingDepartments}
-                >
-                  <option value="">
-                    {loadingDepartments
-                      ? "Loading departments..."
-                      : "Select Department (Optional)"}
-                  </option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <RoleDropdown
+                value={formData.role}
+                onChange={(role) => setFormData((prev) => ({ ...prev, role }))}
+                labelClassName="text-sm text-burning-orange-300 ml-1"
+              />
+              <DepartmentDropdown
+                departments={departments}
+                value={formData.department}
+                onChange={(department) =>
+                  setFormData((prev) => ({ ...prev, department }))
+                }
+                labelClassName="text-sm text-burning-orange-300 ml-1"
+                placeholder="Select Department (Optional)"
+              />
             </div>
           </div>
           {/* Set user password */}

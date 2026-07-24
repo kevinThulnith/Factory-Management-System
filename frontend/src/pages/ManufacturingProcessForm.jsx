@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFormSubmit from "../hooks/useFormSubmit";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -29,9 +30,7 @@ const ManufacturingProcessForm = () => {
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [processData, setProcessData] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -40,9 +39,20 @@ const ManufacturingProcessForm = () => {
     quality_parameters: "{}",
   });
 
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    setPageError,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
   useEffect(() => {
     if (processId) {
-      setLoading(true);
+      setFetchLoading(true);
       api
         .get(`api/manufacturing-process/${processId}/`)
         .then((response) => {
@@ -60,9 +70,9 @@ const ManufacturingProcessForm = () => {
           });
         })
         .catch(() => setPageError("Failed to load process details."))
-        .finally(() => setLoading(false));
+        .finally(() => setFetchLoading(false));
     }
-  }, [processId]);
+  }, [processId, setPageError]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,9 +82,6 @@ const ManufacturingProcessForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
-    // Name Validation
-    if (!formData.name.trim()) newErrors.name = "Process name is required.";
 
     // Time Validation (Regex from your original code)
     const timeRegex =
@@ -112,62 +119,31 @@ const ManufacturingProcessForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // !Submit form data
+  const method = isEditMode ? "patch" : "post";
+  const message = `Manufacturing Process ${isEditMode ? "updated" : "created"} successfully !!!`;
+  const url = isEditMode
+    ? `api/manufacturing-process/${processId}/`
+    : "api/manufacturing-process/";
+  const payload = {
+    ...formData,
+    quality_parameters: JSON.parse(formData.quality_parameters),
+  };
 
-    if (!validateForm()) return;
-
-    setLoading(true);
-    setPageError("");
-    setErrors({});
-
-    try {
-      // Parse JSON before sending
-      const payload = {
-        ...formData,
-        quality_parameters: JSON.parse(formData.quality_parameters),
-      };
-
-      if (isEditMode)
-        await api.patch(`api/manufacturing-process/${processId}/`, payload);
-      else await api.post("api/manufacturing-process/", payload);
-
-      alert(
-        `Manufacturing Process ${
-          isEditMode ? "updated" : "created"
-        } successfully.`,
-      );
-      navigate("/manufacturing-process");
-    } catch (error) {
-      console.error("Submission Error:", error);
-      const apiErrors = error.response?.data;
-
-      if (apiErrors && typeof apiErrors === "object") {
-        const newFormErrors = {};
-        for (const key in apiErrors) {
-          if (
-            Object.prototype.hasOwnProperty.call(formData, key) &&
-            Array.isArray(apiErrors[key])
-          )
-            newFormErrors[key] = apiErrors[key].join(" ");
-        }
-        setErrors(newFormErrors);
-
-        if (Object.keys(newFormErrors).length === 0) {
-          setPageError(
-            apiErrors.detail || "An error occurred. Please try again.",
-          );
-        } else {
-          setPageError("Please correct the errors below.");
-        }
-      } else {
-        setPageError(
-          error.response?.data?.detail || "An unexpected error occurred.",
-        );
-      }
-    } finally {
-      setLoading(false);
+  const HandleSubmit = (e) => {
+    if (!validateForm()) {
+      e.preventDefault();
+      return;
     }
+
+    submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/manufacturing-process"),
+    });
   };
 
   // Helper to format JSON for View Mode
@@ -241,8 +217,7 @@ const ManufacturingProcessForm = () => {
           </div>
         </div>
       ) : (
-        // --- EDIT/CREATE MODE ---
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Name */}
             <InputItem

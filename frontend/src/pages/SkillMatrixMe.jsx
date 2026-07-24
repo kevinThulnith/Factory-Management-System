@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
+import useFetchData from "../hooks/useFetchData";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 import {
   PlusCircle,
@@ -29,17 +29,7 @@ const MySkillsPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [filterByCategory, setFilterByCategory] = useState("all");
 
-  const fetchMySkills = useCallback(() => {
-    if (!refreshing) setLoading(true);
-    api
-      .get("api/skill-matrix/")
-      .then((res) => setMySkills(res.data.results || res.data))
-      .catch(() => alert("Failed to fetch your skills."))
-      .finally(() => {
-        setLoading(false);
-        if (refreshing) setRefreshing(false);
-      });
-  }, [refreshing]);
+  const fetchMySkills = useFetchData("skill-matrix", setLoading, setMySkills)
 
   useEffect(() => fetchMySkills(), [fetchMySkills]);
 
@@ -57,38 +47,17 @@ const MySkillsPage = () => {
   };
 
   const getCategoryIcon = (category) => {
-    const iconProps = { size: 16, className: "mr-2" };
     switch (category) {
       case "TECHNICAL":
       case "MECHANICAL":
       case "ELECTRICAL":
-        return (
-          <HardHat
-            {...iconProps}
-            className={`${iconProps.className} text-orange-400`}
-          />
-        );
+        return <HardHat size={16} className="mr-2 text-orange-400" />
       case "SOFTWARE":
-        return (
-          <Lightbulb
-            {...iconProps}
-            className={`${iconProps.className} text-blue-400`}
-          />
-        );
+        return <Lightbulb size={16} className="mr-2 text-blue-400" />
       case "MANAGEMENT":
-        return (
-          <Users
-            {...iconProps}
-            className={`${iconProps.className} text-green-400`}
-          />
-        );
+        return <Users size={16} className="mr-2 text-green-400" />
       default:
-        return (
-          <BookOpen
-            {...iconProps}
-            className={`${iconProps.className} text-stone-400`}
-          />
-        );
+        return <BookOpen size={16} className="mr-2 text-stone-400" />
     }
   };
 

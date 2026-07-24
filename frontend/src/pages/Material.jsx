@@ -2,9 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -122,8 +122,6 @@ const MaterialListPage = () => {
 
   // Check permissions
   const canCreate = user?.role === "ADMIN";
-  const canEdit =
-    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   return (
     <div className="min-h-screen py-6">
@@ -338,7 +336,7 @@ const MaterialListPage = () => {
                             >
                               <Eye size={18} />
                             </Link>
-                            {canEdit && (
+                            {canCreate && (
                               <Link
                                 to={`/material/edit/${material.id}`}
                                 className="p-2 text-indigo-200 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-colors duration-200"

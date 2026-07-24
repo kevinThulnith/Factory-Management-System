@@ -1,9 +1,12 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import useEntityFormData from "../hooks/useEntityFormData";
+import useFormSubmit from "../hooks/useFormSubmit";
+import useWorkshops from "../hooks/useWorkshops";
 import useFetchData from "../hooks/useFetchData";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
-import api from "../api";
 
 import {
   TextareaItem,
@@ -26,6 +29,20 @@ import {
   Cog,
 } from "lucide-react";
 
+// !Default values for the form
+const MACHINE_DEFAULTS = {
+  name: "",
+  model_number: "",
+  serial_number: "",
+  workshop: "",
+  operator: "",
+  status: "OPERATIONAL",
+  purchase_date: "",
+  last_maintenance_date: "",
+  next_maintenance_date: "",
+  specifications: "",
+};
+
 const MachineForm = () => {
   const { machineId } = useParams();
   const navigate = useNavigate();
@@ -36,67 +53,48 @@ const MachineForm = () => {
   const isEditMode = location.pathname.includes("/edit/");
 
   const { user } = useAuth();
-  const [errors, setErrors] = useState({});
   const [machine, setMachine] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [workshops, setWorkshops] = useState([]);
   const [operators, setOperators] = useState([]);
-  const [pageError, setPageError] = useState("");
-  const [workshopsLoading, setWorkshopsLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const { workshops, workshopsLoading } = useWorkshops();
+  const [formData, setFormData] = useState(MACHINE_DEFAULTS);
   const [operatorsLoading, setOperatorsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    model_number: "",
-    serial_number: "",
-    workshop: "",
-    operator: "",
-    status: "OPERATIONAL",
-    purchase_date: "",
-    last_maintenance_date: "",
-    next_maintenance_date: "",
-    specifications: "",
-  });
+
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Fetch component data
+  const handleMachineData = useEntityFormData(
+    setMachine,
+    setFormData,
+    MACHINE_DEFAULTS,
+  );
 
   // !Get all operators
-  const fetchOperators = useFetchData("user", setOperatorsLoading, (data) => {
-    const operatorUsers = data.filter((u) => ["OPERATOR"].includes(u.role));
-    setOperators(operatorUsers);
-  });
-
-  // !Get all workshops
-  const fetchWorkshops = useFetchData(
-    "workshop",
-    setWorkshopsLoading,
-    setWorkshops,
+  const fetchOperators = useFetchUsersByRole(
+    ["OPERATOR"],
+    setOperatorsLoading,
+    setOperators,
   );
 
   // !Fetch machine data
   const fetchMachine = useFetchData(
     `machine/${machineId}`,
-    setLoading,
-    (data) => {
-      setMachine(data);
-      setFormData({
-        name: data.name || "",
-        model_number: data.model_number || "",
-        serial_number: data.serial_number || "",
-        workshop: data.workshop || "",
-        operator: data.operator || "",
-        status: data.status || "OPERATIONAL",
-        purchase_date: data.purchase_date || "",
-        last_maintenance_date: data.last_maintenance_date || "",
-        next_maintenance_date: data.next_maintenance_date || "",
-        specifications: data.specifications || "",
-      });
-    },
+    setFetchLoading,
+    handleMachineData,
   );
 
   useEffect(() => {
-    fetchWorkshops();
-    fetchOperators();
+    if (!isViewMode) fetchOperators();
     if (machineId) fetchMachine();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [machineId]);
+  }, [fetchOperators, fetchMachine,isViewMode, machineId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -104,78 +102,52 @@ const MachineForm = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // !Permission check
+  const canEditAllFields = user?.role === "ADMIN";
+  const canEditOperatorAndStatus =
+    user && ["SUPERVISOR", "MANAGER"].includes(user.role);
+  const canEditMaintenanceAndStatus = user?.role === "TECHNICIAN";
 
-    setLoading(true);
-    setPageError("");
-    setErrors({});
-
-    const payload = {
-      ...formData,
-      operator: formData.operator || null,
-      purchase_date: formData.purchase_date || null,
-      last_maintenance_date: formData.last_maintenance_date || null,
-      next_maintenance_date: formData.next_maintenance_date || null,
-    };
-
-    // Filter payload based on user permissions
-    let finalPayload = payload;
-
-    if (isEditMode) {
-      if (canEditOperatorAndStatus && !canEditAllFields) {
-        // SUPERVISOR/MANAGER: only operator and status
-        finalPayload = {
-          operator: payload.operator,
-          status: payload.status,
-        };
-      } else if (canEditMaintenanceAndStatus && !canEditAllFields) {
-        // TECHNICIAN: only status, last_maintenance_date, next_maintenance_date
-        finalPayload = {
-          status: payload.status,
-          last_maintenance_date: payload.last_maintenance_date,
-          next_maintenance_date: payload.next_maintenance_date,
-        };
-      }
-    }
-
-    try {
-      if (isEditMode)
-        await api.patch(`api/machine/${machineId}/`, finalPayload);
-      else await api.post("api/machine/", finalPayload);
-      alert("Machine saved successfully!");
-      navigate("/machine");
-    } catch (error) {
-      console.error("Form submission error:", error.response);
-      const apiErrors = error.response?.data;
-
-      if (apiErrors && typeof apiErrors === "object") {
-        const newFormErrors = {};
-        for (const key in apiErrors) {
-          if (
-            Object.prototype.hasOwnProperty.call(formData, key) &&
-            Array.isArray(apiErrors[key])
-          ) {
-            newFormErrors[key] = apiErrors[key].join(" ");
-          }
-        }
-        setErrors(newFormErrors);
-
-        if (Object.keys(newFormErrors).length === 0) {
-          setPageError(
-            apiErrors.detail || "An error occurred. Please try again.",
-          );
-        } else setPageError("Please correct the errors below.");
-      } else {
-        setPageError(
-          error.response?.data?.detail ||
-            "An error occurred. Please try again.",
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
+  // !Submit form data
+  const method = isEditMode ? "patch" : "post";
+  const url = isEditMode ? `api/machine/${machineId}/` : "api/machine/";
+  const message = `Machine ${isEditMode ? "updated" : "created"} successfully !!!`;
+  const payload = {
+    ...formData,
+    operator: formData.operator || null,
+    purchase_date: formData.purchase_date || null,
+    last_maintenance_date: formData.last_maintenance_date || null,
+    next_maintenance_date: formData.next_maintenance_date || null,
   };
+
+  let finalPayload = payload;
+  if (isEditMode && !canEditAllFields) {
+    // SUPERVISOR/MANAGER: only operator and status
+    if (canEditOperatorAndStatus) {
+      finalPayload = {
+        operator: payload.operator,
+        status: payload.status,
+      };
+      // TECHNICIAN: only status, last_maintenance_date, next_maintenance_date
+    } else if (canEditMaintenanceAndStatus) {
+      finalPayload = {
+        status: payload.status,
+        last_maintenance_date: payload.last_maintenance_date,
+        next_maintenance_date: payload.next_maintenance_date,
+      };
+      // No recognized edit permission — send nothing, let backend reject
+    } else finalPayload = {};
+  }
+
+  const HandleSubmit = (e) =>
+    submit(e, {
+      method,
+      url,
+      payload: finalPayload,
+      formData,
+      message,
+      onSuccess: () => navigate("/machine"),
+    });
 
   const getWorkshopOptions = () => {
     return workshops.map((ws) => ({
@@ -232,12 +204,6 @@ const MachineForm = () => {
       day: "numeric",
     });
   };
-
-  // Determine field editability based on backend permissions
-  const canEditAllFields = user?.role === "ADMIN";
-  const canEditOperatorAndStatus =
-    user && ["SUPERVISOR", "MANAGER"].includes(user.role);
-  const canEditMaintenanceAndStatus = user?.role === "TECHNICIAN";
 
   return (
     <Form
@@ -320,7 +286,7 @@ const MachineForm = () => {
         </div>
       ) : (
         // !Edit/Create Mode
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <InputItem

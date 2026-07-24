@@ -2,9 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 import api from "../api";
 
 import {
@@ -35,8 +35,8 @@ import {
 
 const Projects = () => {
   const { user } = useAuth();
-  const [allProjects, setAllProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allProjects, setProjects] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -44,9 +44,9 @@ const Projects = () => {
     managerId: "",
   });
 
-  const fetchProjects = useFetchData("project", setLoading, setAllProjects);
+  const fetchProjects = useFetchData("project", setLoading, setProjects);
 
-  useWebSocket("projects", setAllProjects, fetchProjects);
+  useWebSocket("projects", setProjects, fetchProjects);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -78,13 +78,14 @@ const Projects = () => {
       return;
 
     setLoading(true);
-    try {
-      await api.patch(`api/project/${projectId}/`, {
-        project_status: newStatus,
-      });
-      await fetchProjects();
-      alert("Project status updated successfully!");
-    } catch (error) {
+    api.patch(`api/project/${projectId}/`, {
+      project_status: newStatus,
+    })
+    .then(() => {
+      fetchProjects();
+      alert("Project status updated successfully !!!");
+    })
+    .catch((error) => {
       console.error("Error updating project status:", error);
       alert(
         `Failed to update project status: ${
@@ -93,9 +94,10 @@ const Projects = () => {
           "Server error"
         }`,
       );
-    } finally {
+    })
+    .finally(() => {
       setLoading(false);
-    }
+    });
   };
 
   const filteredProjects = useMemo(() => {

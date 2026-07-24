@@ -9,6 +9,15 @@ export const USER_ROLES = {
   PURCHASING: "PURCHASING",
 };
 
+export const userRoles = [
+  "ADMIN",
+  "MANAGER",
+  "SUPERVISOR",
+  "OPERATOR",
+  "TECHNICIAN",
+  "PURCHASING",
+];
+
 export const USER_ROLE_LABELS = {
   [USER_ROLES.MANAGER]: "Manager",
   [USER_ROLES.OPERATOR]: "Operator",

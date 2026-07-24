@@ -1,7 +1,7 @@
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo1.png";
 import { useState } from "react";
 import api from "../api";

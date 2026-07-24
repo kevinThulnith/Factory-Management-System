@@ -2,9 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -34,7 +34,6 @@ function Workshop() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [allWorkshops, setAllWorkshops] = useState([]);
-
   const [filters, setFilters] = useState({
     status: "all",
     searchTerm: "",
@@ -102,11 +101,11 @@ function Workshop() {
 
   // Get unique departments for filter
   const uniqueDepartments = useMemo(() => {
-    const depts = new Set();
+    const departments = new Set();
     allWorkshops.forEach((workshop) => {
-      if (workshop.department_name) depts.add(workshop.department_name);
+      if (workshop.department_name) departments.add(workshop.department_name);
     });
-    return Array.from(depts).sort();
+    return Array.from(departments).sort();
   }, [allWorkshops]);
 
   const filteredWorkshops = useMemo(() => {

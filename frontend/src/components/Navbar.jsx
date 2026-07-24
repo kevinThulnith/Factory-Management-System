@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { BsLayoutSidebarReverse } from "react-icons/bs";
 import MenuItems from "../assets/MenuItems";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
 import { FaUser } from "react-icons/fa";
+import useAuth from "../hooks/useAuth";
 import logo from "../assets/logo1.png";
 
 const NavItem = memo(({ to, label, onClick, className, icon }) => (
@@ -41,7 +41,7 @@ function Navbar() {
        isActive ? "bg-stone-100 text-stone-900" : ""
      }
   `,
-    []
+    [],
   );
 
   // Updated closeMenu to only close on smaller screens
@@ -57,7 +57,7 @@ function Navbar() {
       if (!user || !user.role) return [];
       return items.filter((item) => item.roles.includes(user.role));
     },
-    [user]
+    [user],
   );
 
   return (

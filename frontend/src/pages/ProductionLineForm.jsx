@@ -1,6 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../hooks/useAuth";
+import useFormSubmit from "../hooks/useFormSubmit";
+import useWorkshops from "../hooks/useWorkshops";
+import useFetchData from "../hooks/useFetchData";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -34,11 +37,10 @@ const ProductionLineForm = () => {
   const isCreateMode = location.pathname.includes("/add");
 
   const { user } = useAuth();
+  const { workshops } = useWorkshops();
   const [line, setLine] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [allMachines, setAllMachines] = useState([]);
-  const [allWorkshops, setAllWorkshops] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     workshop: "",
@@ -48,30 +50,29 @@ const ProductionLineForm = () => {
     machines: [],
   });
 
-  // Permissions
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    pageError,
+    setPageError,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Permissions
   const canSubmitFullForm = user && ["ADMIN", "SUPERVISOR"].includes(user.role);
   const canEditStatusOnly =
     user && user.role === "MANAGER" && !canSubmitFullForm;
 
-  // Data Fetching
+  // !Fetch components data
+  const fetchMachines = useFetchData("machine", setFetchLoading, setAllMachines);
+
   useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      api
-        .get("api/workshop/")
-        .then((res) => setAllWorkshops(res.data.results || res.data)),
-      api
-        .get("api/machine/")
-        .then((res) => setAllMachines(res.data.results || res.data)),
-    ]).finally(() => setLoading(false));
-  }, []);
+    fetchMachines();
+  }, [fetchMachines]);
 
   const fetchLineData = useCallback(() => {
-    if (!productionLineId) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
+    setFetchLoading(true);
     api
       .get(`api/production-line/${productionLineId}/`)
       .then((res) => {
@@ -96,12 +97,12 @@ const ProductionLineForm = () => {
         console.error("Failed to load production line details:", error);
         setPageError("Failed to load production line details.");
       })
-      .finally(() => setLoading(false));
-  }, [productionLineId]);
+      .finally(() => setFetchLoading(false));
+  }, [productionLineId, setPageError]);
 
   useEffect(() => {
-    fetchLineData();
-  }, [fetchLineData]);
+    if (productionLineId) fetchLineData();
+  }, [productionLineId, fetchLineData]);
 
   // Event Handlers
   const handleChange = (e) => {
@@ -117,41 +118,35 @@ const ProductionLineForm = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setPageError("");
+  // !Submit form data
+  const method = isCreateMode ? "post" : "patch";
+  const url = isCreateMode
+    ? "api/production-line/"
+    : `api/production-line/${productionLineId}/`;
+  const message = `Production Line ${isCreateMode ? "created" : "updated"} successfully !!!`;
+  let payload;
+  if (canEditStatusOnly) {
+    payload = { operational_status: formData.operational_status };
+  } else {
+    payload = {
+      name: formData.name,
+      description: formData.description,
+      workshop: formData.workshop,
+      operational_status: formData.operational_status,
+      production_capacity: formData.production_capacity,
+      machine_ids: formData.machines,
+    };
+  }
 
-    let payload;
-    if (canEditStatusOnly) {
-      payload = { operational_status: formData.operational_status };
-    } else {
-      payload = {
-        name: formData.name,
-        description: formData.description,
-        workshop: formData.workshop,
-        operational_status: formData.operational_status,
-        production_capacity: formData.production_capacity,
-        machine_ids: formData.machines,
-      };
-    }
-
-    try {
-      if (isCreateMode) {
-        await api.post("api/production-line/", payload);
-      } else {
-        await api.patch(`api/production-line/${productionLineId}/`, payload);
-      }
-      alert("Production Line saved successfully!");
-      navigate("/production-line");
-    } catch (err) {
-      setPageError(
-        err.response?.data?.detail || "Failed to save production line.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const HandleSubmit = (e) =>
+    submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/production-line"),
+    });
 
   const getStatusBadge = (status) => {
     const config = {
@@ -330,7 +325,7 @@ const ProductionLineForm = () => {
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputItem
               label="Line Name"
@@ -347,7 +342,7 @@ const ProductionLineForm = () => {
               icon={<Factory />}
               value={formData.workshop}
               onChange={handleChange}
-              options={allWorkshops.map((w) => ({
+              options={workshops.map((w) => ({
                 value: w.id,
                 label: w.name,
               }))}

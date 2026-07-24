@@ -2,9 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -24,7 +24,6 @@ import {
   Factory,
   Trash2,
   Filter,
-  Users,
   Edit3,
   Clock,
   Eye,
@@ -128,9 +127,7 @@ const LaborAllocations = () => {
     [allAllocations],
   );
 
-  const canCreate =
-    user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
-
+  // !Permission checks
   const canEdit = () =>
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
@@ -201,7 +198,7 @@ const LaborAllocations = () => {
                 handleRefresh={handleRefresh}
                 refreshing={refreshing}
               />
-              {canCreate && (
+              {canEdit && (
                 <AddButton url="/labor-allocation/add" text="New Allocation" />
               )}
             </div>
@@ -218,7 +215,7 @@ const LaborAllocations = () => {
                 </p>
                 <p className="text-3xl font-bold">{stats.total}</p>
               </div>
-              <Users className="h-10 w-10 text-orange-200" />
+              <UsersRound className="h-10 w-10 text-orange-200" />
             </div>
           </div>
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg transform hover:scale-105 transition-all duration-300">

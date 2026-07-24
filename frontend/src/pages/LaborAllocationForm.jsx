@@ -1,5 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import useFormSubmit from "../hooks/useFormSubmit";
+import useFetchData from "../hooks/useFetchData";
+import useProjects from "../hooks/useProjects";
+import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
 
@@ -20,12 +24,12 @@ import {
 
 import {
   Info,
-  Users,
   Clock,
   Factory,
   Briefcase,
+  UserRound,
   ListChecks,
-  UserCircle,
+  UsersRound,
   CalendarDays,
   AlertTriangle,
 } from "lucide-react";
@@ -35,16 +39,16 @@ const LaborAllocationForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Determine mode from route path
   const isViewMode = location.pathname.includes("/view/");
   const isCreateMode = location.pathname.includes("/add");
 
   const { user } = useAuth();
+  const { projects } = useProjects();
   const [allTasks, setAllTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
-  const [allProjects, setAllProjects] = useState([]);
+  const [allEmployees, setEmployees] = useState([]);
   const [allocation, setAllocation] = useState(null);
-  const [allEmployees, setAllEmployees] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [allProductionLines, setAllProductionLines] = useState([]);
   const [formData, setFormData] = useState({
     task: "",
@@ -56,28 +60,30 @@ const LaborAllocationForm = () => {
     date: new Date().toISOString().split("T")[0],
   });
 
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    pageError,
+    setPageError,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
+  // !Permission Checks
   const canManage =
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
-  // Fetch dropdown data
-  const fetchDropdownData = useCallback(async () => {
-    try {
-      const [employeesRes, projectsRes, linesRes] = await Promise.all([
-        api.get("api/user/", {
-          params: { role: "OPERATOR,TECHNICIAN,SUPERVISOR,MANAGER" },
-        }),
-        api.get("api/project/"),
-        api.get("api/production-line/"),
-      ]);
-
-      setAllEmployees(employeesRes.data.results || employeesRes.data);
-      setAllProjects(projectsRes.data.results || projectsRes.data);
-      setAllProductionLines(linesRes.data.results || linesRes.data);
-    } catch (err) {
-      console.error("Error fetching dropdown data:", err);
-      setPageError("Could not load required data.");
-    }
-  }, []);
+  // !Fetch component data
+  const fetchProductionLines = useFetchData(
+    "production-line",
+    setFetchLoading,
+    setAllProductionLines,
+  );
+  const fetchEmployees = useFetchUsersByRole(
+    ["OPERATOR"],
+    setFetchLoading,
+    setEmployees,
+  );
 
   // Fetch tasks for selected project
   const fetchTasksForProject = useCallback(async (projectId) => {
@@ -85,72 +91,70 @@ const LaborAllocationForm = () => {
       setAllTasks([]);
       return;
     }
-    try {
-      const tasksRes = await api.get("api/task/", {
-        params: { project: projectId },
+
+    api
+      .get("api/task/", { params: { project: projectId } })
+      .then((response) => {
+        const tasks = response.data.results || response.data;
+        const filtered = tasks.filter((t) => {
+          const taskProjectId =
+            t.project && typeof t.project === "object"
+              ? t.project.id
+              : t.project;
+          return String(taskProjectId) === String(projectId);
+        });
+        setAllTasks(filtered);
+      })
+      .catch((err) => {
+        console.error(`Error fetching tasks for project ${projectId}:`, err);
+        setAllTasks([]);
       });
-      setAllTasks(tasksRes.data.results || tasksRes.data);
-    } catch (err) {
-      console.error(`Error fetching tasks for project ${projectId}:`, err);
-      setAllTasks([]);
-    }
   }, []);
 
-  // Fetch allocation details if editing or viewing
-  const fetchAllocationData = useCallback(() => {
-    if (!allocationId) {
-      setLoading(false);
-      return;
-    }
+  // !Fetch allocation details if editing or viewing
+  const HandleAllocationData = useCallback(
+    (data) => {
+      setAllocation(data);
+      const allocationType = data.task
+        ? "task"
+        : data.production_line
+          ? "production_line"
+          : "project";
 
-    setLoading(true);
-    api
-      .get(`api/allocation/${allocationId}/`)
-      .then((response) => {
-        const allocData = response.data;
-        setAllocation(allocData);
+      setFormData({
+        employee: data.employee || "",
+        allocation_type: allocationType,
+        project: data.project || "",
+        task: data.task || "",
+        production_line: data.production_line || "",
+        hours_allocated: parseFloat(data.hours_allocated || 1).toFixed(2),
+        date: data.date || new Date().toISOString().split("T")[0],
+      });
 
-        // Determine allocation type
-        const allocationType = allocData.task
-          ? "task"
-          : allocData.production_line
-            ? "production_line"
-            : "project";
+      if (allocationType === "task" && data.project) {
+        fetchTasksForProject(data.project);
+      }
+    },
+    [fetchTasksForProject],
+  );
 
-        setFormData({
-          employee: allocData.employee || "",
-          allocation_type: allocationType,
-          project: allocData.project || "",
-          task: allocData.task || "",
-          production_line: allocData.production_line || "",
-          hours_allocated: parseFloat(allocData.hours_allocated || 1).toFixed(
-            2,
-          ),
-          date: allocData.date || new Date().toISOString().split("T")[0],
-        });
-
-        // Fetch tasks if needed
-        if (allocationType === "task" && allocData.project) {
-          fetchTasksForProject(allocData.project);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching allocation:", error);
-        setPageError("Failed to load allocation details.");
-      })
-      .finally(() => setLoading(false));
-  }, [allocationId, fetchTasksForProject]);
+  const fetchAllocationData = useFetchData(
+    `allocation/${allocationId}`,
+    setFetchLoading,
+    HandleAllocationData,
+  );
 
   useEffect(() => {
-    setLoading(true);
-    fetchDropdownData().finally(() => {
-      if (!allocationId) setLoading(false);
-    });
-  }, [allocationId, fetchDropdownData]);
-
-  useEffect(() => {
+    // fetchProjects();
+    fetchProductionLines();
+    fetchEmployees();
     fetchAllocationData();
-  }, [fetchAllocationData]);
+  }, [
+    fetchAllocationData,
+    // fetchProjects,
+    fetchProductionLines,
+    fetchEmployees,
+  ]);
 
   // Fetch tasks when project changes for task allocation
   useEffect(() => {
@@ -193,102 +197,89 @@ const LaborAllocationForm = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const HandleSubmit = (e) => {
+    // Validation
     if (!canManage) {
+      e.preventDefault();
       setPageError("You do not have permission to save this allocation.");
       return;
     }
 
-    // Validation
-    if (!formData.employee) {
-      setPageError("Employee is required.");
-      return;
-    }
-    if (!formData.date) {
-      setPageError("Date is required.");
-      return;
-    }
+    // ?Validate based on allocation type
 
-    // Validate based on allocation type
+    // Validate project allocation
     if (formData.allocation_type === "project" && !formData.project) {
+      e.preventDefault();
       setPageError("Project is required for this allocation type.");
       return;
     }
+
+    // Validate task allocation
     if (formData.allocation_type === "task") {
       if (!formData.project) {
+        e.preventDefault();
         setPageError("Project is required to select a task.");
         return;
       }
       if (!formData.task) {
+        e.preventDefault();
         setPageError("Task is required for this allocation type.");
         return;
       }
     }
+
+    // Validate production line allocation
     if (
       formData.allocation_type === "production_line" &&
       !formData.production_line
     ) {
+      e.preventDefault();
       setPageError("Production Line is required for this allocation type.");
       return;
     }
 
-    setLoading(true);
-    setPageError("");
+    const payload = {
+      employee: parseInt(formData.employee),
+      hours_allocated: parseFloat(formData.hours_allocated).toFixed(2),
+      date: formData.date,
+    };
 
-    try {
-      const payload = {
-        employee: parseInt(formData.employee),
-        hours_allocated: parseFloat(formData.hours_allocated).toFixed(2),
-        date: formData.date,
-      };
-
-      // Add target fields based on allocation type
-      if (
-        formData.allocation_type === "project" ||
-        formData.allocation_type === "task"
-      ) {
-        if (formData.project) {
-          payload.project = parseInt(formData.project);
-        }
+    // Add target fields based on allocation type
+    if (
+      formData.allocation_type === "project" ||
+      formData.allocation_type === "task"
+    ) {
+      if (formData.project) {
+        payload.project = parseInt(formData.project);
       }
-
-      if (formData.allocation_type === "task" && formData.task) {
-        payload.task = parseInt(formData.task);
-      }
-
-      if (
-        formData.allocation_type === "production_line" &&
-        formData.production_line
-      ) {
-        payload.production_line = parseInt(formData.production_line);
-      }
-
-      if (allocationId && !isCreateMode) {
-        await api.patch(`api/allocation/${allocationId}/`, payload);
-        alert("Labor Allocation updated successfully!");
-      } else {
-        await api.post("api/allocation/", payload);
-        alert("Labor Allocation created successfully!");
-      }
-
-      navigate("/labor-allocation");
-    } catch (error) {
-      console.error("Error saving allocation:", error);
-      setPageError(
-        error.response?.data?.detail ||
-          error.response?.data?.employee?.[0] ||
-          error.response?.data?.hours_allocated?.[0] ||
-          "Failed to save allocation. Please check your input.",
-      );
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const handleCancel = () => {
-    navigate("/labor-allocation");
+    if (formData.allocation_type === "task" && formData.task) {
+      payload.task = parseInt(formData.task);
+    }
+
+    if (
+      formData.allocation_type === "production_line" &&
+      formData.production_line
+    ) {
+      payload.production_line = parseInt(formData.production_line);
+    }
+
+    const isEditing = allocationId && !isCreateMode;
+    const method = isEditing ? "patch" : "post";
+    const url = isEditing
+      ? `api/allocation/${allocationId}/`
+      : "api/allocation/";
+    const message = `Labor Allocation ${isEditing ? "updated" : "created"} successfully!`;
+
+    submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/labor-allocation"),
+    });
   };
 
   // Generate employee options
@@ -307,11 +298,11 @@ const LaborAllocationForm = () => {
   // Generate project options
   const projectOptions = useMemo(
     () =>
-      allProjects.map((proj) => ({
+      projects.map((proj) => ({
         value: proj.id,
         label: proj.name,
       })),
-    [allProjects],
+    [projects],
   );
 
   // Generate task options
@@ -335,8 +326,8 @@ const LaborAllocationForm = () => {
   );
 
   const allocationTypeOptions = [
-    { value: "project", label: "Project" },
     { value: "task", label: "Task" },
+    { value: "project", label: "Project" },
     { value: "production_line", label: "Production Line" },
   ];
 
@@ -365,7 +356,7 @@ const LaborAllocationForm = () => {
 
   return (
     <Form
-      icon={<Users />}
+      icon={<UsersRound />}
       heading={
         isViewMode
           ? "Labor Allocation Details"
@@ -381,7 +372,7 @@ const LaborAllocationForm = () => {
             : "Assign employee to project, task, or production line"
       }
       text_02="Allocations"
-      onClick={handleCancel}
+      onClick={() => navigate("/labor-allocation")}
       fnction={() => navigate(`/labor-allocation/edit/${allocationId}`)}
       gradient="from-orange-600 to-amber-800"
       isViewMode={isViewMode}
@@ -392,7 +383,7 @@ const LaborAllocationForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Employee */}
           <InfoItem
-            icon={<UserCircle />}
+            icon={<UserRound />}
             label="Employee"
             value={
               allocation?.employee_name ||
@@ -461,15 +452,6 @@ const LaborAllocationForm = () => {
 
           <InfoItem
             icon={<Clock />}
-            label="Created At"
-            value={
-              allocation?.created_at
-                ? new Date(allocation.created_at).toLocaleString()
-                : "N/A"
-            }
-          />
-          <InfoItem
-            icon={<Clock />}
             label="Last Updated"
             value={
               allocation?.updated_at
@@ -479,11 +461,11 @@ const LaborAllocationForm = () => {
           />
         </div>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={HandleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Employee Selection */}
             <SelectItem
-              icon={<UserCircle />}
+              icon={<UserRound />}
               label="Employee"
               name="employee"
               value={formData.employee}
@@ -582,7 +564,7 @@ const LaborAllocationForm = () => {
           </div>
 
           <Buttons
-            onCancel={handleCancel}
+            onCancel={() => navigate("/labor-allocation")}
             text_01={allocationId ? "Save Changes" : "Create Allocation"}
           />
         </form>

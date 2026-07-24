@@ -2,8 +2,9 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import { useEffect, useState, useMemo } from "react";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useAuth } from "../hooks/useAuth";
+import { userRoles } from "../constants";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import {
   RefreshButton,
@@ -34,7 +35,6 @@ function User() {
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
   const [filters, setFilters] = useState({
     isActive: "all",
     searchTerm: "",
@@ -49,9 +49,7 @@ function User() {
     setTimeout(() => setRefreshing(false), 1000); // Simulate a short delay for better UX
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  useEffect(() => fetchUsers(), [fetchUsers]);
 
   const handleDeleteUser = useDelete("user", setLoading, "users", fetchUsers);
 
@@ -64,15 +62,6 @@ function User() {
   const resetFiltersHandler = () => {
     setFilters({ searchTerm: "", role: "all", isActive: "all" });
   };
-
-  const userRoles = [
-    "ADMIN",
-    "MANAGER",
-    "OPERATOR",
-    "SUPERVISOR",
-    "TECHNICIAN",
-    "PURCHASING",
-  ];
 
   const getRoleIcon = (role) => {
     switch (role) {
