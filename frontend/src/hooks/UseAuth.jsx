@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ACCESS_TOKEN } from "../constants";
 import useFetchData from "./useFetchData";
 
-export const useAuth = () => {
+const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
