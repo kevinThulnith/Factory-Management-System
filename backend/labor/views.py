@@ -7,7 +7,7 @@ from django.db.models import Q
 # TODO: Create labor model views
 
 
-class LaborAllocationViewset(RBACCacheMixin):
+class LaborAllocationViewSet(RBACCacheMixin):
     """
     LaborAllocation View
     - Admins: Full CRUD Access
@@ -46,7 +46,7 @@ class LaborAllocationViewset(RBACCacheMixin):
         return LaborAllocation.objects.none()
 
 
-class SkillMatrixViewset(RBACCacheMixin):
+class SkillMatrixViewSet(RBACCacheMixin):
     """
     SkillMatrix View
     - Admins: Full CRUD Access

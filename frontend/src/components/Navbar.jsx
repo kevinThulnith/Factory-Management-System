@@ -107,7 +107,7 @@ function Navbar() {
         />
       )}
 
-      {/* Side bar */}
+      {/* Sidebar */}
       <div
         className={`
             fixed top-14 right-0 h-[calc(100vh-3.5rem)] w-full sm:w-80 bg-card-main shadow-2xl
