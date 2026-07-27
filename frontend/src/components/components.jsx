@@ -89,13 +89,13 @@ export const InfoItem = ({ icon, label, value }) => (
       {icon && cloneElement(icon, { size: 16 })}
       {label}
     </label>
-    <p className="text-base font-medium text-stone-300 truncate">
+    <div className="text-base font-medium text-stone-300 break-words">
       {value === null || value === undefined || value === "" ? (
         <span className="text-stone-500">N/A</span>
       ) : (
         value
       )}
-    </p>
+    </div>
   </div>
 );
 
@@ -109,14 +109,14 @@ export const Buttons = ({
     <button
       type="button"
       onClick={onCancel}
-      className="bg-gray-600 hover:bg-gray-500 text-stone-200 font-medium duration-100 py-2 px-3 rounded-lg text-sm"
+      className="bg-gray-600 hover:bg-gray-500 text-stone-200 font-medium duration-100 py-2 px-3 rounded-lg text-sm ease-linear"
     >
       Cancel
     </button>
     <button
       type="submit"
       disabled={disabled}
-      className="bg-orange-500 hover:bg-orange-400 text-stone-800 font-medium duration-100 py-2 px-3 rounded-lg text-sm"
+      className="bg-orange-500 hover:bg-orange-400 text-stone-800 font-medium duration-100 py-2 px-3 rounded-lg text-sm ease-linear"
     >
       {text_01} <Save className="inline ml-1" size={16} />
     </button>

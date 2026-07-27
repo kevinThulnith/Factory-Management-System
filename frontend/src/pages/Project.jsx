@@ -279,7 +279,7 @@ const Projects = () => {
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   {/* Left Section - Main Info */}
                   <div className="flex-grow space-y-3">
-                    <div div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between">
                       <h3 className="text-2xl font-medium text-stone-200 flex items-center gap-2 mb-4">
                         <FolderKanban size={28} className="text-indigo-300" />
                         {project.name}

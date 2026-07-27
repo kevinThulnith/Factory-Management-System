@@ -55,7 +55,6 @@ const ProjectsForm = () => {
   const isOriginalPM = user && originalProjectManager === user?.id;
   const canCreate =
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
-
   const canSubmitForm = useMemo(
     () =>
       (isCreateMode && canCreate) ||

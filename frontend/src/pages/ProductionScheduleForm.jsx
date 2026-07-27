@@ -1,8 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import useProductionLines from "../hooks/useProductionLines";
 import { useState, useEffect, useCallback } from "react";
 import Consumption from "../components/Consumption";
+import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
-import useMaterials from "../hooks/useMaterials";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -34,15 +35,12 @@ const ProductionScheduleListForm = () => {
   const isCreateMode = location.pathname.includes("/new");
 
   const { user } = useAuth();
-  const { materials } = useMaterials();
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
   const [schedule, setSchedule] = useState(null);
+  const { productionLines } = useProductionLines();
   const [allProducts, setAllProducts] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
-  const [allProductionLines, setAllProductionLines] = useState([]);
+  const [fetchLoading, setLoading] = useState(false);
   const [showAddConsumption, setShowAddConsumption] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
   const [formData, setFormData] = useState({
     production_line: "",
     product: "",
@@ -52,6 +50,17 @@ const ProductionScheduleListForm = () => {
     status: "SCHEDULED",
   });
 
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    setPageError,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
+
   // !Permissions checks
   const canManage =
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
@@ -60,16 +69,6 @@ const ProductionScheduleListForm = () => {
 
   // !Fetching component data
   const fetchProducts = useFetchData("product", setLoading, setAllProducts);
-  const fetchProductionLines = useFetchData(
-    "production-line",
-    setLoading,
-    setAllProductionLines,
-  );
-
-  useEffect(() => {
-    fetchProductionLines();
-    fetchProducts();
-  }, [fetchProducts, fetchProductionLines]);
 
   const fetchScheduleData = useCallback(() => {
     if (!scheduleId) {
@@ -111,124 +110,70 @@ const ProductionScheduleListForm = () => {
             : "",
           status: res.data.status || "SCHEDULED",
         });
-        // Load consumptions from nested serializer data
-        setConsumptions(res.data.comsumed_materials || []);
+        setConsumptions(res.data.consumed_materials || []);
       })
       .catch((error) => {
         console.error("Failed to load schedule details:", error);
         setPageError("Failed to load production schedule details.");
       })
       .finally(() => setLoading(false));
-  }, [scheduleId]);
-
-  useEffect(() => {
-    fetchScheduleData();
-  }, [fetchScheduleData]);
+  }, [scheduleId, setPageError]);
 
   const fetchConsumptions = useCallback(() => {
     if (!scheduleId) return;
     api
       .get(`api/production-schedule/${scheduleId}/`)
-      .then((res) => setConsumptions(res.data.comsumed_materials || []))
+      .then((res) => setConsumptions(res.data.consumed_materials || []))
       .catch((err) => console.error("Error refreshing consumptions:", err));
   }, [scheduleId]);
 
   useEffect(() => {
+    fetchProducts();
+    fetchScheduleData();
     fetchConsumptions();
-  }, [fetchConsumptions]);
-
-  // Material consumption handlers
-  const handleAddConsumption = async (payload) => {
-    setActionLoading(true);
-    api
-      .post("api/material-consumption/", {
-        ...payload,
-        production_schedule: parseInt(scheduleId),
-      })
-      .then(() => {
-        setShowAddConsumption(false);
-        fetchConsumptions();
-        window.location.reload();
-      })
-      .catch((err) => {
-        const msg =
-          err.response?.data?.detail ||
-          err.response?.data?.non_field_errors?.[0] ||
-          Object.values(err.response?.data || {})
-            .flat()
-            .join(", ") ||
-          "Failed to add consumption.";
-        setPageError(msg);
-      })
-      .finally(() => {
-        setActionLoading(false);
-      });
-  };
-
-  const handleDeleteConsumption = async (id) => {
-    if (!window.confirm("Delete this material consumption record?")) return;
-    setActionLoading(true);
-    api
-      .delete(`api/material-consumption/${id}/`)
-      .then(() => {
-        fetchConsumptions();
-        window.location.reload();
-      })
-      .catch(() => {
-        setPageError("Failed to delete consumption record.");
-      })
-      .finally(() => {
-        setActionLoading(false);
-      });
-  };
+  }, [fetchConsumptions, fetchProducts, fetchScheduleData]);
 
   // Event Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
   const handleDecimalChange = (e) => {
     const { name, value } = e.target;
     if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
       setFormData((prev) => ({ ...prev, [name]: value }));
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setPageError("");
-
-    // Validate quantity
+  const handleSubmit = (e) => {
+    // !Pre-flight checks that must short-circuit before the hook takes over.
     const quantityVal = parseFloat(formData.quantity);
     if (isNaN(quantityVal) || quantityVal <= 0) {
+      e.preventDefault();
       setPageError("Quantity must be a positive number greater than 0.");
-      setLoading(false);
       return;
     }
 
-    // Validate start time
     if (!formData.start_time) {
+      e.preventDefault();
       setPageError("Start time is required.");
-      setLoading(false);
       return;
     }
 
-    // Validate end time if provided
     if (
       formData.end_time &&
       formData.start_time &&
       new Date(formData.end_time) < new Date(formData.start_time)
     ) {
+      e.preventDefault();
       setPageError("End time cannot be before start time.");
-      setLoading(false);
       return;
     }
 
-    const payload = {
-      production_line: parseInt(formData.production_line),
-      product: parseInt(formData.product),
+    const basePayload = {
       quantity: parseFloat(formData.quantity).toFixed(2),
       start_time: formData.start_time
         ? new Date(formData.start_time).toISOString()
@@ -239,43 +184,31 @@ const ProductionScheduleListForm = () => {
       status: formData.status,
     };
 
-    if (!payload.end_time) delete payload.end_time;
+    if (!basePayload.end_time) delete basePayload.end_time;
 
-    try {
-      if (isCreateMode) {
-        await api.post("api/production-schedule/", payload);
-      } else {
-        // For edit, only send updatable fields
-        const updatePayload = {
-          quantity: payload.quantity,
-          start_time: payload.start_time,
-          end_time: payload.end_time,
-          status: payload.status,
-        };
-        // Allow changing production_line and product when schedule is still SCHEDULED
-        if (schedule?.status === "SCHEDULED") {
-          updatePayload.production_line = payload.production_line;
-          updatePayload.product = payload.product;
-        }
-        await api.patch(
-          `api/production-schedule/${scheduleId}/`,
-          updatePayload,
-        );
-      }
-      alert(
-        `Production Schedule ${isCreateMode ? "created" : "updated"} successfully!`,
-      );
-      navigate("/production-schedule");
-    } catch (err) {
-      console.error("Form submission error:", err);
-      const errorMsg =
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        "Failed to save production schedule.";
-      setPageError(errorMsg);
-    } finally {
-      setLoading(false);
+    let payload = basePayload;
+    if (isCreateMode || schedule?.status === "SCHEDULED") {
+      payload = {
+        ...basePayload,
+        production_line: parseInt(formData.production_line),
+        product: parseInt(formData.product),
+      };
     }
+
+    const url = isCreateMode
+      ? "api/production-schedule/"
+      : `api/production-schedule/${scheduleId}/`;
+    const method = isCreateMode ? "post" : "patch";
+    const message = `Production Schedule ${isCreateMode ? "created" : "updated"} successfully !!!`;
+
+    return submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/production-schedule"),
+    });
   };
 
   const getStatusBadge = (status) => {
@@ -397,15 +330,16 @@ const ProductionScheduleListForm = () => {
 
           {/* Material Consumption Section - View Mode */}
           <Consumption
-            materials={materials}
             consumptions={consumptions}
             canAdd={canAddConsumption}
             canDelete={canManage}
             showAddConsumption={showAddConsumption}
             setShowAddConsumption={setShowAddConsumption}
-            onSave={handleAddConsumption}
-            onDelete={handleDeleteConsumption}
-            loading={actionLoading}
+            entityField="production_schedule"
+            entityId={scheduleId}
+            onAdded={fetchConsumptions}
+            onDeleted={fetchConsumptions}
+            onError={setPageError}
           />
         </div>
       ) : (
@@ -417,11 +351,12 @@ const ProductionScheduleListForm = () => {
               icon={<Factory />}
               value={formData.production_line}
               onChange={handleChange}
-              options={allProductionLines.map((line) => ({
+              options={productionLines.map((line) => ({
                 value: line.id,
                 label: `${line.name} (${line.workshop_name})`,
               }))}
               required
+              error={errors.production_line}
               disabled={isFieldDisabled("production_line")}
             />
             <SelectItem
@@ -435,6 +370,7 @@ const ProductionScheduleListForm = () => {
                 label: `${prod.name} (${prod.code})`,
               }))}
               required
+              error={errors.product}
               disabled={isFieldDisabled("product")}
             />
             <InputItem
@@ -446,6 +382,7 @@ const ProductionScheduleListForm = () => {
               type="text"
               inputMode="decimal"
               required
+              error={errors.quantity}
               disabled={!isCreateMode && schedule?.status !== "SCHEDULED"}
             />
             <SelectItem
@@ -461,6 +398,7 @@ const ProductionScheduleListForm = () => {
                 { value: "CANCELLED", label: "Cancelled" },
               ]}
               required
+              error={errors.status}
               disabled={
                 !isCreateMode &&
                 (schedule?.status === "COMPLETED" ||
@@ -475,6 +413,7 @@ const ProductionScheduleListForm = () => {
               onChange={handleChange}
               type="datetime-local"
               required
+              error={errors.start_time}
               disabled={!isCreateMode && schedule?.status !== "SCHEDULED"}
             />
             <InputItem
@@ -484,6 +423,7 @@ const ProductionScheduleListForm = () => {
               value={formData.end_time}
               onChange={handleChange}
               type="datetime-local"
+              error={errors.end_time}
               disabled={!isCreateMode && schedule?.status !== "SCHEDULED"}
             />
           </div>
@@ -501,15 +441,16 @@ const ProductionScheduleListForm = () => {
           {/* Material Consumption Section - Edit Mode */}
           {!isCreateMode && (
             <Consumption
-              materials={materials}
               consumptions={consumptions}
               canAdd={canAddConsumption}
               canDelete={canManage}
               showAddConsumption={showAddConsumption}
               setShowAddConsumption={setShowAddConsumption}
-              onSave={handleAddConsumption}
-              onDelete={handleDeleteConsumption}
-              loading={actionLoading}
+              entityField="production_schedule"
+              entityId={scheduleId}
+              onAdded={fetchConsumptions}
+              onDeleted={fetchConsumptions}
+              onError={setPageError}
             />
           )}
 

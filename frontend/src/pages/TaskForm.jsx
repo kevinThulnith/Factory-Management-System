@@ -2,7 +2,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
 import Consumption from "../components/Consumption";
-import useMaterials from "../hooks/useMaterials";
+import useFormSubmit from "../hooks/useFormSubmit";
+import useFetchData from "../hooks/useFetchData";
 import useProjects from "../hooks/useProjects";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -40,13 +41,10 @@ const TasksForm = () => {
 
   const { user } = useAuth();
   const { projects } = useProjects();
-  const { materials } = useMaterials();
   const [task, setTask] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pageError, setPageError] = useState("");
+  const [users, setUsers] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [associatedProject, setAssociatedProject] = useState(null);
   const [showAddConsumption, setShowAddConsumption] = useState(false);
   const [formData, setFormData] = useState({
@@ -59,16 +57,62 @@ const TasksForm = () => {
     status: "PENDING",
   });
 
-  // !Fetch components data
-  const fetchUsers = useFetchUsersByRole(["OPERATOR"], setLoading, setAllUsers);
+  // !Form submission state + handler now come from the hook itself
+  const {
+    loading: submitLoading,
+    errors,
+    pageError,
+    setErrors,
+    setPageError,
+    submit,
+  } = useFormSubmit();
+  const loading = fetchLoading || submitLoading;
 
-  useEffect(() => fetchUsers(), [fetchUsers]);
+  // !Fetch components data
+  const fetchUsers = useFetchUsersByRole(
+    ["OPERATOR"],
+    setFetchLoading,
+    setUsers,
+  );
+
+  const fetchAssociatedProject = useCallback((projectId) => {
+    if (!projectId) return;
+    api
+      .get(`api/project/${projectId}/`)
+      .then((res) => setAssociatedProject(res.data))
+      .catch((err) => console.error("Error fetching project details:", err));
+  }, []);
+
+  const handleTaskData = useCallback(
+    (data) => {
+      setTask(data);
+      setFormData({
+        name: data.name || "",
+        description: data.description || "",
+        project: data.project || "",
+        assigned_to: data.assigned_to || "",
+        start_date: data.start_date || "",
+        end_date: data.end_date || "",
+        status: data.status || "PENDING",
+      });
+      setConsumptions(data.consumed_materials || []);
+      if (data.project) fetchAssociatedProject(data.project);
+    },
+    [fetchAssociatedProject],
+  );
+
+  const fetchTask = useFetchData(
+    `task/${taskId}`,
+    setFetchLoading,
+    handleTaskData,
+  );
 
   const fetchTaskData = useCallback(() => {
     const queryParams = new URLSearchParams(location.search);
     const projectIdFromQuery = queryParams.get("project_id");
 
     if (!taskId) {
+      setFetchLoading(true);
       // New task
       if (projectIdFromQuery) {
         setFormData((prev) => ({
@@ -76,60 +120,24 @@ const TasksForm = () => {
           project: projectIdFromQuery,
           start_date: new Date().toISOString().split("T")[0],
         }));
-        // Fetch project details
-        api
-          .get(`api/project/${projectIdFromQuery}/`)
-          .then((res) => setAssociatedProject(res.data))
-          .catch((err) =>
-            console.error("Error fetching project details:", err),
-          );
+        fetchAssociatedProject(projectIdFromQuery);
       } else {
         setFormData((prev) => ({
           ...prev,
           start_date: new Date().toISOString().split("T")[0],
         }));
       }
-      setLoading(false);
+      setFetchLoading(false);
       return;
     }
 
-    setLoading(true);
-    api
-      .get(`api/task/${taskId}/`)
-      .then((res) => {
-        setTask(res.data);
-        setFormData({
-          name: res.data.name || "",
-          description: res.data.description || "",
-          project: res.data.project || "",
-          assigned_to: res.data.assigned_to || "",
-          start_date: res.data.start_date || "",
-          end_date: res.data.end_date || "",
-          status: res.data.status || "PENDING",
-        });
-        // Load consumptions from nested serializer data
-        setConsumptions(res.data.consumed_materials || []);
-
-        // Fetch project details
-        if (res.data.project) {
-          api
-            .get(`api/project/${res.data.project}/`)
-            .then((projRes) => setAssociatedProject(projRes.data))
-            .catch((err) =>
-              console.error("Error fetching project details:", err),
-            );
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load task details:", error);
-        setPageError("Failed to load task details.");
-      })
-      .finally(() => setLoading(false));
-  }, [taskId, location.search]);
+    fetchTask();
+  }, [taskId, location.search, fetchTask, fetchAssociatedProject]);
 
   useEffect(() => {
     fetchTaskData();
-  }, [fetchTaskData]);
+    if (!isViewMode) fetchUsers();
+  }, [fetchTaskData, isViewMode, fetchUsers]);
 
   // --- Material Consumption ---
   const fetchConsumptions = useCallback(() => {
@@ -160,66 +168,21 @@ const TasksForm = () => {
 
   const canAddConsumption = canSubmitForm || user?.role === "OPERATOR";
 
-  const handleAddConsumption = async (payload) => {
-    setActionLoading(true);
-    try {
-      await api.post("api/material-consumption/", {
-        ...payload,
-        task: parseInt(taskId),
-      });
-      setShowAddConsumption(false);
-      fetchConsumptions();
-      // Refresh materials to update stock quantities
-      window.location.reload();
-    } catch (err) {
-      const msg =
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        Object.values(err.response?.data || {})
-          .flat()
-          .join(", ") ||
-        "Failed to add consumption.";
-      setPageError(msg);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDeleteConsumption = async (consumptionId) => {
-    if (
-      !window.confirm("Delete this consumption record? Stock will be restored.")
-    )
-      return;
-    setActionLoading(true);
-    try {
-      await api.delete(`api/material-consumption/${consumptionId}/`);
-      fetchConsumptions();
-      window.location.reload();
-    } catch {
-      setPageError("Failed to delete consumption record.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   // Event Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
 
     // If project changes, fetch new project details
     if (name === "project" && value) {
-      api
-        .get(`api/project/${value}/`)
-        .then((res) => setAssociatedProject(res.data))
-        .catch((err) => console.error("Error fetching project details:", err));
+      fetchAssociatedProject(value);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = (e) => {
     if (!canSubmitForm) {
+      e.preventDefault();
       setPageError(
         isCreateMode
           ? "You do not have permission to create tasks for this project."
@@ -228,18 +191,15 @@ const TasksForm = () => {
       return;
     }
 
-    // Validation
     if (
       formData.end_date &&
       formData.start_date &&
       new Date(formData.end_date) < new Date(formData.start_date)
     ) {
+      e.preventDefault();
       setPageError("End date cannot be before start date.");
       return;
     }
-
-    setLoading(true);
-    setPageError("");
 
     const payload = {
       name: formData.name,
@@ -253,23 +213,16 @@ const TasksForm = () => {
 
     const url = isCreateMode ? "api/task/" : `api/task/${taskId}/`;
     const method = isCreateMode ? "post" : "patch";
+    const message = `Task ${isCreateMode ? "created" : "saved"} successfully !!!`;
 
-    api[method](url, payload)
-      .then(() => {
-        alert(`Task ${isCreateMode ? "created" : "saved"} successfully !!!`);
-        navigate("/task");
-      })
-      .catch((err) => {
-        console.error("Error saving task:", err);
-        setPageError(
-          err.response?.data?.detail ||
-            Object.values(err.response?.data || {})
-              .flat()
-              .join(", ") ||
-            "Failed to save task.",
-        );
-      })
-      .finally(() => setLoading(false));
+    return submit(e, {
+      method,
+      url,
+      payload,
+      formData,
+      message,
+      onSuccess: () => navigate("/task"),
+    });
   };
 
   const getStatusBadge = (status) => {
@@ -395,15 +348,16 @@ const TasksForm = () => {
 
           {/* Material Consumption Section - View Mode */}
           <Consumption
-            materials={materials}
             consumptions={consumptions}
             canAdd={canAddConsumption}
             canDelete={canSubmitForm}
             showAddConsumption={showAddConsumption}
             setShowAddConsumption={setShowAddConsumption}
-            onSave={handleAddConsumption}
-            onDelete={handleDeleteConsumption}
-            loading={actionLoading}
+            entityField="task"
+            entityId={taskId}
+            onAdded={fetchConsumptions}
+            onDeleted={fetchConsumptions}
+            onError={setPageError}
           />
         </div>
       ) : (
@@ -417,6 +371,7 @@ const TasksForm = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                error={errors.name}
                 disabled={isFieldDisabled("name")}
               />
             </div>
@@ -431,6 +386,7 @@ const TasksForm = () => {
                 label: proj.name,
               }))}
               required
+              error={errors.project}
               disabled={isFieldDisabled("project")}
             />
             <SelectItem
@@ -441,13 +397,14 @@ const TasksForm = () => {
               onChange={handleChange}
               options={[
                 { value: "", label: "Unassigned" },
-                ...allUsers.map((usr) => ({
+                ...users.map((usr) => ({
                   value: usr.id,
                   label: `${usr.first_name || usr.username} ${
                     usr.last_name || ""
                   } (${usr.role})`,
                 })),
               ]}
+              error={errors.assigned_to}
               disabled={isFieldDisabled("assigned_to")}
             />
             <SelectItem
@@ -464,6 +421,7 @@ const TasksForm = () => {
                 { value: "CANCELLED", label: "Cancelled" },
               ]}
               required
+              error={errors.status}
               disabled={isFieldDisabled("status")}
             />
             {formData.start_date && (
@@ -476,6 +434,7 @@ const TasksForm = () => {
                 value={formData.start_date}
                 onChange={handleChange}
                 type="date"
+                error={errors.start_date}
                 disabled={isFieldDisabled("start_date")}
               />
             )}
@@ -486,6 +445,7 @@ const TasksForm = () => {
               value={formData.end_date}
               onChange={handleChange}
               type="date"
+              error={errors.end_date}
               disabled={isFieldDisabled("end_date")}
             />
             <div className="md:col-span-2">
@@ -495,6 +455,7 @@ const TasksForm = () => {
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
+                error={errors.description}
                 disabled={isFieldDisabled("description")}
               />
             </div>
@@ -522,15 +483,16 @@ const TasksForm = () => {
           {/* Material Consumption Section - Edit Mode */}
           {!isCreateMode && (
             <Consumption
-              materials={materials}
               consumptions={consumptions}
               canAdd={canAddConsumption}
               canDelete={canSubmitForm}
               showAddConsumption={showAddConsumption}
               setShowAddConsumption={setShowAddConsumption}
-              onSave={handleAddConsumption}
-              onDelete={handleDeleteConsumption}
-              loading={actionLoading}
+              entityField="task"
+              entityId={taskId}
+              onAdded={fetchConsumptions}
+              onDeleted={fetchConsumptions}
+              onError={setPageError}
             />
           )}
 

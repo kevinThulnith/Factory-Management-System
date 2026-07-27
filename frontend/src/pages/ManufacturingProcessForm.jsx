@@ -21,17 +21,17 @@ import {
 } from "lucide-react";
 
 const ManufacturingProcessForm = () => {
-  const { user } = useAuth();
+  const { processId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { processId } = useParams();
 
   // Mode Detection
   const isViewMode = location.pathname.includes("/view/");
   const isEditMode = location.pathname.includes("/edit/");
 
-  const [fetchLoading, setFetchLoading] = useState(false);
+  const { user } = useAuth();
   const [processData, setProcessData] = useState(null);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",

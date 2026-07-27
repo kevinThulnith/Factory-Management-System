@@ -40,7 +40,7 @@ const useFormSubmit = () => {
     [],
   );
 
-  return { loading, errors, pageError, setErrors, submit };
+  return { loading, errors, pageError, setPageError, setErrors, submit };
 };
 
 export default useFormSubmit;

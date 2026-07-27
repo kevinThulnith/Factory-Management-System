@@ -1,28 +1,11 @@
 import { UserRoundPlus, FileText, KeyRound, UserCog } from "lucide-react";
 import DepartmentDropdown from "../components/DepartmentDropDown";
 import RoleDropdown from "../components/RoleDropDown";
+import { InputItem } from "../components/components";
 import useDepartments from "../hooks/useDepartments";
 import useFormSubmit from "../hooks/useFormSubmit";
 import { USER_ROLES } from "../constants";
 import { useState } from "react";
-
-// !Render input fields
-const InputItem = ({ label, name, caption, ...props }) => (
-  <div className="flex flex-col mb-[-5px]">
-    <label htmlFor={name} className="mb-2 text-sm ml-1">
-      {label}
-    </label>
-    <input
-      id={name}
-      name={name}
-      className="bg-card-accent border-none outline-none text-star-dust-200 rounded-lg p-2  disabled:bg-stone-600 disabled:text-stone-400 disabled:cursor-not-allowed"
-      {...props}
-    />
-    {caption && (
-      <small className="text-disabled-text mt-1 text-xs">{caption}</small>
-    )}
-  </div>
-);
 
 function Register() {
   const { departments } = useDepartments();
@@ -41,11 +24,13 @@ function Register() {
   });
 
   // !Form submission state + handler now come from the hook itself
-  const { loading, pageError, setPageError, submit } = useFormSubmit();
+  const { loading, errors, pageError, setPageError, setErrors, submit } =
+    useFormSubmit();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
   const handleSubmit = (e) => {
@@ -116,6 +101,7 @@ function Register() {
                 value={formData.first_name}
                 onChange={handleChange}
                 placeholder="John"
+                error={errors.first_name}
                 required
               />
               <InputItem
@@ -125,6 +111,7 @@ function Register() {
                 value={formData.last_name}
                 onChange={handleChange}
                 placeholder="Doe"
+                error={errors.last_name}
                 required
               />
               <InputItem
@@ -134,6 +121,7 @@ function Register() {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="user0000"
+                error={errors.username}
                 required
               />
               <InputItem
@@ -143,6 +131,7 @@ function Register() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="cat@example.com"
+                error={errors.email}
                 required
               />
               <InputItem
@@ -151,6 +140,7 @@ function Register() {
                 type="date"
                 value={formData.dob}
                 onChange={handleChange}
+                error={errors.dob}
               />
               <InputItem
                 label="NIC"
@@ -159,6 +149,7 @@ function Register() {
                 value={formData.nic}
                 onChange={handleChange}
                 placeholder="123456789V"
+                error={errors.nic}
               />
               <InputItem
                 label="Mobile Number"
@@ -167,6 +158,7 @@ function Register() {
                 value={formData.mobile_no}
                 onChange={handleChange}
                 placeholder="0771234567"
+                error={errors.mobile_no}
               />
             </div>
           </div>
@@ -211,6 +203,7 @@ function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter password"
+                error={errors.password}
                 required
               />
               <InputItem
@@ -220,6 +213,7 @@ function Register() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm password"
+                error={errors.confirmPassword}
                 required
               />
             </div>

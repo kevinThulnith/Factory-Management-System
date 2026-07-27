@@ -92,7 +92,7 @@ function Navbar() {
 
             {/* Menu button */}
             <div className="lg:hidden" onClick={toggleMenu}>
-              <BsLayoutSidebarReverse className="text-stone-200 text-xl cursor-pointer" />
+              <BsLayoutSidebarReverse className="text-stone-200 text-xl cursor-pointer hover:text-white ease-linear" />
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
+import useProductionLines from "../hooks/useProductionLines";
 import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
 import useProjects from "../hooks/useProjects";
@@ -46,10 +47,10 @@ const LaborAllocationForm = () => {
   const { user } = useAuth();
   const { projects } = useProjects();
   const [allTasks, setAllTasks] = useState([]);
+  const { productionLines } = useProductionLines();
   const [allEmployees, setEmployees] = useState([]);
   const [allocation, setAllocation] = useState(null);
   const [fetchLoading, setFetchLoading] = useState(false);
-  const [allProductionLines, setAllProductionLines] = useState([]);
   const [formData, setFormData] = useState({
     task: "",
     project: "",
@@ -74,11 +75,6 @@ const LaborAllocationForm = () => {
     user && ["ADMIN", "SUPERVISOR", "MANAGER"].includes(user.role);
 
   // !Fetch component data
-  const fetchProductionLines = useFetchData(
-    "production-line",
-    setFetchLoading,
-    setAllProductionLines,
-  );
   const fetchEmployees = useFetchUsersByRole(
     ["OPERATOR"],
     setFetchLoading,
@@ -145,16 +141,9 @@ const LaborAllocationForm = () => {
   );
 
   useEffect(() => {
-    // fetchProjects();
-    fetchProductionLines();
     fetchEmployees();
     fetchAllocationData();
-  }, [
-    fetchAllocationData,
-    // fetchProjects,
-    fetchProductionLines,
-    fetchEmployees,
-  ]);
+  }, [fetchAllocationData, fetchEmployees]);
 
   // Fetch tasks when project changes for task allocation
   useEffect(() => {
@@ -318,11 +307,11 @@ const LaborAllocationForm = () => {
   // Generate production line options
   const productionLineOptions = useMemo(
     () =>
-      allProductionLines.map((line) => ({
+      productionLines.map((line) => ({
         value: line.id,
         label: line.name,
       })),
-    [allProductionLines],
+    [productionLines],
   );
 
   const allocationTypeOptions = [

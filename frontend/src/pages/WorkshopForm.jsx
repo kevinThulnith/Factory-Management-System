@@ -63,6 +63,7 @@ const WorkshopForm = () => {
   } = useFormSubmit();
   const loading = fetchLoading || submitLoading;
 
+  // !Fetch component data
   const handleWorkshopData = useEntityFormData(
     setWorkshop,
     setFormData,
@@ -83,9 +84,9 @@ const WorkshopForm = () => {
   );
 
   useEffect(() => {
-    if (!isViewMode) fetchManagers();
+    if (isEditMode) fetchManagers();
     if (workshopId) fetchWorkshop();
-  }, [fetchManagers, fetchWorkshop, isViewMode,workshopId]);
+  }, [fetchManagers, fetchWorkshop, isEditMode, workshopId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -114,7 +114,7 @@ const ProfilePage = () => {
               {!isEditing && (
                 <button
                   onClick={handleEdit}
-                  className="mt-4 sm:mt-0 sm:ml-auto bg-orange-600 hover:bg-burning-orange-700 text-stone-800 font-medium py-2 px-4 rounded-lg text-[14px]"
+                  className="mt-4 sm:mt-0 sm:ml-auto bg-orange-600 hover:bg-burning-orange-700 text-stone-800 font-medium py-2 px-4 rounded-lg text-[14px] hover:text-stone-300 duration-100 ease-linear"
                 >
                   Edit Profile
                   <LuUserRoundPen size={18} className="inline-block ml-2" />

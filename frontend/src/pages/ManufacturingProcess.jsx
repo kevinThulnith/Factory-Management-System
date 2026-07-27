@@ -245,15 +245,15 @@ function ManufacturingProcessList() {
                     </h2>
                   </div>
                   <div className="space-y-2 text-sm text-stone-400">
-                    <p className="flex items-center my-5">
+                    <div className="flex items-center my-5">
                       <Clock size={15} className="mr-2 flex-shrink-0" />
                       <span className="text-stone-300 mr-4 ">
                         {proc.standard_time}
                       </span>
                       <div>{renderQualityBadge(proc.quality_parameters)}</div>
-                    </p>
+                    </div>
                     {proc.description && (
-                      <p className="flex items-start mt-3 pt-3 border-t border-stone-600">
+                      <div className="flex items-start mt-3 pt-3 border-t border-stone-600">
                         <FileText
                           size={15}
                           className="mr-2 mt-0.5 flex-shrink-0"
@@ -261,7 +261,7 @@ function ManufacturingProcessList() {
                         <span className="text-stone-400 line-clamp-2">
                           {proc.description}
                         </span>
-                      </p>
+                      </div>
                     )}
                   </div>
                 </div>

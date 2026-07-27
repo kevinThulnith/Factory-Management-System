@@ -36,7 +36,7 @@ const Form = ({
         <div className="flex items-center gap-2 sm:mt-0 mt-4">
           <button
             onClick={onClick}
-            className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 pl-2 hover:shadow-sm"
+            className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 pl-2 hover:shadow-sm ease-linear duration-100"
           >
             <ChevronLeft size={20} />
             {text_02}
@@ -44,7 +44,7 @@ const Form = ({
           {isViewMode && (
             <button
               onClick={fnction}
-              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm"
+              className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm ease-linear duration-100"
             >
               <Edit2 size={18} />
               Edit
