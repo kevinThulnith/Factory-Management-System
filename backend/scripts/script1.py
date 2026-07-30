@@ -48,43 +48,31 @@ def create_random_users():
             print(f"⚠️ User {username} already exists")
 
 
+def set_base(role, count):
+    users = User.objects.filter(role=User.Role.OPERATOR)[:count]
+    for user in users:
+        user.role = role
+        user.save()
+        print(f"✅ Set {user.username} as {role.name.lower()}")
+    return len(users)
+
+
 def set_supervisors():
     # TODO: Set supervisors
-    users = User.objects.filter(role=User.Role.OPERATOR)[:7]
-    count = 0
-    for user in users:
-        user.role = User.Role.SUPERVISOR
-        user.save()
-        count += 1
-        print(f"✅ Set {user.username} as supervisor")
-
-    print(f"👥 Total supervisors set: {count}")
+    n = set_base(User.Role.SUPERVISOR, 7)
+    print(f"👥 Total supervisors set: {n}")
 
 
 def set_managers():
     # TODO: Set managers
-    users = User.objects.filter(role=User.Role.OPERATOR)[:21]
-    count = 0
-    for user in users:
-        user.role = User.Role.MANAGER
-        user.save()
-        count += 1
-        print(f"✅ Set {user.username} as manager")
-
-    print(f"👥 Total managers set: {count}")
+    n = set_base(User.Role.MANAGER, 21)
+    print(f"👥 Total managers set: {n}")
 
 
 def set_technicians():
     # TODO: Set technicians
-    users = User.objects.filter(role=User.Role.OPERATOR)[:7]
-    count = 0
-    for user in users:
-        user.role = User.Role.TECHNICIAN
-        user.save()
-        count += 1
-        print(f"✅ Set {user.username} as technician")
-
-    print(f"👥 Total technicians set: {count}")
+    n = set_base(User.Role.TECHNICIAN, 7)
+    print(f"👥 Total technicians set: {n}")
 
 
 def set_purchasing():

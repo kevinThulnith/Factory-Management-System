@@ -17,10 +17,6 @@ django.setup()
 from product.models import Product, ProductProcess
 from production.models import ManufacturingProcess
 
-# create products in the database
-# add manufacturing processes to the products
-# show the products and their manufacturing processes with sequence numbers
-
 
 def create_products():
     "Create products from sample data"
@@ -41,8 +37,8 @@ def create_products():
             product = Product.objects.create(**pr_data)
             created_count += 1
             print(f"✅ Created product: {product.name}")
-        except Exception as e:
-            print(f"⚠️ Failed to create product {pr_data['name']}: {e}")
+        except Exception as product_err:
+            print(f"⚠️ Failed to create product {pr_data['name']}: {product_err}")
 
     print(f"🎉 Successfully created {created_count} products!")
 
@@ -80,8 +76,10 @@ def add_manufacturing_processes_with_sequence():
                 f"✅ Added {len(random_processes)} processes to product {product.name}"
             )
 
-        except Exception as e:
-            print(f"⚠️ Failed to add processes to product {product.name}: {e}")
+        except Exception as process_err:
+            print(
+                f"⚠️ Failed to add processes to product {product.name}: {process_err}"
+            )
 
     print(f"🎉 Successfully assigned processes to {assignment_count} products!")
 

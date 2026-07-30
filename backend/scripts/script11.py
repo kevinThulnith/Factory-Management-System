@@ -1,4 +1,5 @@
 from info import SAMPLE_SKILLS, SKILL_CATEGORIES
+from random import choice, sample
 import django
 import sys
 import os
@@ -15,7 +16,6 @@ django.setup()
 # ⬇️ Your production schedule generation logic below this
 from labor.models import SkillMatrix
 from main.models import User
-from random import choice, sample
 
 
 def create_skill_matrix():
@@ -78,7 +78,7 @@ def create_skill_matrix():
             description = f"{skill_name} skill for {user.name}. Level: {level}"
 
             # Create the skill matrix entry
-            skill = SkillMatrix.objects.create(
+            SkillMatrix.objects.create(
                 name=skill_name,
                 description=description,
                 category=category,

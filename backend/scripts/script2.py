@@ -1,3 +1,4 @@
+from django.db.utils import IntegrityError
 from info import SAMPLE_DEPARTMENTS
 from faker import Faker
 import django
@@ -18,12 +19,11 @@ from core.models import Department, User
 
 
 def create_departments():
-    global SAMPLE_DEPARTMENTS
     supervisors = User.objects.filter(role=User.Role.SUPERVISOR)
-    SAMPLE_DEPARTMENTS = SAMPLE_DEPARTMENTS[: len(supervisors)]
+    sample_set = SAMPLE_DEPARTMENTS[: len(supervisors)]
     fake = Faker()
 
-    for i, department in enumerate(SAMPLE_DEPARTMENTS):
+    for i, department in enumerate(sample_set):
         supervisor = supervisors[i]
         try:
             Department(
@@ -33,7 +33,7 @@ def create_departments():
                 supervisor=supervisor,
             ).save()
             print(f"✅ Created department: {department}")
-        except:
+        except IntegrityError:
             print(f"⚠️ Department '{department}' already exists")
 
 

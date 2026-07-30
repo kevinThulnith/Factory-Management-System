@@ -86,7 +86,7 @@ def create_production_schedules():
                         ProductionSchedule.ScheduleStatus.COMPLETED,
                         ProductionSchedule.ScheduleStatus.CANCELLED,
                     ],
-                    weights=[85, 15],  # 85% completed, 15% cancelled
+                    weights=[85, 15],  # ?85% completed, 15% canceled
                 )[0]
             elif current_date.date() == timezone.now().date():
                 # Today's schedules - mix of statuses
@@ -134,8 +134,8 @@ def create_production_schedules():
                     f"✅ Created schedule: {product.name} on {production_line.name} - {quantity} units ({status})"
                 )
 
-            except Exception as e:
-                print(f"❌ Error creating schedule: {e}")
+            except Exception as schedule_err:
+                print(f"❌ Error creating schedule: {schedule_err}")
 
     print(f"\n🎉 Successfully created {created_count} production schedules!")
 
@@ -240,8 +240,8 @@ def create_sample_production_lines():
             )
             created_count += 1
             print(f"✅ Created production line: {line_data['name']}")
-        except Exception as e:
-            print(f"❌ Error creating production line {line_data['name']}: {e}")
+        except Exception as line_err:
+            print(f"❌ Error creating production line {line_data['name']}: {line_err}")
 
     print(f"Created {created_count} production lines.")
 
