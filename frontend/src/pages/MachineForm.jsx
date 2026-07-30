@@ -14,6 +14,7 @@ import {
   InputItem,
   InfoItem,
   Buttons,
+  Status,
 } from "../components/components";
 
 import {
@@ -94,7 +95,7 @@ const MachineForm = () => {
   useEffect(() => {
     if (!isViewMode) fetchOperators();
     if (machineId) fetchMachine();
-  }, [fetchOperators, fetchMachine,isViewMode, machineId]);
+  }, [fetchOperators, fetchMachine, isViewMode, machineId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -269,13 +270,10 @@ const MachineForm = () => {
             label="Next Maintenance"
             value={formatDate(machine?.next_maintenance_date)}
           />
-          <div className="flex flex-col">
-            <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-              <Activity size={16} />
-              Status
-            </label>
-            {machine?.status && getStatusBadge(machine.status)}
-          </div>
+          <Status
+            label="Status"
+            value={machine?.status && getStatusBadge(machine.status)}
+          />
           <div className="md:col-span-2">
             <InfoItem
               icon={<FileText />}

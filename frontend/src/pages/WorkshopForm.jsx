@@ -14,6 +14,7 @@ import {
   InputItem,
   InfoItem,
   Buttons,
+  Status,
 } from "../components/components";
 
 import {
@@ -214,14 +215,13 @@ const WorkshopForm = () => {
             label="Manager"
             value={workshop?.manager_name}
           />
-          <div className="flex flex-col">
-            <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-              <Activity size={16} />
-              Operational Status
-            </label>
-            {workshop?.operational_status &&
-              getStatusBadge(workshop.operational_status)}
-          </div>
+          <Status
+            label="Operational Status"
+            value={
+              workshop?.operational_status &&
+              getStatusBadge(workshop.operational_status)
+            }
+          />
           <div className="md:col-span-2">
             <InfoItem
               icon={<FileText />}

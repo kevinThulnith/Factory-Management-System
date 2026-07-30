@@ -6,6 +6,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Status,
   Buttons,
   InfoItem,
   InputItem,
@@ -265,13 +266,6 @@ const ProjectsForm = () => {
               label="Project Manager"
               value={project?.project_manager_name || "Unassigned"}
             />
-            <div className="flex flex-col">
-              <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                <Activity size={16} /> Status
-              </label>
-              {project?.project_status &&
-                getStatusBadge(project.project_status)}
-            </div>
             <InfoItem
               icon={<CalendarDays />}
               label="Start Date"
@@ -298,6 +292,13 @@ const ProjectsForm = () => {
               icon={<Activity />}
               label="Tasks"
               value={`${project?.tasks_count || 0} total`}
+            />
+            <Status
+              label="Status"
+              value={
+                project?.project_status &&
+                getStatusBadge(project.project_status)
+              }
             />
           </div>
           <InfoItem

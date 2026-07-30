@@ -10,6 +10,7 @@ import {
   InfoItem,
   InputItem,
   TextareaItem,
+  Specifications,
 } from "../components/components";
 
 import {
@@ -146,20 +147,6 @@ const ManufacturingProcessForm = () => {
     });
   };
 
-  // Helper to format JSON for View Mode
-  const formatJSON = (data) => {
-    if (!data) return "N/A";
-    try {
-      return (
-        <pre className="text-xs text-slate-300 font-mono whitespace-pre-wrap">
-          {JSON.stringify(data, null, 2)}
-        </pre>
-      );
-    } catch (e) {
-      return "Invalid Data" + e.message;
-    }
-  };
-
   // Check if user has write permission (ADMIN role)
   const canWrite = user?.role === "ADMIN";
 
@@ -202,10 +189,9 @@ const ManufacturingProcessForm = () => {
             value={processData?.standard_time}
           />
           <div className="md:col-span-2">
-            <InfoItem
-              icon={<SlidersHorizontal />}
+            <Specifications
               label="Quality Parameters"
-              value={formatJSON(processData?.quality_parameters)}
+              value={formData.quality_parameters}
             />
           </div>
           <div className="md:col-span-2">

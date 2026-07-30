@@ -8,6 +8,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Status,
   Buttons,
   InfoItem,
   InputItem,
@@ -255,13 +256,10 @@ const ProductionLineForm = () => {
               label="Production Capacity"
               value={`${line?.production_capacity || "N/A"} units/hr`}
             />
-            <div className="flex flex-col">
-              <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                Status
-              </label>
-              {line?.operational_status &&
-                getStatusBadge(line.operational_status)}
-            </div>
+            <Status
+              label="Status"
+              value={line?.operational_status && getStatusBadge(line.operational_status)}
+            />
           </div>
           <InfoItem
             icon={<FileText />}

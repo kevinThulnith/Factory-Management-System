@@ -1,3 +1,4 @@
+import { Activity, FileText } from "lucide-react";
 import { cloneElement } from "react";
 import { Save } from "lucide-react";
 
@@ -122,3 +123,25 @@ export const Buttons = ({
     </button>
   </div>
 );
+
+export const Status = ({ label, value }) => (
+  <div className="flex flex-col">
+    <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+      <Activity size={16} />
+      {label}
+    </label>
+    {value}
+  </div>
+)
+
+export const Specifications = ({label, value}) => (
+  <div className="bg-card-sub p-2 pl-3 rounded-lg border-l-4 border-orange-600">
+    <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+      <FileText size={16} />
+      {label}
+    </label>
+    <pre className="bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap text-base font-medium text-stone-300">
+      {value}
+    </pre>
+  </div>
+)

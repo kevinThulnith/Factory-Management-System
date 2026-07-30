@@ -16,16 +16,16 @@ import {
 } from "../components/viewComponents";
 
 import {
+  UserRoundCheck,
+  UserRoundMinus,
   ChevronRight,
   ChevronLeft,
   Building2,
-  UserCheck,
   Calendar,
   Trash2,
   MapPin,
   Filter,
   Edit3,
-  UserX,
   User,
   Eye,
 } from "lucide-react";
@@ -337,11 +337,11 @@ function Department() {
                       </h2>
                       {dept.supervisor_name ? (
                         <span className="flex-shrink-0 ml-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-stone-200 text-stone-800 shadow-sm">
-                          <UserCheck size={12} className="mr-1" /> Supervised
+                          <UserRoundCheck size={12} className="mr-1" /> Supervised
                         </span>
                       ) : (
                         <span className="flex-shrink-0 ml-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 shadow-sm">
-                          <UserX size={12} className="mr-1" /> Needs Supervisor
+                          <UserRoundMinus size={12} className="mr-1" /> Needs Supervisor
                         </span>
                       )}
                     </div>

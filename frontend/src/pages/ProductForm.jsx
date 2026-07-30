@@ -6,11 +6,13 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Specifications,
   TextareaItem,
   SelectItem,
   InputItem,
   InfoItem,
   Buttons,
+  Status,
 } from "../components/components";
 
 import {
@@ -279,24 +281,15 @@ const ProductForm = () => {
               label="Unit of Measurement"
               value={product?.unit_of_measurement}
             />
-            <div className="flex flex-col">
-              <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                <Activity size={16} /> Status
-              </label>
-              {product?.status && getStatusBadge(product.status)}
-            </div>
+            <Status
+              label="Status"
+              value={product?.status && getStatusBadge(product.status)}
+            />
           </div>
-          <div className="bg-card-sub p-2 pl-3 rounded-lg border-l-4 border-orange-600">
-            <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-              <FileText size={16} />
-              Specifications (JSON)
-            </label>
-            <pre className="bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap text-base font-medium text-stone-300">
-              {formData.specifications || (
-                <span className="text-stone-500">N/A</span>
-              )}
-            </pre>
-          </div>
+          <Specifications
+            label="Specifications (JSON)"
+            value={formData.specifications}
+          />
           <div>
             <h3 className="text-lg font-medium text-stone-300 mb-3 border-b border-stone-700 pb-2">
               Manufacturing Steps

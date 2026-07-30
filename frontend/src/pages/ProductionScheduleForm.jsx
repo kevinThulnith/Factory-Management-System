@@ -9,6 +9,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Status,
   Buttons,
   InfoItem,
   InputItem,
@@ -320,12 +321,10 @@ const ProductionScheduleListForm = () => {
                   : "Not set"
               }
             />
-            <div className="flex flex-col">
-              <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                <Activity size={16} /> Status
-              </label>
-              {schedule?.status && getStatusBadge(schedule.status)}
-            </div>
+            <Status
+              label="Status"
+              value={schedule?.status && getStatusBadge(schedule.status)}
+            />
           </div>
 
           {/* Material Consumption Section - View Mode */}

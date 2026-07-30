@@ -10,6 +10,7 @@ import Form from "../components/Form";
 import api from "../api";
 
 import {
+  Status,
   Buttons,
   InfoItem,
   InputItem,
@@ -313,12 +314,6 @@ const TasksForm = () => {
               label="Assigned To"
               value={task?.assigned_to_name || "Unassigned"}
             />
-            <div className="flex flex-col">
-              <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
-                <Activity size={16} /> Status
-              </label>
-              {task?.status && getStatusBadge(task.status)}
-            </div>
             <InfoItem
               icon={<CalendarDays />}
               label="Start Date"
@@ -338,6 +333,10 @@ const TasksForm = () => {
                   ? new Date(task.end_date + "T00:00:00Z").toLocaleDateString()
                   : "Not set"
               }
+            />
+            <Status
+              label="Status"
+              value={task?.status && getStatusBadge(task.status)}
             />
           </div>
           <InfoItem
