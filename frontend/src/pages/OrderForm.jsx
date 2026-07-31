@@ -127,14 +127,14 @@ const LineItemForm = ({ itemToEdit, materials, onSave, onCancel, loading }) => {
 
 // --- Main Order Form/Detail Component ---
 const OrderForm = () => {
-  const { user } = useAuth();
+  const { orderId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { orderId } = useParams();
 
   const isViewMode = location.pathname.includes("/view/");
   const isCreateMode = location.pathname.includes("/add");
 
+  const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [lineItems, setLineItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -142,12 +142,12 @@ const OrderForm = () => {
 
   const [invoice, setInvoice] = useState(null);
   const [pageError, setPageError] = useState("");
+  const [editingItem, setEditingItem] = useState(null);
+  const [showAddItemForm, setShowAddItemForm] = useState(false);
   const [loading, setLoading] = useState({ page: true, action: false });
   const [formData, setFormData] = useState({ supplier: "", status: "DRAFT" });
 
-  const [showAddItemForm, setShowAddItemForm] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-
+  // !Permission check
   const canManage =
     user && ["ADMIN", "SUPERVISOR", "PURCHASING"].includes(user.role);
 
@@ -224,9 +224,7 @@ const OrderForm = () => {
             : apiErrors.detail || "Failed to save order header.",
         );
       })
-      .finally(() => {
-        setLoading((prev) => ({ ...prev, action: false }));
-      });
+      .finally(() => setLoading((prev) => ({ ...prev, action: false })));
   };
 
   const handleSaveLineItem = async (payload, itemId) => {
@@ -251,9 +249,7 @@ const OrderForm = () => {
         console.error("API error:", err.response?.data || err.message);
         setPageError("Failed to save line item.");
       })
-      .finally(() => {
-        setLoading((prev) => ({ ...prev, action: false }));
-      });
+      .finally(() => setLoading((prev) => ({ ...prev, action: false })));
   };
 
   const handleDeleteLineItem = async (itemId) => {
@@ -261,18 +257,14 @@ const OrderForm = () => {
     setLoading((prev) => ({ ...prev, action: true }));
     api
       .delete(`api/order/${orderId}/material/${itemId}/`)
-      .then(() => {
-        fetchOrderData();
-      })
+      .then(() => fetchOrderData())
       .catch((err) => {
         console.error("Delete error:", err.response?.data || err.message);
         setPageError(
           err.response?.data?.detail || "Failed to delete line item.",
         );
       })
-      .finally(() => {
-        setLoading((prev) => ({ ...prev, action: false }));
-      });
+      .finally(() => setLoading((prev) => ({ ...prev, action: false })));
   };
 
   const handleOrderStatusUpdate = async (newStatus) => {
@@ -313,9 +305,7 @@ const OrderForm = () => {
         );
         setPageError(err.response?.data?.detail || "Failed to update status.");
       })
-      .finally(() => {
-        setLoading((prev) => ({ ...prev, action: false }));
-      });
+      .finally(() => setLoading((prev) => ({ ...prev, action: false })));
   };
 
   const orderSummary = useMemo(() => {
