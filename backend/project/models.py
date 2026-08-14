@@ -204,7 +204,7 @@ class Task(Model):
                     },
                 )
 
-                # If allocation already exists and we're not creating a new one,
+                # If allocation already exists, and we're not creating a new one,
                 # we might want to accumulate hours or update task reference
                 if not created:
                     # Update the task reference to the current task

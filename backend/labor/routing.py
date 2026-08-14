@@ -1,7 +1,7 @@
 from .consumers import SkillMatrixConsumer, LaborAllocationConsumer
 from django.urls import re_path
 
-# !WebSocket routings for labor app
+# !WebSocket routing for labor app
 
 websocket_urlpatterns = [
     re_path(r"ws/skill-matrix/$", SkillMatrixConsumer.as_asgi()),

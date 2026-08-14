@@ -8,7 +8,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from .middleware import JWTAuthMiddleware
 
-# !Web Socket Routings
+# !Web Socket Routing
 import core.routing
 import main.routing
 import labor.routing

@@ -116,8 +116,8 @@ class ProductionLineViewSet(RBACCacheMixin):
                 },
                 status=status.HTTP_200_OK,
             )
-        except Exception:
-            return Response("Error invalid data", status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError) as machine_err:
+            return Response({"error": f"Invalid data format provided: {str(machine_err)}"}, status=status.HTTP_400_BAD_REQUEST)
         finally:
             invalidate_resource(self.cache_resource)
 

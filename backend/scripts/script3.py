@@ -13,7 +13,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
 
 # ⬇️ Your user generation logic below this
-from core.models import Workshop, Department, User
+from core.models import Workshop, Department
+from main.models import User
 
 
 def create_workshops():

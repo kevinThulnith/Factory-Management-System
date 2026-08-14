@@ -35,9 +35,6 @@ class ProjectViewSet(RBACCacheMixin):
         return self.queryset.none()
 
     def perform_create(self, serializer):
-        """
-        Handle project creation - ensure admin users can create projects
-        """
         serializer.save()
         invalidate_resource(self.cache_resource)
 

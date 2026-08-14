@@ -423,12 +423,12 @@ class Machine(Model):
 
     @property
     def is_operational(self):
-        "Chek if machine is operational"
+        "Check if machine is operational"
         return self.status == self.Status.OPERATIONAL
 
     @property
     def has_operator(self):
-        "Chec if machine has an operator assigned"
+        "Check if machine has an operator assigned"
         return self.operator is not None
 
     @property
@@ -439,13 +439,13 @@ class Machine(Model):
         return timezone.now() >= self.operator_auto_remove_at
 
     def get_current_assignment(self):
-        "Get the crrent active assignment for this machine"
+        "Get the current active assignment for this machine"
         return self.operator_assignments.filter(
             status="ACTIVE", removed_at__isnull=True
         ).first()
 
     def get_assignment_history(self):
-        "Get assignmet history for this machine"
+        "Get assignment history for this machine"
         return self.operator_assignments.all().order_by("-assigned_at")
 
 

@@ -53,7 +53,7 @@ class RequestTimeLoggingMiddleware:
         else:
             time_display = f"{execution_time * 1000:.2f}ms"
 
-        # Skip logging for client cancelled requests (499)
+        # Skip logging for client canceled requests (499)
         if response.status_code == 499:
             return response
 
