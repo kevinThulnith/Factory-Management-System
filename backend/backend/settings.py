@@ -47,7 +47,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "SIGNING_KEY": os.getenv("JWT_SECRET_KEY", SECRET_KEY),
-    'ALGORITHM': 'HS256',
+    "ALGORITHM": "HS256",
     "UPDATE_LAST_LOGIN": True,
     "ROTATE_REFRESH_TOKENS": True,
     "TOKEN_BLACKLIST_ENABLED": True,
@@ -258,6 +258,7 @@ ACCOUNT_USERNAME_REQUIRED = True
 REST_AUTH = {
     "USE_JWT": True,
     "SESSION_LOGIN": False,
+    "JWT_AUTH_SAMESITE": "Lax",
     "JWT_AUTH_COOKIE": "auth-token",
     "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
     "JWT_AUTH_HTTPONLY": False,  # Set to False so frontend can access tokens

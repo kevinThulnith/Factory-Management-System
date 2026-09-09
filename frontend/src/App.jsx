@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { lazy, Suspense } from "react";
-import useAuth from "./hooks/useAuth";
+import useAuth from "./hooks/UseAuth";
 
 const ManufacturingProcess = lazy(() => import("./pages/ManufacturingProcess"));
 const LaborAllocationForm = lazy(() => import("./pages/LaborAllocationForm"));
