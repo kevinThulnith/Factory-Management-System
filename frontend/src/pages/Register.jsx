@@ -1,4 +1,4 @@
-import { UserRoundPlus, FileText, KeyRound, UserCog } from "lucide-react";
+import { FileText, KeyRound, UserCog, UserRoundPlus } from "lucide-react";
 import DepartmentDropdown from "../components/DepartmentDropDown";
 import RoleDropdown from "../components/RoleDropDown";
 import { InputItem } from "../components/components";
@@ -51,7 +51,9 @@ function Register() {
       nic: formData.nic || null,
       mobile_no: formData.mobile_no || null,
       role: formData.role,
-      department: formData.department ? parseInt(formData.department) : null,
+      department: formData.department
+        ? parseInt(formData.department, 10)
+        : null,
       is_active: true, // Set user as active by default
     };
 
@@ -180,7 +182,10 @@ function Register() {
                 departments={departments}
                 value={formData.department}
                 onChange={(department) =>
-                  setFormData((prev) => ({ ...prev, department }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    department,
+                  }))
                 }
                 labelClassName="text-sm text-burning-orange-300 ml-1"
                 placeholder="Select Department (Optional)"

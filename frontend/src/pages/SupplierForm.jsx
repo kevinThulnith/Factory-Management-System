@@ -1,9 +1,9 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useEntityFormData from "../hooks/useEntityFormData";
-import { MapPin, Truck, Phone, Mail } from "lucide-react";
+import { Mail, MapPin, Phone, Truck } from "lucide-react";
 import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 

@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -244,10 +244,14 @@ function Machine() {
               style={{ height: "40px" }}
               list={[
                 { value: "all", label: "All Workshops" },
-                ...uniqueWorkshops.map((w) => ({ value: w, label: w })),
+                ...uniqueWorkshops.map((w) => ({
+                  value: w,
+                  label: w,
+                })),
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="flex-1 px-4 py-3 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105"
               style={{ height: "40px", lineHeight: "16px" }}
@@ -256,6 +260,7 @@ function Machine() {
               Reset Filters
             </button>
             <button
+              type="button"
               onClick={applyFilters}
               className="flex-1 px-4 py-3 rounded-lg font-medium transition-all bg-yellow-600 hover:scale-105 inline-flex items-center justify-center"
               style={{ height: "40px", lineHeight: "16px" }}
@@ -393,6 +398,7 @@ function Machine() {
                           )}
                           {canCreate && (
                             <button
+                              type="button"
                               onClick={() => handleDeleteMachine(machine.id)}
                               className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                               title="Delete Machine"

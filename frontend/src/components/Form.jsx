@@ -28,13 +28,16 @@ const Form = ({
             </div>
             <div>
               <h1 className="text-3xl sm:text-2xl font-medium">{heading}</h1>
-              <p className="text-stone-400 mt-1 text-1xl hidden sm:block">{text_01}</p>
+              <p className="text-stone-400 mt-1 text-1xl hidden sm:block">
+                {text_01}
+              </p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:mt-0 mt-4">
           <button
+            type="button"
             onClick={onClick}
             className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-1 px-3 pl-2 hover:shadow-sm ease-linear duration-100"
           >
@@ -43,6 +46,7 @@ const Form = ({
           </button>
           {isViewMode && (
             <button
+              type="button"
               onClick={fnction}
               className="inline-flex items-center bg-card-sub p-2 shadow-lg rounded-xl gap-2 px-3 hover:shadow-sm ease-linear duration-100"
             >

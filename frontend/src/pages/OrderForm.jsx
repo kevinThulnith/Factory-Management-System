@@ -1,6 +1,6 @@
-import { SelectItem, InputItem, InfoItem } from "../components/components";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { InfoItem, InputItem, SelectItem } from "../components/components";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useFetchData from "../hooks/useFetchData";
 import Form from "../components/Form.jsx";
 import useAuth from "../hooks/useAuth";
@@ -85,7 +85,10 @@ const LineItemForm = ({ itemToEdit, materials, onSave, onCancel, loading }) => {
             name="material"
             value={formData.material}
             onChange={handleChange}
-            options={materials.map((m) => ({ value: m.id, label: m.name }))}
+            options={materials.map((m) => ({
+              value: m.id,
+              label: m.name,
+            }))}
             required
             disabled={!!itemToEdit}
           />
@@ -352,7 +355,7 @@ const OrderForm = () => {
           label="Order Date"
           value={
             order?.order_date
-              ? new Date(order.order_date + "T00:00:00Z").toLocaleDateString()
+              ? new Date(`${order.order_date}T00:00:00Z`).toLocaleDateString()
               : "Pending"
           }
         />
@@ -380,9 +383,15 @@ const OrderForm = () => {
             icon={<Building />}
             value={formData.supplier}
             onChange={(e) =>
-              setFormData((prev) => ({ ...prev, supplier: e.target.value }))
+              setFormData((prev) => ({
+                ...prev,
+                supplier: e.target.value,
+              }))
             }
-            options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+            options={suppliers.map((s) => ({
+              value: s.id,
+              label: s.name,
+            }))}
             required
             disabled={!isCreateMode}
           />
@@ -517,6 +526,7 @@ const OrderForm = () => {
                       </label>
                       {invoice && (
                         <button
+                          type="button"
                           onClick={() => setInvoice(null)}
                           className="w-full bg-red-600 hover:bg-red-800 text-red-200 font-medium py-2 px-3 rounded-md flex items-center justify-center gap-2 transition text-sm"
                         >
@@ -525,8 +535,7 @@ const OrderForm = () => {
                       )}
                       {!order?.invoice && !invoice && (
                         <p className="text-xs text-yellow-400 flex items-center gap-1">
-                          ⚠️ Invoice is required before marking order as
-                          received
+                          ⚠️ Invoice is required before marking order as received
                         </p>
                       )}
                     </div>
@@ -542,6 +551,7 @@ const OrderForm = () => {
               >
                 {order?.status === "DRAFT" && lineItems.length > 0 && (
                   <button
+                    type="button"
                     onClick={() => handleOrderStatusUpdate("ORDERED")}
                     disabled={loading.action}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 pl-2 rounded-lg flex items-center gap-2 transition text-[14px]"
@@ -551,6 +561,7 @@ const OrderForm = () => {
                 )}
                 {order?.status === "ORDERED" && (
                   <button
+                    type="button"
                     onClick={() => handleOrderStatusUpdate("RECEIVED")}
                     disabled={loading.action || (!order?.invoice && !invoice)}
                     className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 pl-2 rounded-lg flex items-center gap-2 transition text-[14px] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -565,6 +576,7 @@ const OrderForm = () => {
                 )}
                 {(order?.status === "DRAFT" || order?.status === "ORDERED") && (
                   <button
+                    type="button"
                     onClick={() => handleOrderStatusUpdate("CANCELLED")}
                     disabled={loading.action}
                     className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 pl-2 rounded-lg flex items-center gap-2 transition text-[14px]"
@@ -585,6 +597,7 @@ const OrderForm = () => {
               </h3>
               {isEditable && !showAddItemForm && !editingItem && (
                 <button
+                  type="button"
                   onClick={() => setShowAddItemForm(true)}
                   className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-[14px]"
                 >
@@ -629,12 +642,14 @@ const OrderForm = () => {
                       {isEditable && (
                         <div className="flex items-center gap-2">
                           <button
+                            type="button"
                             onClick={() => setEditingItem(item)}
                             className="p-2 text-indigo-400 hover:bg-indigo-500/20 rounded-lg"
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleDeleteLineItem(item.id)}
                             className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
                           >

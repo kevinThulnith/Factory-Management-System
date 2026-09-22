@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import useFormSubmit from "../hooks/useFormSubmit";
 import useWorkshops from "../hooks/useWorkshops";
 import useFetchData from "../hooks/useFetchData";
@@ -66,7 +66,11 @@ const ProductionLineForm = () => {
     user && user.role === "MANAGER" && !canSubmitFullForm;
 
   // !Fetch components data
-  const fetchMachines = useFetchData("machine", setFetchLoading, setAllMachines);
+  const fetchMachines = useFetchData(
+    "machine",
+    setFetchLoading,
+    setAllMachines,
+  );
 
   useEffect(() => {
     fetchMachines();
@@ -236,7 +240,7 @@ const ProductionLineForm = () => {
       }
       text_02={"Production Lines"}
       onClick={() => navigate("/production-line")}
-      fnction={() => navigate("/production-line/edit/" + productionLineId)}
+      fnction={() => navigate(`/production-line/edit/${productionLineId}`)}
       gradient={"from-amber-600 to-amber-800"}
       isViewMode={isViewMode && (canEditStatusOnly || canSubmitFullForm)}
       pageError={pageError}
@@ -258,7 +262,10 @@ const ProductionLineForm = () => {
             />
             <Status
               label="Status"
-              value={line?.operational_status && getStatusBadge(line.operational_status)}
+              value={
+                line?.operational_status &&
+                getStatusBadge(line.operational_status)
+              }
             />
           </div>
           <InfoItem

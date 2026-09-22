@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -86,12 +86,10 @@ const Supplier = () => {
     const filtered = allSuppliers.filter(
       (s) =>
         s.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        (s.contact_person &&
-          s.contact_person
-            .toLowerCase()
-            .includes(filters.searchTerm.toLowerCase())) ||
-        (s.email &&
-          s.email.toLowerCase().includes(filters.searchTerm.toLowerCase())),
+        s.contact_person
+          ?.toLowerCase()
+          .includes(filters.searchTerm.toLowerCase()) ||
+        s.email?.toLowerCase().includes(filters.searchTerm.toLowerCase()),
     );
 
     const [field, direction] = filters.sortBy.split("-");
@@ -167,9 +165,18 @@ const Supplier = () => {
               value={filters.sortBy}
               onChange={handleFilterChange}
               list={[
-                { value: "name-asc", label: "Sort by Name (A-Z)" },
-                { value: "name-desc", label: "Sort by Name (Z-A)" },
-                { value: "contact_person-asc", label: "Sort by Contact (A-Z)" },
+                {
+                  value: "name-asc",
+                  label: "Sort by Name (A-Z)",
+                },
+                {
+                  value: "name-desc",
+                  label: "Sort by Name (Z-A)",
+                },
+                {
+                  value: "contact_person-asc",
+                  label: "Sort by Contact (A-Z)",
+                },
                 {
                   value: "contact_person-desc",
                   label: "Sort by Contact (Z-A)",
@@ -177,6 +184,7 @@ const Supplier = () => {
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -271,6 +279,7 @@ const Supplier = () => {
                           <Edit3 size={20} />
                         </Link>
                         <button
+                          type="button"
                           onClick={() => handleDelete(supplier.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Supplier"

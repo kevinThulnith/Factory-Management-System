@@ -11,7 +11,9 @@ const useFetchData = (link, setLoading, setData) => {
 
     // 2. Security Check: Block directory traversal (..) and external protocols (//, http)
     if (link.includes("..") || link.includes("//") || link.includes(":\\")) {
-      console.error(`Security Alert: Blocked potentially malicious path manipulation: ${link}`);
+      console.error(
+        `Security Alert: Blocked potentially malicious path manipulation: ${link}`,
+      );
       alert("Invalid request path configuration.");
       return;
     }
@@ -25,8 +27,8 @@ const useFetchData = (link, setLoading, setData) => {
         setData(data);
       })
       .catch((error) => {
-        console.error(`Error fetching ${link}:`, error);
-        alert(`Failed to fetch ${link}. Please try again.`);
+        console.error(`Error fetching %s:`, link, error);
+        alert(`Failed to fetch %s. Please try again.`, link);
       })
       .finally(() => setLoading(false));
   }, [link, setLoading, setData]);

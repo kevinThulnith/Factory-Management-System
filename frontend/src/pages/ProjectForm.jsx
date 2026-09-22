@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -156,7 +156,7 @@ const ProjectsForm = () => {
       start_date: formData.start_date,
       end_date: formData.end_date || null,
       project_status: formData.project_status,
-      project_manager: parseInt(formData.project_manager),
+      project_manager: parseInt(formData.project_manager, 10),
     };
 
     try {
@@ -247,7 +247,7 @@ const ProjectsForm = () => {
       }
       text_02={"Projects"}
       onClick={() => navigate("/project")}
-      fnction={() => navigate("/project/edit/" + projectId)}
+      fnction={() => navigate(`/project/edit/${projectId}`)}
       gradient={"from-indigo-600 to-indigo-800"}
       isViewMode={isViewMode}
       pageError={pageError}
@@ -272,7 +272,7 @@ const ProjectsForm = () => {
               value={
                 project?.start_date
                   ? new Date(
-                      project.start_date + "T00:00:00Z",
+                      `${project.start_date}T00:00:00Z`,
                     ).toLocaleDateString()
                   : "N/A"
               }
@@ -283,7 +283,7 @@ const ProjectsForm = () => {
               value={
                 project?.end_date
                   ? new Date(
-                      project.end_date + "T00:00:00Z",
+                      `${project.end_date}T00:00:00Z`,
                     ).toLocaleDateString()
                   : "Not set"
               }

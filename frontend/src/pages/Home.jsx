@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, cloneElement } from "react";
+import { cloneElement, useEffect, useMemo, useState } from "react";
 import { MdDashboard } from "react-icons/md";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
@@ -9,6 +9,7 @@ import {
   UserRoundPlus,
   CheckCircle,
   ListChecks,
+  UsersRound,
   BarChart3,
   Calendar,
   Activity,
@@ -233,7 +234,7 @@ function Home() {
               to="/user"
               className="p-4 bg-orange-600 rounded-xl text-stone-200 text-center shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group"
             >
-              <Users
+              <UsersRound
                 size={32}
                 className="mx-auto mb-2 group-hover:animate-pulse"
               />
@@ -282,7 +283,7 @@ function Home() {
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
-                  <Users size={28} className="text-white" />
+                  <UsersRound size={28} className="text-white" />
                 </div>
                 <span className="text-2xl font-bold text-purple-500">
                   {dashboardData.users.length}
@@ -360,6 +361,7 @@ function Home() {
           {/* Admin Quick Actions */}
           <div className="mt-5 pt-5 border-t border-star-dust-600">
             <button
+              type="button"
               className="px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 text-stone-200 rounded-lg font-medium hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
               onClick={() => window.location.reload()}
             >
@@ -372,9 +374,9 @@ function Home() {
 
       {/* Quick Stats Grid with Enhanced Styling */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-        {renderQuickStats().map((stat, index) => (
+        {renderQuickStats().map((stat) => (
           <Link
-            key={index}
+            key={stat.link}
             to={stat.link}
             className="bg-card-main rounded-lg sm:p-6 p-4 shadow-lg transition-all duration-300 hover:scale-105 hover:-translate-y-1 group sm:block flex gap-4 items-center"
           >

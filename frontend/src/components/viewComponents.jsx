@@ -1,9 +1,10 @@
-import { Search, RefreshCw, PlusCircle, Download } from "lucide-react";
+import { Download, PlusCircle, RefreshCw, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cloneElement } from "react";
 
 export const RefreshButton = ({ handleRefresh, refreshing }) => (
   <button
+    type="button"
     onClick={handleRefresh}
     disabled={refreshing}
     className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
@@ -18,6 +19,7 @@ export const RefreshButton = ({ handleRefresh, refreshing }) => (
 
 export const ExportCsvButton = ({ handleExport, term }) => (
   <button
+    type="button"
     onClick={handleExport}
     disabled={term}
     className="px-3 py-2 text-[14px] rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl disabled:opacity-50 hover:scale-105 bg-blue-700 text-stone-200"
@@ -82,6 +84,7 @@ export const NoItems = ({
     <p className="text-gray-500">{description}</p>
     {onClick && state && (
       <button
+        type="button"
         onClick={onClick}
         className="mt-4 px-6 py-2 bg-gray-400 text-gray-100 font-medium rounded-lg hover:bg-gray-200 transition-colors"
       >

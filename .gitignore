@@ -22,3 +22,5 @@ schema/*.jpg
 testsprite_tests/
 backend/static/
 backend/pyrightconfig.json
+*.cjs
+*/biome.json

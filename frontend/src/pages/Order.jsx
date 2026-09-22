@@ -3,7 +3,7 @@ import { getSortComparator } from "../utils/sort";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -195,6 +195,7 @@ const Order = () => {
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -303,7 +304,7 @@ const Order = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-stone-400">
                         {new Date(
-                          order.order_date + "T00:00:00Z",
+                          `${order.order_date}T00:00:00Z`,
                         ).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -325,6 +326,7 @@ const Order = () => {
                                 <Edit3 size={18} />
                               </Link>
                               <button
+                                type="button"
                                 onClick={() => handleDelete(order.id)}
                                 className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
                                 title="Delete Order"

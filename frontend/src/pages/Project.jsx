@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import api from "../api";
@@ -78,26 +78,27 @@ const Projects = () => {
       return;
 
     setLoading(true);
-    api.patch(`api/project/${projectId}/`, {
-      project_status: newStatus,
-    })
-    .then(() => {
-      fetchProjects();
-      alert("Project status updated successfully !!!");
-    })
-    .catch((error) => {
-      console.error("Error updating project status:", error);
-      alert(
-        `Failed to update project status: ${
-          error.response?.data?.detail ||
-          error.response?.data?.project_status?.join(" ") ||
-          "Server error"
-        }`,
-      );
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+    api
+      .patch(`api/project/${projectId}/`, {
+        project_status: newStatus,
+      })
+      .then(() => {
+        fetchProjects();
+        alert("Project status updated successfully !!!");
+      })
+      .catch((error) => {
+        console.error("Error updating project status:", error);
+        alert(
+          `Failed to update project status: ${
+            error.response?.data?.detail ||
+            error.response?.data?.project_status?.join(" ") ||
+            "Server error"
+          }`,
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const filteredProjects = useMemo(() => {
@@ -254,6 +255,7 @@ const Projects = () => {
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -322,7 +324,7 @@ const Projects = () => {
                         <span className="mr-2">Start:</span>
                         <span className="text-stone-300 font-medium">
                           {new Date(
-                            project.start_date + "T00:00:00Z",
+                            `${project.start_date}T00:00:00Z`,
                           ).toLocaleDateString()}
                         </span>
                       </div>
@@ -335,7 +337,7 @@ const Projects = () => {
                           <span className="mr-2">End:</span>
                           <span className="text-stone-300 font-medium">
                             {new Date(
-                              project.end_date + "T00:00:00Z",
+                              `${project.end_date}T00:00:00Z`,
                             ).toLocaleDateString()}
                           </span>
                         </div>
@@ -399,6 +401,7 @@ const Projects = () => {
 
                     {canCreate && project.project_status === "PLANNING" && (
                       <button
+                        type="button"
                         onClick={() =>
                           handleStatusUpdate(project.id, "IN_PROGRESS")
                         }
@@ -412,6 +415,7 @@ const Projects = () => {
                     {canCreate && project.project_status === "IN_PROGRESS" && (
                       <>
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(project.id, "COMPLETED")
                           }
@@ -421,6 +425,7 @@ const Projects = () => {
                           <CheckCircle size={20} />
                         </button>
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(project.id, "ON_HOLD")
                           }
@@ -434,6 +439,7 @@ const Projects = () => {
 
                     {canCreate && project.project_status === "ON_HOLD" && (
                       <button
+                        type="button"
                         onClick={() =>
                           handleStatusUpdate(project.id, "IN_PROGRESS")
                         }
@@ -449,6 +455,7 @@ const Projects = () => {
                         project.project_status === "IN_PROGRESS" ||
                         project.project_status === "ON_HOLD") && (
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(project.id, "CANCELLED")
                           }
@@ -463,6 +470,7 @@ const Projects = () => {
                       (project.project_status === "PLANNING" ||
                         project.project_status === "CANCELLED") && (
                         <button
+                          type="button"
                           onClick={() => handleDelete(project.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Project"

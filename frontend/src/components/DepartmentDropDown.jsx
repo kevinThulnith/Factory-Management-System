@@ -1,4 +1,4 @@
-import { ChevronLeft, Building2 } from "lucide-react";
+import { Building2, ChevronLeft } from "lucide-react";
 import { useState } from "react";
 
 const DepartmentDropdown = ({
@@ -44,7 +44,16 @@ const DepartmentDropdown = ({
         </button>
         {open && (
           <>
-            <div className="fixed inset-0 z-0" onClick={() => setOpen(false)} />
+            <button
+              type="button"
+              className="fixed inset-0 z-0"
+              tabIndex={0}
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") setOpen(false);
+              }}
+            />
             <div className="absolute z-10 mt-1 w-full rounded-xl bg-[#2e2e2e] shadow-lg overflow-hidden max-h-48 overflow-y-auto">
               <button
                 type="button"

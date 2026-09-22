@@ -1,6 +1,5 @@
-import { Activity, FileText } from "lucide-react";
+import { Activity, FileText, Save } from "lucide-react";
 import { cloneElement } from "react";
-import { Save } from "lucide-react";
 
 // !Input component for forms
 export const InputItem = ({ label, name, icon, error, ...props }) => (
@@ -86,10 +85,10 @@ export const SelectItem = ({
 // !Info display component for view mode
 export const InfoItem = ({ icon, label, value }) => (
   <div className="bg-card-sub p-2 pl-3 rounded-lg border-l-4 border-orange-600">
-    <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+    <span className="flex items-center gap-2 text-sm text-stone-400 mb-2">
       {icon && cloneElement(icon, { size: 16 })}
       {label}
-    </label>
+    </span>
     <div className="text-base font-medium text-stone-300 break-words">
       {value === null || value === undefined || value === "" ? (
         <span className="text-stone-500">N/A</span>
@@ -126,22 +125,22 @@ export const Buttons = ({
 
 export const Status = ({ label, value }) => (
   <div className="flex flex-col">
-    <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+    <span className="flex items-center gap-2 text-sm text-stone-400 mb-2">
       <Activity size={16} />
       {label}
-    </label>
+    </span>
     {value}
   </div>
-)
+);
 
-export const Specifications = ({label, value}) => (
+export const Specifications = ({ label, value }) => (
   <div className="bg-card-sub p-2 pl-3 rounded-lg border-l-4 border-orange-600">
-    <label className="flex items-center gap-2 text-sm text-stone-400 mb-2">
+    <span className="flex items-center gap-2 text-sm text-stone-400 mb-2">
       <FileText size={16} />
       {label}
-    </label>
+    </span>
     <pre className="bg-stone-900/50 p-3 rounded-lg whitespace-pre-wrap text-base font-medium text-stone-300">
       {value}
     </pre>
   </div>
-)
+);

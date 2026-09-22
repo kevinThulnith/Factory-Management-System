@@ -1,8 +1,8 @@
-import { PlusCircle, Beaker, FileText, Trash2 } from "lucide-react";
-import { InputItem, SelectItem } from "./components";
-import useFetchData from "../hooks/useFetchData";
-import { useState, useEffect } from "react";
+import { Beaker, FileText, PlusCircle, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import api from "../api";
+import useFetchData from "../hooks/useFetchData";
+import { InputItem, SelectItem } from "./components";
 
 function Consumption({
   consumptions,
@@ -42,10 +42,10 @@ function Consumption({
     setActionLoading(true);
     api
       .post("api/material-consumption/", {
-        material: parseInt(formData.material),
+        material: parseInt(formData.material, 10),
         quantity: formData.quantity,
         notes: formData.notes || null,
-        [entityField]: parseInt(entityId),
+        [entityField]: parseInt(entityId, 10),
       })
       .then(() => {
         setFormData({ material: "", quantity: "1.00", notes: "" });
@@ -101,7 +101,8 @@ function Consumption({
           <h4 className="text-md font-semibold text-stone-200 mb-4">
             Add Material Consumption
           </h4>
-          <div
+          <button
+            type="button"
             className="space-y-4"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -154,7 +155,7 @@ function Consumption({
                 {actionLoading ? "Saving..." : "Add Consumption"}
               </button>
             </div>
-          </div>
+          </button>
         </div>
       )}
 

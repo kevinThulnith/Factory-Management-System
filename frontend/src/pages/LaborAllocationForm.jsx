@@ -1,4 +1,4 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
 import useProductionLines from "../hooks/useProductionLines";
 import useFormSubmit from "../hooks/useFormSubmit";
@@ -228,7 +228,7 @@ const LaborAllocationForm = () => {
     }
 
     const payload = {
-      employee: parseInt(formData.employee),
+      employee: parseInt(formData.employee, 10),
       hours_allocated: parseFloat(formData.hours_allocated).toFixed(2),
       date: formData.date,
     };
@@ -239,19 +239,19 @@ const LaborAllocationForm = () => {
       formData.allocation_type === "task"
     ) {
       if (formData.project) {
-        payload.project = parseInt(formData.project);
+        payload.project = parseInt(formData.project, 10);
       }
     }
 
     if (formData.allocation_type === "task" && formData.task) {
-      payload.task = parseInt(formData.task);
+      payload.task = parseInt(formData.task, 10);
     }
 
     if (
       formData.allocation_type === "production_line" &&
       formData.production_line
     ) {
-      payload.production_line = parseInt(formData.production_line);
+      payload.production_line = parseInt(formData.production_line, 10);
     }
 
     const isEditing = allocationId && !isCreateMode;
@@ -386,7 +386,7 @@ const LaborAllocationForm = () => {
             label="Date"
             value={
               allocation?.date
-                ? new Date(allocation.date + "T00:00:00Z").toLocaleDateString()
+                ? new Date(`${allocation.date}T00:00:00Z`).toLocaleDateString()
                 : "N/A"
             }
           />

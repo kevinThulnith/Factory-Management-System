@@ -1,5 +1,5 @@
 import LoadingIndicator from "../components/LoadingIndicator";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
 import { userRoles } from "../constants";
@@ -218,6 +218,7 @@ function User() {
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className=" flex-1 px-4 py-3 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105"
               style={{ height: "40px", lineHeight: "16px" }}
@@ -226,6 +227,7 @@ function User() {
               Reset Filters
             </button>
             <button
+              type="button"
               onClick={applyFilters}
               className="flex-1 px-4 py-3 rounded-lg font-medium transition-all bg-yellow-600 hover:scale-105 inline-flex items-center justify-center"
               style={{ height: "40px", lineHeight: "16px" }}
@@ -333,6 +335,7 @@ function User() {
                           </Link>
                           {u.id !== user.id && u.role !== "ADMIN" && (
                             <button
+                              type="button"
                               onClick={() => handleDeleteUser(u.id)}
                               className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                               title="Delete User"

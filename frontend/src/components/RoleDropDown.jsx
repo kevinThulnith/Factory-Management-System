@@ -1,8 +1,8 @@
-import { ChevronLeft } from "lucide-react";
 import { userRoles } from "../constants";
 import { useState } from "react";
 
 import {
+  ChevronLeft,
   ShieldCheck,
   Activity,
   Package,
@@ -23,37 +23,37 @@ const RoleDropdown = ({
   const [open, setOpen] = useState(false);
 
   const roleConfig = {
-  ADMIN: {
-    icon: <Crown size={16} />,
-    color: "purple-600",
-    label: "Administrator",
-  },
-  MANAGER: {
-    icon: <ShieldCheck size={16} />,
-    color: "blue-600",
-    label: "Manager",
-  },
-  SUPERVISOR: {
-    icon: <Eye size={16} />,
-    color: "green-600",
-    label: "Supervisor",
-  },
-  OPERATOR: {
-    icon: <CogIcon size={16} />,
-    color: "orange-600",
-    label: "Operator",
-  },
-  TECHNICIAN: {
-    icon: <Activity size={16} />,
-    color: "red-600",
-    label: "Technician",
-  },
-  PURCHASING: {
-    icon: <Package size={16} />,
-    color: "indigo-600",
-    label: "Purchasing",
-  },
-};
+    ADMIN: {
+      icon: <Crown size={16} />,
+      color: "purple-600",
+      label: "Administrator",
+    },
+    MANAGER: {
+      icon: <ShieldCheck size={16} />,
+      color: "blue-600",
+      label: "Manager",
+    },
+    SUPERVISOR: {
+      icon: <Eye size={16} />,
+      color: "green-600",
+      label: "Supervisor",
+    },
+    OPERATOR: {
+      icon: <CogIcon size={16} />,
+      color: "orange-600",
+      label: "Operator",
+    },
+    TECHNICIAN: {
+      icon: <Activity size={16} />,
+      color: "red-600",
+      label: "Technician",
+    },
+    PURCHASING: {
+      icon: <Package size={16} />,
+      color: "indigo-600",
+      label: "Purchasing",
+    },
+  };
 
   return (
     <div className="flex flex-col mb-[-5px]">
@@ -82,7 +82,11 @@ const RoleDropdown = ({
         </button>
         {open && !disabled && (
           <>
-            <div className="fixed inset-0 z-0" onClick={() => setOpen(false)} />
+            <button
+              type="button"
+              className="fixed inset-0 z-0"
+              onClick={() => setOpen(false)}
+            />
             <div className="absolute z-10 mt-1 w-full rounded-xl bg-[#2e2e2e] shadow-lg overflow-hidden">
               {userRoles.map((role) => (
                 <button

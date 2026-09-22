@@ -1,23 +1,22 @@
-import { LuUsersRound, LuUserRound } from "react-icons/lu";
-import { MdDashboard } from "react-icons/md";
-import { GiFactory } from "react-icons/gi";
-import { FiPackage } from "react-icons/fi";
-
 import {
-  FaClipboardCheck,
-  FaShoppingCart,
-  FaCalendarAlt,
-  FaChartLine,
+  FaBox,
   FaBuilding,
   FaBullseye,
-  FaWrench,
+  FaCalendarAlt,
+  FaChartLine,
+  FaClipboardCheck,
+  FaCog,
+  FaShoppingCart,
+  FaStar,
   FaTasks,
   FaTruck,
   FaUsers,
-  FaStar,
-  FaCog,
-  FaBox,
+  FaWrench,
 } from "react-icons/fa";
+import { FiPackage } from "react-icons/fi";
+import { GiFactory } from "react-icons/gi";
+import { LuUserRound, LuUsersRound } from "react-icons/lu";
+import { MdDashboard } from "react-icons/md";
 
 // !Define menu items grouped by category
 const menuItems = {

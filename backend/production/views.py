@@ -2,6 +2,7 @@ from .models import ManufacturingProcess, ProductionLine, ProductionSchedule
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+import logging
 
 from core.cache_utils import (
     invalidate_resource,
@@ -22,6 +23,8 @@ from .serializers import (
     ProductionScheduleSerializer,
     ProductionLineSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 # TODO: Create production model views
 
@@ -117,7 +120,11 @@ class ProductionLineViewSet(RBACCacheMixin):
                 status=status.HTTP_200_OK,
             )
         except (ValueError, TypeError) as machine_err:
-            return Response({"error": f"Invalid data format provided: {str(machine_err)}"}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning("manage_machines failed: %s", machine_err, exc_info=True)
+            return Response(
+                {"error": "Invalid data format provided in request."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         finally:
             invalidate_resource(self.cache_resource)
 
@@ -127,7 +134,7 @@ class ProductionScheduleViewSet(RBACCacheMixin):
     Production Schedule API
     - Admins: Full CRUD access
     - Supervisor | MANAGER: Create | Read | Update their own schedules
-    - Operator: Read-only access in their owm department
+    - Operator: Read-only access in their own department
     """
 
     serializer_class = ProductionScheduleSerializer

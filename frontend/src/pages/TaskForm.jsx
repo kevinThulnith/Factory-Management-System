@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
 import Consumption from "../components/Consumption";
 import useFormSubmit from "../hooks/useFormSubmit";
@@ -155,7 +155,7 @@ const TasksForm = () => {
   const isProjectManager = useMemo(() => {
     if (!user || !formData.project) return false;
     return (
-      projects.find((p) => p.id === parseInt(formData.project))
+      projects.find((p) => p.id === parseInt(formData.project, 10))
         ?.project_manager === user.id
     );
   }, [user, formData.project, projects]);
@@ -205,8 +205,10 @@ const TasksForm = () => {
     const payload = {
       name: formData.name,
       description: formData.description || null,
-      project: parseInt(formData.project),
-      assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
+      project: parseInt(formData.project, 10),
+      assigned_to: formData.assigned_to
+        ? parseInt(formData.assigned_to, 10)
+        : null,
       start_date: formData.start_date || null,
       end_date: formData.end_date || null,
       status: formData.status,
@@ -290,7 +292,7 @@ const TasksForm = () => {
       }
       text_02={"Tasks"}
       onClick={() => navigate("/task")}
-      fnction={() => navigate("/task/edit/" + taskId)}
+      fnction={() => navigate(`/task/edit/${taskId}`)}
       gradient={"from-emerald-600 to-emerald-800"}
       isViewMode={isViewMode}
       pageError={pageError}
@@ -320,7 +322,7 @@ const TasksForm = () => {
               value={
                 task?.start_date
                   ? new Date(
-                      task.start_date + "T00:00:00Z",
+                      `${task.start_date}T00:00:00Z`,
                     ).toLocaleDateString()
                   : "N/A"
               }
@@ -330,7 +332,7 @@ const TasksForm = () => {
               label="Due Date"
               value={
                 task?.end_date
-                  ? new Date(task.end_date + "T00:00:00Z").toLocaleDateString()
+                  ? new Date(`${task.end_date}T00:00:00Z`).toLocaleDateString()
                   : "Not set"
               }
             />

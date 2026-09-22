@@ -1,10 +1,10 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
 import useEntityFormData from "../hooks/useEntityFormData";
 import useFormSubmit from "../hooks/useFormSubmit";
-import useWorkshops from "../hooks/useWorkshops";
 import useFetchData from "../hooks/useFetchData";
-import { useState, useEffect } from "react";
+import useWorkshops from "../hooks/useWorkshops";
+import { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 
@@ -199,7 +199,7 @@ const MachineForm = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString + "T00:00:00Z").toLocaleDateString("en-US", {
+    return new Date(`${dateString}T00:00:00Z`).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -347,7 +347,10 @@ const MachineForm = () => {
               options={[
                 { value: "OPERATIONAL", label: "Operational" },
                 { value: "IDLE", label: "Idle" },
-                { value: "MAINTENANCE", label: "Under Maintenance" },
+                {
+                  value: "MAINTENANCE",
+                  label: "Under Maintenance",
+                },
                 { value: "BROKEN", label: "Broken" },
               ]}
               error={errors.status}

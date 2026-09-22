@@ -1,5 +1,5 @@
 import LoadingIndicator from "../components/LoadingIndicator";
-import { useState, useMemo, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
@@ -82,18 +82,15 @@ function Department() {
       filtered = filtered.filter(
         (department) =>
           department.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (department.description &&
-            department.description
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())) ||
-          (department.location &&
-            department.location
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())) ||
-          (department.supervisor_name &&
-            department.supervisor_name
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())),
+          department.description
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          department.location
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          department.supervisor_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -252,8 +249,14 @@ function Department() {
               onChange={(e) => setFilterBy(e.target.value)}
               list={[
                 { value: "all", label: "All Departments" },
-                { value: "with-supervisor", label: "With Supervisors" },
-                { value: "without-supervisor", label: "Need Supervisors" },
+                {
+                  value: "with-supervisor",
+                  label: "With Supervisors",
+                },
+                {
+                  value: "without-supervisor",
+                  label: "Need Supervisors",
+                },
               ]}
             />
             <SearchSelect
@@ -266,12 +269,30 @@ function Department() {
               list={[
                 { value: "name-asc", label: "Name (A-Z)" },
                 { value: "name-desc", label: "Name (Z-A)" },
-                { value: "location-asc", label: "Location (A-Z)" },
-                { value: "location-desc", label: "Location (Z-A)" },
-                { value: "supervisor_name-asc", label: "Supervisor (A-Z)" },
-                { value: "supervisor_name-desc", label: "Supervisor (Z-A)" },
-                { value: "updated_at-desc", label: "Recently Updated" },
-                { value: "updated_at-asc", label: "Oldest Updated" },
+                {
+                  value: "location-asc",
+                  label: "Location (A-Z)",
+                },
+                {
+                  value: "location-desc",
+                  label: "Location (Z-A)",
+                },
+                {
+                  value: "supervisor_name-asc",
+                  label: "Supervisor (A-Z)",
+                },
+                {
+                  value: "supervisor_name-desc",
+                  label: "Supervisor (Z-A)",
+                },
+                {
+                  value: "updated_at-desc",
+                  label: "Recently Updated",
+                },
+                {
+                  value: "updated_at-asc",
+                  label: "Oldest Updated",
+                },
               ]}
             />
             <SearchSelect
@@ -337,11 +358,13 @@ function Department() {
                       </h2>
                       {dept.supervisor_name ? (
                         <span className="flex-shrink-0 ml-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-stone-200 text-stone-800 shadow-sm">
-                          <UserRoundCheck size={12} className="mr-1" /> Supervised
+                          <UserRoundCheck size={12} className="mr-1" />{" "}
+                          Supervised
                         </span>
                       ) : (
                         <span className="flex-shrink-0 ml-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 shadow-sm">
-                          <UserRoundMinus size={12} className="mr-1" /> Needs Supervisor
+                          <UserRoundMinus size={12} className="mr-1" />
+                          Needs Supervisor
                         </span>
                       )}
                     </div>
@@ -410,6 +433,7 @@ function Department() {
                               <Edit3 size={20} />
                             </Link>
                             <button
+                              type="button"
                               onClick={() => handleDelete(dept.id)}
                               className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                               title="Delete Department"
@@ -432,6 +456,7 @@ function Department() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1 flex justify-between sm:hidden">
                       <button
+                        type="button"
                         onClick={() =>
                           handlePageChange(Math.max(1, currentPage - 1))
                         }
@@ -441,6 +466,7 @@ function Department() {
                         Previous
                       </button>
                       <button
+                        type="button"
                         onClick={() =>
                           handlePageChange(
                             Math.min(totalPages, currentPage + 1),
@@ -479,6 +505,7 @@ function Department() {
                           aria-label="Pagination"
                         >
                           <button
+                            type="button"
                             onClick={() =>
                               handlePageChange(Math.max(1, currentPage - 1))
                             }
@@ -497,6 +524,7 @@ function Department() {
                             ) {
                               return (
                                 <button
+                                  type="button"
                                   key={page}
                                   onClick={() => handlePageChange(page)}
                                   className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors ${
@@ -524,6 +552,7 @@ function Department() {
                             return null;
                           })}
                           <button
+                            type="button"
                             onClick={() =>
                               handlePageChange(
                                 Math.min(totalPages, currentPage + 1),

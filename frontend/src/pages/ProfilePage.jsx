@@ -18,9 +18,9 @@ import {
 // !Display info items
 const InfoItem = ({ icon, label, value }) => (
   <div className="bg-card-sub p-2 rounded-lg border-l-4 border-orange-600 shadow-lg">
-    <label className="flex items-center gap-2 text-sm text-stone-400 mb-1">
+    <span className="flex items-center gap-2 text-sm text-stone-400 mb-1">
       {icon} {label}
-    </label>
+    </span>
     <p className="text-base font-medium">
       {value === null || value === undefined || value === "" ? (
         <span className="text-stone-500">N/A</span>
@@ -99,12 +99,12 @@ const ProfilePage = () => {
                   <UserRound className="text-stone-800 sm:h-[40px] sm:w-[40px] h-[30px] w-[30px]" />
                 </div>
                 <h1 className="font-medium text-2xl sm:hidden ml-4 mt-1">
-                  {user.name || user.name || "Unknown User"}
+                  {user.name || "Unknown User"}
                 </h1>
               </div>
               <div className="text-center sm:text-left">
                 <h1 className="font-medium hidden sm:block text-2xl">
-                  {user.name || user.name || "Unknown User"}
+                  {user.name || "Unknown User"}
                 </h1>
                 <p className="text-stone-400 text-sm">
                   {user.role || "No Role"} •{" "}
@@ -113,6 +113,7 @@ const ProfilePage = () => {
               </div>
               {!isEditing && (
                 <button
+                  type="button"
                   onClick={handleEdit}
                   className="mt-4 sm:mt-0 sm:ml-auto bg-orange-600 hover:bg-burning-orange-700 text-stone-800 font-medium py-2 px-4 rounded-lg text-[14px] hover:text-stone-300 duration-100 ease-linear"
                 >

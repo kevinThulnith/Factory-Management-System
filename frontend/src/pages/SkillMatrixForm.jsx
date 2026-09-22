@@ -1,8 +1,8 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
-import { Star, UsersRound, Award } from "lucide-react";
+import { Award, Star, UsersRound } from "lucide-react";
 import useFormSubmit from "../hooks/useFormSubmit";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -122,7 +122,7 @@ const SkillForm = () => {
     description: formData.description || null,
     category: formData.category,
     level: formData.level,
-    employee: isMySkillsMode ? user.id : parseInt(formData.employee),
+    employee: isMySkillsMode ? user.id : parseInt(formData.employee, 10),
   };
 
   const validateForm = () => {
@@ -170,7 +170,7 @@ const SkillForm = () => {
 
   const getEmployeeName = () => {
     if (!formData.employee) return "N/A";
-    const emp = employees.find((e) => e.id === parseInt(formData.employee));
+    const emp = employees.find((e) => e.id === parseInt(formData.employee, 10));
     if (emp) {
       return `${emp.first_name || ""} ${emp.last_name || ""} (${
         emp.username

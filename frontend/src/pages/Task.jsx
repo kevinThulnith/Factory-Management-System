@@ -3,7 +3,7 @@ import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useProjects from "../hooks/useProjects";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import api from "../api";
@@ -63,7 +63,12 @@ const Tasks = () => {
   };
 
   const resetFiltersHandler = () => {
-    setFilters({ searchTerm: "", status: "all", project: "", assigned_to: "" });
+    setFilters({
+      searchTerm: "",
+      status: "all",
+      project: "",
+      assigned_to: "",
+    });
   };
 
   const handleStatusUpdate = async (taskId, newStatus) => {
@@ -136,7 +141,7 @@ const Tasks = () => {
       completed: allTasks.filter((t) => t.status === "COMPLETED").length,
       blocked: allTasks.filter((t) => t.status === "BLOCKED").length,
       overdue: allTasks.filter((t) => {
-        const dueDate = new Date(t.end_date + "T00:00:00Z");
+        const dueDate = new Date(`${t.end_date}T00:00:00Z`);
         return dueDate < new Date() && t.status !== "COMPLETED";
       }).length,
     }),
@@ -313,10 +318,14 @@ const Tasks = () => {
               onChange={handleFilterChange}
               list={[
                 { value: "", label: "All Projects" },
-                ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ...projects.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                })),
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -393,7 +402,7 @@ const Tasks = () => {
                         <span className="text-stone-300 font-medium">
                           {task.start_date
                             ? new Date(
-                                task.start_date + "T00:00:00Z",
+                                `${task.start_date}T00:00:00Z`,
                               ).toLocaleDateString()
                             : "N/A"}
                         </span>
@@ -407,7 +416,7 @@ const Tasks = () => {
                           <span className="mr-2">Due:</span>
                           <span className="text-stone-300 font-medium">
                             {new Date(
-                              task.end_date + "T00:00:00Z",
+                              `${task.end_date}T00:00:00Z`,
                             ).toLocaleDateString()}
                           </span>
                         </div>
@@ -437,6 +446,7 @@ const Tasks = () => {
 
                     {canEdit(task) && task.status === "PENDING" && (
                       <button
+                        type="button"
                         onClick={() =>
                           handleStatusUpdate(task.id, "IN_PROGRESS")
                         }
@@ -450,6 +460,7 @@ const Tasks = () => {
                     {canEdit(task) && task.status === "IN_PROGRESS" && (
                       <>
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(task.id, "COMPLETED")
                           }
@@ -459,6 +470,7 @@ const Tasks = () => {
                           <CheckCircle size={20} />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleStatusUpdate(task.id, "BLOCKED")}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Mark Blocked"
@@ -470,6 +482,7 @@ const Tasks = () => {
 
                     {canEdit(task) && task.status === "BLOCKED" && (
                       <button
+                        type="button"
                         onClick={() =>
                           handleStatusUpdate(task.id, "IN_PROGRESS")
                         }
@@ -485,6 +498,7 @@ const Tasks = () => {
                         task.status === "IN_PROGRESS" ||
                         task.status === "BLOCKED") && (
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(task.id, "CANCELLED")
                           }
@@ -499,6 +513,7 @@ const Tasks = () => {
                       (task.status === "PENDING" ||
                         task.status === "CANCELLED") && (
                         <button
+                          type="button"
                           onClick={() => handleDelete(task.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Task"

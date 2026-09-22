@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import api from "../api";
@@ -78,7 +78,8 @@ const ProductionSchedule = () => {
       return;
 
     setLoading(true);
-    api.patch(`api/production-schedule/${scheduleId}/`, {
+    api
+      .patch(`api/production-schedule/${scheduleId}/`, {
         status: newStatus,
       })
       .then(() => {
@@ -240,6 +241,7 @@ const ProductionSchedule = () => {
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -341,6 +343,7 @@ const ProductionSchedule = () => {
 
                     {canCreate && schedule.status === "SCHEDULED" && (
                       <button
+                        type="button"
                         onClick={() =>
                           handleStatusUpdate(schedule.id, "IN_PROGRESS")
                         }
@@ -354,6 +357,7 @@ const ProductionSchedule = () => {
                     {canCreate && schedule.status === "IN_PROGRESS" && (
                       <>
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(schedule.id, "COMPLETED")
                           }
@@ -363,6 +367,7 @@ const ProductionSchedule = () => {
                           <CheckCircle size={20} />
                         </button>
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(schedule.id, "SCHEDULED")
                           }
@@ -378,6 +383,7 @@ const ProductionSchedule = () => {
                       (schedule.status === "SCHEDULED" ||
                         schedule.status === "IN_PROGRESS") && (
                         <button
+                          type="button"
                           onClick={() =>
                             handleStatusUpdate(schedule.id, "CANCELLED")
                           }
@@ -392,6 +398,7 @@ const ProductionSchedule = () => {
                       (schedule.status === "SCHEDULED" ||
                         schedule.status === "CANCELLED") && (
                         <button
+                          type="button"
                           onClick={() => handleDelete(schedule.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Schedule"

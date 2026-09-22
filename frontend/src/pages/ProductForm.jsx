@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import useFetchData from "../hooks/useFetchData";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
@@ -74,7 +74,7 @@ const ProductForm = () => {
       selected_processes: (data.processes || [])
         .map((p, index) => ({
           id: data.manufacturing_processes?.[index] || index,
-          name: p["process__name"],
+          name: p.process__name,
           sequence: p.sequence,
         }))
         .sort((a, b) => a.sequence - b.sequence),
@@ -99,7 +99,9 @@ const ProductForm = () => {
   };
 
   const handleAddProcess = () => {
-    const process = allProcesses.find((p) => p.id === parseInt(processToAdd));
+    const process = allProcesses.find(
+      (p) => p.id === parseInt(processToAdd, 10),
+    );
     if (!process) return;
     setFormData((prev) => ({
       ...prev,
@@ -131,7 +133,10 @@ const ProductForm = () => {
         processes[index + 1],
         processes[index],
       ];
-    const resequenced = processes.map((p, i) => ({ ...p, sequence: i + 1 }));
+    const resequenced = processes.map((p, i) => ({
+      ...p,
+      sequence: i + 1,
+    }));
     setFormData((prev) => ({ ...prev, selected_processes: resequenced }));
   };
 
@@ -338,7 +343,10 @@ const ProductForm = () => {
               options={[
                 { value: "ACTIVE", label: "Active" },
                 { value: "INACTIVE", label: "Inactive" },
-                { value: "DISCONTINUED", label: "Discontinued" },
+                {
+                  value: "DISCONTINUED",
+                  label: "Discontinued",
+                },
               ]}
               required
             />
@@ -370,10 +378,14 @@ const ProductForm = () => {
             </h3>
             <div className="flex items-end gap-3 mb-4">
               <div className="flex-grow">
-                <label className="block text-sm font-medium text-stone-400 mb-1">
+                <label
+                  htmlFor="dd-process-select"
+                  className="block text-sm font-medium text-stone-400 mb-1"
+                >
                   Add Process
                 </label>
                 <select
+                  id="dd-process-select"
                   value={processToAdd}
                   onChange={(e) => setProcessToAdd(e.target.value)}
                   className="w-full px-4 text-slate-200 appearance-none outline-none rounded-lg bg-card-sub h-10"

@@ -1,10 +1,10 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchUsersByRole from "../hooks/useFetchUsersByRole";
 import useEntityFormData from "../hooks/useEntityFormData";
 import useDepartments from "../hooks/useDepartments";
 import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 
@@ -281,7 +281,10 @@ const WorkshopForm = () => {
               onChange={handleChange}
               options={[
                 { value: "ACTIVE", label: "Active" },
-                { value: "MAINTENANCE", label: "Under Maintenance" },
+                {
+                  value: "MAINTENANCE",
+                  label: "Under Maintenance",
+                },
                 { value: "INACTIVE", label: "Inactive" },
               ]}
               error={errors.operational_status}

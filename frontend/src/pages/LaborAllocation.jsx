@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -284,6 +284,7 @@ const LaborAllocations = () => {
               className="w-full px-4 py-2 border-none outline-none rounded-lg bg-card-sub text-slate-400"
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -345,7 +346,7 @@ const LaborAllocations = () => {
                           <span className="mr-2">Date:</span>
                           <span className="text-stone-300 font-medium">
                             {new Date(
-                              alloc.date + "T00:00:00Z",
+                              `${alloc.date}T00:00:00Z`,
                             ).toLocaleDateString()}
                           </span>
                         </div>
@@ -391,6 +392,7 @@ const LaborAllocations = () => {
                             <Edit3 size={20} />
                           </Link>
                           <button
+                            type="button"
                             onClick={() => handleDelete(alloc.id)}
                             className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                             title="Delete Allocation"

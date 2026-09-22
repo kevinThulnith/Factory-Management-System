@@ -14,7 +14,7 @@ api.interceptors.request.use(
     // TODO: Add Authorization token
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     // TODO: Add CSRF token only for mutation requests
@@ -32,7 +32,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export default api;

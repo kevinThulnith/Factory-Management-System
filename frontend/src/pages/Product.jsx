@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -175,10 +175,14 @@ const Product = () => {
                 { value: "all", label: "All Statuses" },
                 { value: "ACTIVE", label: "Active" },
                 { value: "INACTIVE", label: "Inactive" },
-                { value: "DISCONTINUED", label: "Discontinued" },
+                {
+                  value: "DISCONTINUED",
+                  label: "Discontinued",
+                },
               ]}
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >
@@ -245,6 +249,7 @@ const Product = () => {
                           <Edit3 size={20} />
                         </Link>
                         <button
+                          type="button"
                           onClick={() => handleDelete(product.id)}
                           className="text-red-200 hover:text-red-800 transition duration-200 p-2 hover:bg-red-100 rounded-full shadow-sm"
                           title="Delete Product"

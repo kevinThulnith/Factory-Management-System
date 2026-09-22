@@ -1,5 +1,5 @@
 import LoadingIndicator from "../components/LoadingIndicator";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useFetchData from "../hooks/useFetchData";
 import { Link } from "react-router-dom";
 
@@ -29,7 +29,7 @@ const MySkillsPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [filterByCategory, setFilterByCategory] = useState("all");
 
-  const fetchMySkills = useFetchData("skill-matrix", setLoading, setMySkills)
+  const fetchMySkills = useFetchData("skill-matrix", setLoading, setMySkills);
 
   useEffect(() => fetchMySkills(), [fetchMySkills]);
 
@@ -51,19 +51,19 @@ const MySkillsPage = () => {
       case "TECHNICAL":
       case "MECHANICAL":
       case "ELECTRICAL":
-        return <HardHat size={16} className="mr-2 text-orange-400" />
+        return <HardHat size={16} className="mr-2 text-orange-400" />;
       case "SOFTWARE":
-        return <Lightbulb size={16} className="mr-2 text-blue-400" />
+        return <Lightbulb size={16} className="mr-2 text-blue-400" />;
       case "MANAGEMENT":
-        return <Users size={16} className="mr-2 text-green-400" />
+        return <Users size={16} className="mr-2 text-green-400" />;
       default:
-        return <BookOpen size={16} className="mr-2 text-stone-400" />
+        return <BookOpen size={16} className="mr-2 text-stone-400" />;
     }
   };
 
   const uniqueCategories = useMemo(
     () => [...new Set(mySkills.map((s) => s.category))],
-    [mySkills]
+    [mySkills],
   );
 
   const filteredSkills = useMemo(() => {
@@ -72,8 +72,7 @@ const MySkillsPage = () => {
       const matchesSearch =
         !searchTerm ||
         skill.name.toLowerCase().includes(searchTermLower) ||
-        (skill.description &&
-          skill.description.toLowerCase().includes(searchTermLower));
+        skill.description?.toLowerCase().includes(searchTermLower);
 
       const matchesCategory =
         filterByCategory === "all" || skill.category === filterByCategory;
@@ -130,6 +129,7 @@ const MySkillsPage = () => {
             </div>
             <div className="flex items-center gap-3 mt-3 lg:mt-0">
               <button
+                type="button"
                 onClick={handleRefresh}
                 disabled={refreshing}
                 className="px-3 py-2 rounded-md font-medium transition-all duration-200 inline-flex items-center shadow-lg hover:shadow-xl text-[14px] bg-yellow-500 hover:scale-105 text-stone-700"
@@ -183,6 +183,7 @@ const MySkillsPage = () => {
               ))}
             </select>
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="px-4 py-2 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105 inline-flex items-center justify-center"
             >

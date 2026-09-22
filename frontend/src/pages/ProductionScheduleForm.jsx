@@ -1,6 +1,6 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useProductionLines from "../hooks/useProductionLines";
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Consumption from "../components/Consumption";
 import useFormSubmit from "../hooks/useFormSubmit";
 import useFetchData from "../hooks/useFetchData";
@@ -74,7 +74,7 @@ const ProductionScheduleListForm = () => {
   const fetchScheduleData = useCallback(() => {
     if (!scheduleId) {
       // Set default start time to 5 minutes in the future
-      const nowPlus5Min = new Date(new Date().getTime() + 5 * 60000);
+      const nowPlus5Min = new Date(Date.now() + 5 * 60000);
       const localTime = new Date(
         nowPlus5Min.getTime() - nowPlus5Min.getTimezoneOffset() * 60000,
       )
@@ -152,7 +152,7 @@ const ProductionScheduleListForm = () => {
   const handleSubmit = (e) => {
     // !Pre-flight checks that must short-circuit before the hook takes over.
     const quantityVal = parseFloat(formData.quantity);
-    if (isNaN(quantityVal) || quantityVal <= 0) {
+    if (Number.isNaN(quantityVal) || quantityVal <= 0) {
       e.preventDefault();
       setPageError("Quantity must be a positive number greater than 0.");
       return;
@@ -191,8 +191,8 @@ const ProductionScheduleListForm = () => {
     if (isCreateMode || schedule?.status === "SCHEDULED") {
       payload = {
         ...basePayload,
-        production_line: parseInt(formData.production_line),
-        product: parseInt(formData.product),
+        production_line: parseInt(formData.production_line, 10),
+        product: parseInt(formData.product, 10),
       };
     }
 
@@ -270,7 +270,7 @@ const ProductionScheduleListForm = () => {
       }
       text_02={"Production Schedules"}
       onClick={() => navigate("/production-schedule")}
-      fnction={() => navigate("/production-schedule/edit/" + scheduleId)}
+      fnction={() => navigate(`/production-schedule/edit/${scheduleId}`)}
       gradient={"from-cyan-600 to-cyan-800"}
       isViewMode={isViewMode}
       pageError={pageError}

@@ -30,7 +30,6 @@ function Logout() {
           window.location.reload();
         });
     } else navigate("/login");
-    
 
     return () => (didRunRef.current = false);
   }, [navigate]);

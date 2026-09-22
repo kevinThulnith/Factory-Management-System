@@ -1,6 +1,6 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFormSubmit from "../hooks/useFormSubmit";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
 import Form from "../components/Form";
 import api from "../api";
@@ -113,7 +113,7 @@ const ManufacturingProcessForm = () => {
           'Must be a valid JSON object (e.g., {"key": "value"}).';
       }
     } catch (e) {
-      newErrors.quality_parameters = "Invalid JSON format." + " " + e.message;
+      newErrors.quality_parameters = `Invalid JSON format. ${e.message}`;
     }
 
     setErrors(newErrors);

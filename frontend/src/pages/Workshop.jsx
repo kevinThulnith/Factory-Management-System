@@ -2,7 +2,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import useWebSocket from "../hooks/useWebSocket";
 import useFetchData from "../hooks/useFetchData";
 import useDelete from "../hooks/useDelete";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
@@ -220,7 +220,10 @@ function Workshop() {
               onChange={handleFilterChange}
               list={[
                 { value: "all", label: "All Status" },
-                ...workshopStatuses.map((s) => ({ value: s, label: s })),
+                ...workshopStatuses.map((s) => ({
+                  value: s,
+                  label: s,
+                })),
               ]}
               name="status"
             />
@@ -237,6 +240,7 @@ function Workshop() {
               name="department"
             />
             <button
+              type="button"
               onClick={resetFiltersHandler}
               className="flex-1 px-4 py-3 duration-200 font-medium bg-blue-600 rounded-lg hover:scale-105"
               style={{ height: "40px", lineHeight: "16px" }}
@@ -245,6 +249,7 @@ function Workshop() {
               Reset Filters
             </button>
             <button
+              type="button"
               onClick={applyFilters}
               className="flex-1 px-4 py-3 rounded-lg font-medium transition-all bg-yellow-600 hover:scale-105 inline-flex items-center justify-center"
               style={{ height: "40px", lineHeight: "16px" }}
@@ -367,6 +372,7 @@ function Workshop() {
                           )}
                           {canCreate && (
                             <button
+                              type="button"
                               onClick={() => handleDeleteWorkshop(workshop.id)}
                               className="p-2 text-red-400 hover:bg-red-100 rounded-lg transition-colors duration-200"
                               title="Delete Workshop"

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { BsLayoutSidebarReverse } from "react-icons/bs";
 import MenuItems from "../assets/MenuItems";
 import { NavLink } from "react-router-dom";
@@ -9,7 +9,7 @@ import logo from "../assets/logo1.png";
 const NavItem = memo(({ to, label, onClick, className, icon }) => (
   <NavLink to={to} className={className} onClick={onClick}>
     {label}
-    {icon && icon}
+    {icon}
   </NavLink>
 ));
 
@@ -54,7 +54,7 @@ function Navbar() {
   // Function to filter menu items based on user role
   const filterMenuItemsByRole = useCallback(
     (items) => {
-      if (!user || !user.role) return [];
+      if (!user?.role) return [];
       return items.filter((item) => item.roles.includes(user.role));
     },
     [user],
@@ -91,16 +91,22 @@ function Navbar() {
             )}
 
             {/* Menu button */}
-            <div className="lg:hidden" onClick={toggleMenu}>
+            <button
+              type="button"
+              className="lg:hidden"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
               <BsLayoutSidebarReverse className="text-stone-200 text-xl cursor-pointer hover:text-white ease-linear" />
-            </div>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Mobile Backdrop */}
       {isMenuOpen && (
-        <div
+        <button
+          type="button"
           className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
           onClick={() => setIsMenuOpen(false)}
           style={{ top: "3.5rem" }}
