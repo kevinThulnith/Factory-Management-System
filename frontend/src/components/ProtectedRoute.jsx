@@ -29,9 +29,8 @@ function ProtectedRoute({ children }) {
         setIsAuthorized(true);
         setIsLoading(false);
         return true;
-      } else {
-        throw new Error("Failed to refresh token");
-      }
+      } else throw new Error("Failed to refresh token");
+      
     } catch (error) {
       console.error("Error refreshing token:", error);
       setIsAuthorized(false);

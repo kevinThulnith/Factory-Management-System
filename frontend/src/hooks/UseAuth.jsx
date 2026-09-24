@@ -7,9 +7,7 @@ const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   const handleSetUser = useCallback((userData) => {
-    if (userData) {
-      localStorage.setItem("user", JSON.stringify(userData));
-    }
+    if (userData) localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   }, []);
 

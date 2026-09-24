@@ -13,9 +13,7 @@ api.interceptors.request.use(
   (config) => {
     // TODO: Add Authorization token
     const token = localStorage.getItem(ACCESS_TOKEN);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
 
     // TODO: Add CSRF token only for mutation requests
     const method = config.method?.toLowerCase();
