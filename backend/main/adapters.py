@@ -30,7 +30,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         # !Check if a user exists with this email address
         User = sociallogin.user.__class__
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email, is_active=True)
             # Connect this social account to the existing user
             sociallogin.connect(request, user)
         except User.DoesNotExist:

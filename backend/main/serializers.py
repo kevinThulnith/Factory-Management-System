@@ -112,6 +112,22 @@ class GoogleLoginSerializer(SocialLoginSerializer):
     access_token = CharField(required=False, allow_blank=True)
     id_token = CharField(required=False, allow_blank=True)
 
+    def get_social_login(self, adapter, app, token, response):
+        social_login = super().get_social_login(adapter, app, token, response)
+        email = social_login.user.email
+
+        if (
+            not email
+            or not User.objects.filter(email__iexact=email, is_active=True).exists()
+        ):
+            raise ValidationError(
+                {
+                    "detail": "Your email is not registered in our system. Please contact the system administrator to request access."
+                }
+            )
+
+        return social_login
+
     def validate(self, attrs):
         # Use the standard dj-rest-auth flow with GoogleOAuth2Adapter
         view = self.context.get("view")
