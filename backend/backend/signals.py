@@ -14,7 +14,7 @@ class DummyRequest:
 
 
 def create_model_change_signal(
-    model, serializer_class, group_name, event_type, permission_class=None
+    model, serializer_class, group_name, permission_class=None, event_type="send_update"
 ):
     "Factory function to create signal handlers for model changes with permission filtering."
 

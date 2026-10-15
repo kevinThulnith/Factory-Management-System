@@ -144,7 +144,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-# !When using deafault databases
+# !When using default databases
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
